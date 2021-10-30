@@ -17,7 +17,10 @@ func NewWarehouse() *warehouse {
 }
 
 var (
-    address = "0.0.0.0:1234"
+    address = net.UDPAddr{
+        Port: 4444,
+        IP: net.ParseIP("0.0.0.0"),
+    }
 )
 
 const (
@@ -27,12 +30,13 @@ const (
 func (w *warehouse) Start() {
     //ctx := context.Background()
     logger.Debug("Starting warehouse")
-    //listen, err := net.ListenPacket("udp", address)
-    //if err != nil {
-        //return
-    //}
-    //defer listen.Close()
-    ln, err := net.Listen("tcp", "127.0.0.1:8000")
+    listen, err := net.ListenUDP("udp", &address)
+    if err != nil {
+        return
+    }
+    defer listen.Close()
+    go recvDataFromSensor(listen)
+    ln, err := net.Listen("tcp", "0.0.0.0:8000")
     if err != nil {
         logger.Error(err.Error())
         return
@@ -54,6 +58,18 @@ type HTTPRequest struct {
     path    string
     version string
     query   string
+}
+
+func recvDataFromSensor(listen *net.UDPConn) {
+    for {
+        p := make([]byte, maxBufferSize)
+        _, remoteaddr, err := listen.ReadFromUDP(p)
+        if err != nil {
+            logger.Error(err.Error())
+            return
+        }
+        fmt.Printf("Read a message from %v %s \n", remoteaddr, p)
+    }
 }
 
 func handleConnection(c net.Conn) {
@@ -90,8 +106,21 @@ func handleConnection(c net.Conn) {
     //}
 }
 
+type HTTPResponse struct {
+    HTTPVersion string  // HTTP/1.1
+    statuscode  int     // 200
+    reason      string  // ok
+    body        string  // content
+}
+
 func handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
-    c.Write([]byte("All Sensor Data"))
+    response := HTTPResponse{
+        HTTPVersion:    "HTTP/1.1",
+        statuscode:     200,
+        reason:         "OK \r\n\r\n",
+        body:           "All Sensor Data",
+    }
+    c.Write([]byte(fmt.Sprintf("%v", response)))
 }
 
 func handleGetOneSensorData(request *HTTPRequest, c net.Conn) {

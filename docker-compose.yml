@@ -1,21 +1,5 @@
 version: '3'
 services:
-  sensor-warehouse:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      args:
-        project: ./cmd/sensor-warehouse/
-    environment:
-      - PORT=3001
-      - APP_NAME=sensor-warehouse
-    ports:
-      - 8001:3001
-    restart: on-failure
-    volumes:
-      - sensor-warehouse_vol:/usr/src/calypso/
-    networks:
-      - monorepo_net
   warehouse:
     build:
       context: .
@@ -23,13 +7,27 @@ services:
       args:
         project: ./cmd/warehouse/
     environment:
-      - PORT=3001
+      - PORT=4444
       - APP_NAME=warehouse
     ports:
-      - 8002:3001
-    restart: on-failure
+      - "4444:4444/udp"
+      - "8000:8000/tcp"
     volumes:
       - warehouse_vol:/usr/src/echo/
+    networks:
+      - monorepo_net
+  sensor-warehouse:
+    depends_on:
+      - warehouse
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        project: ./cmd/sensor-warehouse/
+    environment:
+      - APP_NAME=sensor-warehouse
+    volumes:
+      - sensor-warehouse_vol:/usr/src/calypso/
     networks:
       - monorepo_net
 
