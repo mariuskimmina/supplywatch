@@ -20,7 +20,7 @@ func (s *Sensor) Start() {
         "Mehl",
         "Backpulver",
     }
-    conn, err := net.Dial("udp", "127.0.0.1:4444")
+    conn, err := net.Dial("udp", "supplywatch_warehouse_1:4444")
     if err != nil {
         logger.Error("Failed to dial")
     }

@@ -3,7 +3,7 @@ services:
   warehouse:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Docker/warehouse/Dockerfile
       args:
         project: ./cmd/warehouse/
     environment:
@@ -21,7 +21,7 @@ services:
       - warehouse
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Docker/sensor-warehouse/Dockerfile
       args:
         project: ./cmd/sensor-warehouse/
     environment:
