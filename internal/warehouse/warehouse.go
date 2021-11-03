@@ -3,16 +3,20 @@ package warehouse
 import (
 	"bufio"
 	"fmt"
-	"github.com/mariuskimmina/supplywatch/pkg/logger"
 	"net"
 	"strings"
+
+	log "github.com/mariuskimmina/supplywatch/pkg/log"
 )
 
 type warehouse struct {
+    logger  *log.Logger
 }
 
-func NewWarehouse() *warehouse {
-	return &warehouse{}
+func NewWarehouse(logger *log.Logger) *warehouse {
+	return &warehouse{
+        logger: logger,
+    }
 }
 
 var (
@@ -28,7 +32,7 @@ const (
 
 func (w *warehouse) Start() {
 	//ctx := context.Background()
-	logger.Debug("Starting warehouse")
+    w.logger.Info("test")
 	listen, err := net.ListenUDP("udp", &address)
 	if err != nil {
 		return
@@ -37,15 +41,15 @@ func (w *warehouse) Start() {
 	go recvDataFromSensor(listen)
 	ln, err := net.Listen("tcp", "0.0.0.0:8000")
 	if err != nil {
-		logger.Error(err.Error())
+        // logger.Error(err.Error())
 		return
 	}
 	defer ln.Close()
 	for {
-		logger.Debug("Warehouse running")
+        // logger.Debug("Warehouse running")
 		c, err := ln.Accept()
 		if err != nil {
-			logger.Error(err.Error())
+            // logger.Error(err.Error())
 			return
 		}
 		go handleConnection(c)
@@ -64,7 +68,7 @@ func recvDataFromSensor(listen *net.UDPConn) {
 		p := make([]byte, maxBufferSize)
 		_, remoteaddr, err := listen.ReadFromUDP(p)
 		if err != nil {
-			logger.Error(err.Error())
+			// logger.Error(err.Error())
 			return
 		}
 		fmt.Printf("Read a message from %v %s \n", remoteaddr, p)
