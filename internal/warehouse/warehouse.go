@@ -32,7 +32,7 @@ const (
 
 func (w *warehouse) Start() {
 	//ctx := context.Background()
-	w.logger.Info("test")
+	w.logger.Info("Warehouse Starting")
 	listen, err := net.ListenUDP("udp", &address)
 	if err != nil {
 		return
@@ -41,15 +41,14 @@ func (w *warehouse) Start() {
 	go recvDataFromSensor(listen)
 	ln, err := net.Listen("tcp", "0.0.0.0:8000")
 	if err != nil {
-		// logger.Error(err.Error())
+		w.logger.Error(err.Error())
 		return
 	}
 	defer ln.Close()
 	for {
-		// logger.Debug("Warehouse running")
 		c, err := ln.Accept()
 		if err != nil {
-			// logger.Error(err.Error())
+			w.logger.Error(err.Error())
 			return
 		}
 		go handleConnection(c)
