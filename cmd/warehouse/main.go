@@ -7,9 +7,9 @@ import (
 )
 
 func main() {
-    logger := log.NewLogger()
-    logger.SetLevel(logrus.InfoLevel)
-    logger.Info("Starting Warehouse")
+	logger := log.NewLogger()
+	logger.SetLevel(logrus.InfoLevel)
+	logger.Info("Starting Warehouse")
 	warehouse := warehouse.NewWarehouse(logger)
 	warehouse.Start()
 }

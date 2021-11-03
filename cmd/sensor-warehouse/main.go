@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-    logger := log.NewLogger()
+	logger := log.NewLogger()
 	sensor := sensorwarehouse.NewSensor(logger)
 
 	sensor.Start()

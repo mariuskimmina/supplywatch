@@ -8,13 +8,13 @@ import (
 )
 
 type Sensor struct {
-    logger *log.Logger
+	logger *log.Logger
 }
 
 func NewSensor(logger *log.Logger) *Sensor {
 	return &Sensor{
-        logger: logger,
-    }
+		logger: logger,
+	}
 }
 
 func (s *Sensor) Start() {

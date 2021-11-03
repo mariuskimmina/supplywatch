@@ -9,12 +9,12 @@ import (
 )
 
 type Logger struct {
-    *logrus.Logger
+	*logrus.Logger
 }
 
 func NewLogger() *Logger {
-    log := logrus.New()
-    log.SetLevel(logrus.DebugLevel)
+	log := logrus.New()
+	log.SetLevel(logrus.DebugLevel)
 	log.SetReportCaller(true)
 	log.Formatter = &logrus.TextFormatter{
 		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
@@ -22,7 +22,7 @@ func NewLogger() *Logger {
 			return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", filename, f.Line)
 		},
 	}
-    return &Logger{
-        log,
-    }
+	return &Logger{
+		log,
+	}
 }
