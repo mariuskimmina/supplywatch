@@ -17,4 +17,26 @@ the system design, the tests and the deployment of the application.
 
 ![Architecture Diagramm](media/images/architecture.png)
 
+## Requirements analysis
 
+### 1
+
+#### a
+
+* Sensor and Warehouse need to be seperate processes
+* They need to communicate over UDP
+* The Sensor needs to document the arrival of new products
+* The Warehouse needs to log everything message it receives from a Sensor
+    * the log must contain: IP, port, type of sensor
+    * the log must be written to stdout as well as to a file
+
+#### b
+
+* The warehouse must implement a simple HTTP Server.
+    * the HTTP Server has to be implemented on sockets without the use of any HTTP librarry
+    * The HTTP Server must atleast be able to work with HTTP Get requests
+* The HTTP Server must implement 3 HTTP Endpoints
+    * to get the data from a single sensor
+    * to get the data from all sensors
+    * to get the history of sensor data
+* The warehouse must be able to handle data from the sensor and serve HTTP to the clients at the same time
