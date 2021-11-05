@@ -30,6 +30,8 @@ the system design, the tests and the deployment of the application.
     * the log must contain: IP, port, type of sensor
     * the log must be written to stdout as well as to a file
 
+![Architecture Diagramm Part1](media/images/meeting1.png)
+
 #### part B
 
 * The warehouse must implement a simple HTTP Server.
@@ -40,3 +42,5 @@ the system design, the tests and the deployment of the application.
     * to get the data from all sensors
     * to get the history of sensor data
 * The warehouse must be able to handle data from the sensor and serve HTTP to the clients at the same time
+
+![Architecture Diagramm Part2](media/images/meeting1b.png)
