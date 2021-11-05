@@ -19,9 +19,9 @@ the system design, the tests and the deployment of the application.
 
 ## Requirements analysis
 
-### 1
+### Assignment 1
 
-#### a
+#### part A
 
 * Sensor and Warehouse need to be seperate processes
 * They need to communicate over UDP
@@ -30,7 +30,7 @@ the system design, the tests and the deployment of the application.
     * the log must contain: IP, port, type of sensor
     * the log must be written to stdout as well as to a file
 
-#### b
+#### part B
 
 * The warehouse must implement a simple HTTP Server.
     * the HTTP Server has to be implemented on sockets without the use of any HTTP librarry
