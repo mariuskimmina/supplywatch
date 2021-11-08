@@ -14,7 +14,7 @@ type Sensor struct {
 }
 
 type Message struct {
-	SensorType 	string
+	SensorType  string
 	MessageBody string
 }
 
@@ -32,22 +32,24 @@ func (s *Sensor) Start() {
 	products := []string{
 		"Mehl",
 		"Backpulver",
-        "Wasser",
-        "Zucker",
+		"Wasser",
+		"Zucker",
 	}
 	conn, err := net.Dial("udp", "supplywatch_warehouse_1:4444")
 	if err != nil {
 		s.logger.Error("Failed to dial")
 	}
+
 	for {
-        message := Message{
-            SensorType: sensorType,
-            MessageBody: products[rand.Intn(4)],
-        }
-        jsonMessage, err := json.Marshal(message)
-        if err != nil {
-            s.logger.Error("Failed to convert message to json")
-        }
+		message := Message{
+			SensorType:  sensorType,
+			MessageBody: products[rand.Intn(4)],
+		}
+		jsonMessage, err := json.Marshal(message)
+
+		if err != nil {
+			s.logger.Error("Failed to convert message to json")
+		}
 		s.logger.Info("Sending Mehl")
 		conn.Write([]byte(jsonMessage))
 		time.Sleep(5 * time.Second)

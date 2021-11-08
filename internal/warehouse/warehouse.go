@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 
 	log "github.com/mariuskimmina/supplywatch/pkg/log"
@@ -63,6 +64,11 @@ type HTTPRequest struct {
 }
 
 func recvDataFromSensor(listen *net.UDPConn) {
+    f, err := os.Create("/tmp/log2")
+    if err != nil {
+        return
+    }
+    defer f.Close()
 	for {
 		p := make([]byte, maxBufferSize)
 		_, remoteaddr, err := listen.ReadFromUDP(p)
@@ -71,6 +77,8 @@ func recvDataFromSensor(listen *net.UDPConn) {
 			return
 		}
 		fmt.Printf("Read a message from %v %s \n", remoteaddr, p)
+        f.Write(p)
+        f.Write([]byte("\n"))
 	}
 }
 
