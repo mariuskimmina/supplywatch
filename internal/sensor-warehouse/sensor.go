@@ -1,6 +1,7 @@
 package sensorwarehouse
 
 import (
+	"encoding/json"
 	"net"
 	"time"
 
@@ -39,9 +40,13 @@ func (s *Sensor) Start() {
 	if err != nil {
 		s.logger.Error("Failed to dial")
 	}
+    json_message, err := json.Marshal(message)
+	if err != nil {
+		s.logger.Error("Failed to convert message to json")
+	}
 	for {
 		s.logger.Info("Sending Mehl")
-		conn.Write([]byte(message)
+		conn.Write([]byte(json_message))
 		time.Sleep(5 * time.Second)
 	}
 }
