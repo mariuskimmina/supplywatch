@@ -83,7 +83,7 @@ func recvDataFromSensor(listen *net.UDPConn) {
 }
 
 func handleConnection(c net.Conn) {
-	//fmt.Printf("Serving %s\n", c.RemoteAddr().String())
+	fmt.Printf("Serving %s\n", c.RemoteAddr().String())
 	//for {
 	netData, err := bufio.NewReader(c).ReadString('\n')
 	if err != nil {
