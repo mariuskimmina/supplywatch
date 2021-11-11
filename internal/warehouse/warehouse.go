@@ -116,18 +116,14 @@ func handleConnection(c net.Conn) {
 	//}
 }
 
-type HTTPResponse struct {
-	HTTPVersion string // HTTP/1.1
-	statuscode  int    // 200
-	reason      string // ok
-	body        string // content
-}
 
 func handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response := HTTPResponse{
 		HTTPVersion: "HTTP/1.1",
 		statuscode:  200,
-		reason:      "OK \r\n\r\n",
+		reason:      "OK \r\n",
+        headers:     []HTTPHeader{},
+        endHeaders:  "\r\n\r\n",
 		body:        "All Sensor Data",
 	}
 	c.Write([]byte(fmt.Sprintf("%v", response)))
