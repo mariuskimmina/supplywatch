@@ -27,7 +27,16 @@ func NewHTTPResponse() (res *HTTPResponse, err error) {
     return response, nil
 }
 
+func NewHTTPHeader(name, value string) HTTPHeader {
+    return HTTPHeader{
+        name: name,
+        value: value,
+    }
+}
+
 func (r *HTTPResponse) SetHeader(name, value string) error {
+    header := NewHTTPHeader(name, value)
+    r.headers = append(r.headers, header)
     return nil
 }
 

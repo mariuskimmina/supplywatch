@@ -101,10 +101,7 @@ func handleConnection(c net.Conn) {
 	if len(queryString) > 1 {
 		request.query = queryString[1]
 	}
-	fmt.Println(request.method)
-	fmt.Println(request.path)
-	fmt.Println(request.version)
-	fmt.Println(request.query)
+    fmt.Printf("Received Request: %s, %s, %s", request.method, request.path, request.version)
 	if request.path == "/allsensordata" {
 		handleGetAllSensorData(&request, c)
 	} else if request.path == "/sensordata" {
@@ -118,15 +115,11 @@ func handleConnection(c net.Conn) {
 
 
 func handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
-	response := HTTPResponse{
-		HTTPVersion: "HTTP/1.1",
-		statuscode:  200,
-		reason:      "OK \r\n",
-        headers:     []HTTPHeader{},
-        endHeaders:  "\r\n\r\n",
-		body:        "All Sensor Data",
-	}
-	c.Write([]byte(fmt.Sprintf("%v", response)))
+    response, err := NewHTTPResponse()
+    if err != nil {
+        c.Write([]byte(err.Error()))
+    }
+    c.Write([]byte(fmt.Sprintf("%v", response)))
 }
 
 func handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
