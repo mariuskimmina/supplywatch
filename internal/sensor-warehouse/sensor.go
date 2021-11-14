@@ -41,16 +41,17 @@ func (s *Sensor) Start() {
 	}
 
 	for {
+        product := products[rand.Intn(4)]
 		message := Message{
 			SensorType:  sensorType,
-			MessageBody: products[rand.Intn(4)],
+			MessageBody: product,
 		}
 		jsonMessage, err := json.Marshal(message)
 
 		if err != nil {
 			s.logger.Error("Failed to convert message to json")
 		}
-		s.logger.Info("Sending Mehl")
+        s.logger.Infof("Sending %s", product)
 		conn.Write([]byte(jsonMessage))
 		time.Sleep(5 * time.Second)
 	}
