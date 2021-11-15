@@ -9,3 +9,6 @@ build-sensor-warehouse:
 
 run-sensor-warehouse:
 	docker run --name supplywatch_sensor_warehouse --rm  supplywatch_sensor_warehouse:latest
+
+fmt:
+	go fmt ./...

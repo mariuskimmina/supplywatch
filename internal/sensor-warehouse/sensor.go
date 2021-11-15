@@ -14,8 +14,8 @@ type Sensor struct {
 }
 
 type Message struct {
-	SensorType  string
-	MessageBody string
+	SensorType  string `json:"sensor_type"`
+	MessageBody string `json:"message"`
 }
 
 func NewSensor(logger *log.Logger) *Sensor {
@@ -41,7 +41,7 @@ func (s *Sensor) Start() {
 	}
 
 	for {
-        product := products[rand.Intn(4)]
+		product := products[rand.Intn(4)]
 		message := Message{
 			SensorType:  sensorType,
 			MessageBody: product,
@@ -51,7 +51,7 @@ func (s *Sensor) Start() {
 		if err != nil {
 			s.logger.Error("Failed to convert message to json")
 		}
-        s.logger.Infof("Sending %s", product)
+		s.logger.Infof("Sending %s", product)
 		conn.Write([]byte(jsonMessage))
 		time.Sleep(5 * time.Second)
 	}

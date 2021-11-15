@@ -14,8 +14,6 @@ services:
     ports:
       - "4444:4444/udp"
       - "8000:8000/tcp"
-    volumes:
-      - warehouse_vol:/usr/src/echo/
     networks:
       - monorepo_net
   sensor-warehouse:
@@ -30,14 +28,8 @@ services:
         project: ./cmd/sensor-warehouse/
     environment:
       - APP_NAME=sensor-warehouse
-    volumes:
-      - sensor-warehouse_vol:/usr/src/calypso/
     networks:
       - monorepo_net
-
-volumes:
-  sensor-warehouse_vol:
-  warehouse_vol:
 
 networks:
   monorepo_net:

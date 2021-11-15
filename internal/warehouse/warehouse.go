@@ -2,6 +2,8 @@ package warehouse
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -25,6 +27,7 @@ var (
 		Port: 4444,
 		IP:   net.ParseIP("0.0.0.0"),
 	}
+	logger = &log.Logger{}
 )
 
 const (
@@ -34,6 +37,7 @@ const (
 func (w *warehouse) Start() {
 	//ctx := context.Background()
 	w.logger.Info("Warehouse Starting")
+	logger = w.logger
 	listen, err := net.ListenUDP("udp", &address)
 	if err != nil {
 		return
@@ -63,22 +67,51 @@ type HTTPRequest struct {
 	query   string
 }
 
+type logEntry struct {
+	SensorType string `json:"sensor_type"`
+	Message    string `json:"message"`
+	IP         net.IP `json:"ip"`
+	Port       int    `json:"port"`
+}
+
+type SensorMesage struct {
+	SensorType string `json:"sensor_type"`
+	Message    string `json:"message"`
+}
+
 func recvDataFromSensor(listen *net.UDPConn) {
-    f, err := os.Create("/tmp/log2")
-    if err != nil {
-        return
-    }
-    defer f.Close()
+	f, err := os.Create("/tmp/warehouselog")
+	if err != nil {
+		return
+	}
+	defer f.Close()
 	for {
 		p := make([]byte, maxBufferSize)
 		_, remoteaddr, err := listen.ReadFromUDP(p)
 		if err != nil {
-			// logger.Error(err.Error())
+			logger.Error("Error reading data from UDP: ", err)
 			return
 		}
-		fmt.Printf("Read a message from %v %s \n", remoteaddr, p)
-        f.Write(p)
-        f.Write([]byte("\n"))
+		sensorCleanBytes := bytes.Trim(p, "\x00")
+		var sensorMessage SensorMesage
+		err = json.Unmarshal(sensorCleanBytes, &sensorMessage)
+		if err != nil {
+			logger.Error("Error unmarshaling sensor data: ", err)
+			return
+		}
+		logentry := &logEntry{
+			SensorType: sensorMessage.SensorType,
+			Message:    sensorMessage.Message,
+			IP:         remoteaddr.IP,
+			Port:       remoteaddr.Port,
+		}
+		jsonLogEntry, err := json.Marshal(logentry)
+		if err != nil {
+			logger.Error("Error marshaling log entry to json: ", err)
+			return
+		}
+		f.Write(jsonLogEntry)
+		f.Write([]byte("\n"))
 	}
 }
 

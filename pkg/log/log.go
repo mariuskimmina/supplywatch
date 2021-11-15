@@ -12,13 +12,13 @@ type Logger struct {
 }
 
 func NewLogger() *Logger {
-    logcfg := zap.NewProductionConfig()
-    logcfg.EncoderConfig.EncodeTime = zapcore.TimeEncoder(func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+	logcfg := zap.NewProductionConfig()
+	logcfg.EncoderConfig.EncodeTime = zapcore.TimeEncoder(func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString(t.Format(time.Stamp))
-    })
-    log, _  := logcfg.Build()
-    defer log.Sync()
-    sugar := log.Sugar()
+	})
+	log, _ := logcfg.Build()
+	defer log.Sync()
+	sugar := log.Sugar()
 	return &Logger{
 		sugar,
 	}
