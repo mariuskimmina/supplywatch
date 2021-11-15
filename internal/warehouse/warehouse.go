@@ -99,6 +99,7 @@ func recvDataFromSensor(listen *net.UDPConn) {
 			logger.Error("Error unmarshaling sensor data: ", err)
 			return
 		}
+        logger.Infof("Received %s", sensorMessage.Message)
 		logentry := &logEntry{
 			SensorType: sensorMessage.SensorType,
 			Message:    sensorMessage.Message,
