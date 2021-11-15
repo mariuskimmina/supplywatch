@@ -25,7 +25,7 @@ the system design, the tests and the deployment of the application.
 
 * Sensor and Warehouse need to be seperate processes
 * They need to communicate over UDP
-* The Sensor needs to document the arrival of new products
+* The Sensor needs to simulate the arrival of new products
 * The Warehouse needs to log everything message it receives from a Sensor
     * the log must contain: IP, port, type of sensor
     * the log must be written to stdout as well as to a file

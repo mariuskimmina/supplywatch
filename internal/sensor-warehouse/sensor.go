@@ -35,7 +35,7 @@ func (s *Sensor) Start() {
 		"Wasser",
 		"Zucker",
 	}
-	conn, err := net.Dial("udp", "supplywatch_warehouse_1:4444")
+	conn, err := net.Dial("udp", "warehouse:4444")
 	if err != nil {
 		s.logger.Error("Failed to dial")
 	}

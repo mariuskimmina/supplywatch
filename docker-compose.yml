@@ -1,6 +1,8 @@
 version: '3'
 services:
   warehouse:
+    container_name: warehouse
+    hostname: warehouse
     build:
       context: .
       dockerfile: ./Docker/warehouse/Dockerfile
@@ -17,6 +19,8 @@ services:
     networks:
       - monorepo_net
   sensor-warehouse:
+    container_name: sensor-warehouse
+    hostname: sensor-warehouse
     depends_on:
       - warehouse
     build:
