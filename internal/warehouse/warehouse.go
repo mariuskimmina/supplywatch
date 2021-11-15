@@ -34,9 +34,10 @@ const (
 	maxBufferSize = 1024
 )
 
+// Start starts the warehouse server
+// The warehouse listens on a UPD Port to reiceive data from sensors
+// and it also listens on a TCP Port to handle HTTP requests
 func (w *warehouse) Start() {
-	//ctx := context.Background()
-	w.logger.Info("Warehouse Starting")
 	logger = w.logger
 	listen, err := net.ListenUDP("udp", &address)
 	if err != nil {
@@ -60,6 +61,7 @@ func (w *warehouse) Start() {
 	}
 }
 
+// HTTPRequest represents an incoming HTTP request
 type HTTPRequest struct {
 	method  string
 	path    string
@@ -67,6 +69,7 @@ type HTTPRequest struct {
 	query   string
 }
 
+// LogEntry represents a new entry in the log file
 type logEntry struct {
 	SensorType string `json:"sensor_type"`
 	Message    string `json:"message"`
@@ -74,11 +77,13 @@ type logEntry struct {
 	Port       int    `json:"port"`
 }
 
+// SensorMesage represents the data we hope to receive from a sensor
 type SensorMesage struct {
 	SensorType string `json:"sensor_type"`
 	Message    string `json:"message"`
 }
 
+// recvDataFromSensor handles incoming UPD Packets
 func recvDataFromSensor(listen *net.UDPConn) {
 	f, err := os.Create("/tmp/warehouselog")
 	if err != nil {
@@ -116,6 +121,7 @@ func recvDataFromSensor(listen *net.UDPConn) {
 	}
 }
 
+// handleConnection handles incoming HTTP requests
 func handleConnection(c net.Conn) {
 	fmt.Printf("Serving %s\n", c.RemoteAddr().String())
 	//for {
