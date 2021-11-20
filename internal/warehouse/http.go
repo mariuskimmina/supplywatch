@@ -9,10 +9,18 @@ type HTTPResponse struct {
     endHeaders  string
 }
 
+type HTTPRequest struct {
+	method  string
+	path    string
+	version string
+	query   string
+}
+
 type HTTPHeader struct {
     name    string
     value   string
 }
+
 
 func NewHTTPResponse() (res *HTTPResponse, err error) {
 	response := &HTTPResponse{
