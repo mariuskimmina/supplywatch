@@ -16,9 +16,23 @@ services:
       - "8000:8000/tcp"
     networks:
       - monorepo_net
-  sensor-warehouse:
-    container_name: sensor-warehouse
-    hostname: sensor-warehouse
+  sensor-warehouse_1:
+    container_name: sensor-warehouse_1
+    hostname: sensor-warehouse_1
+    depends_on:
+      - warehouse
+    build:
+      context: .
+      dockerfile: ./Docker/sensor-warehouse/Dockerfile
+      args:
+        project: ./cmd/sensor-warehouse/
+    environment:
+      - APP_NAME=sensor-warehouse
+    networks:
+      - monorepo_net
+  sensor-warehouse_2:
+    container_name: sensor-warehouse_2
+    hostname: sensor-warehouse_2
     depends_on:
       - warehouse
     build:

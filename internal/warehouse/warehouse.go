@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/google/uuid"
 	log "github.com/mariuskimmina/supplywatch/pkg/log"
 )
 
@@ -71,6 +72,7 @@ type HTTPRequest struct {
 
 // LogEntry represents a new entry in the log file
 type logEntry struct {
+    SensorID   uuid.UUID `json:"sensor_id"`
 	SensorType string `json:"sensor_type"`
 	Message    string `json:"message"`
 	IP         net.IP `json:"ip"`
@@ -79,6 +81,7 @@ type logEntry struct {
 
 // SensorMesage represents the data we hope to receive from a sensor
 type SensorMesage struct {
+    SensorID   uuid.UUID `json:"sensor_id"`
 	SensorType string `json:"sensor_type"`
 	Message    string `json:"message"`
 }
@@ -107,6 +110,7 @@ func recvDataFromSensor(listen *net.UDPConn) {
         logger.Infof("Received %s", sensorMessage.Message)
 		logentry := &logEntry{
 			SensorType: sensorMessage.SensorType,
+			SensorID: sensorMessage.SensorID,
 			Message:    sensorMessage.Message,
 			IP:         remoteaddr.IP,
 			Port:       remoteaddr.Port,
