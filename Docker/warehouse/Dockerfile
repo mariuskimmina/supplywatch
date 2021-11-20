@@ -11,7 +11,7 @@ RUN go mod download
 # Copy sources to the working directory
 COPY . .
 
-# Build th Go app
+# Build the Go app
 ARG project
 RUN GOOS=linux CGO_ENABLED=0 GOARCH=amd64 go build -a -v -o service $project
 
@@ -22,6 +22,7 @@ WORKDIR /dist
 
 # Copy the build artifacts from the previous stage
 COPY --from=builder /build/service .
+COPY --from=builder /build/config/warehouse.yml .
 
 # Run the executable
 CMD ["./service"]

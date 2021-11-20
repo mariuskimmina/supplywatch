@@ -7,27 +7,30 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/mariuskimmina/supplywatch/pkg/config"
 	log "github.com/mariuskimmina/supplywatch/pkg/log"
 )
 
 type warehouse struct {
 	logger *log.Logger
+    config *config.WarehouseConfig
 }
 
-func NewWarehouse(logger *log.Logger) *warehouse {
+// Create a new warehouse object 
+// TODO: the arguments here should probably be interfaces, I think..
+// this way, I think I'm doing depency injection wrong here...
+func NewWarehouse(logger *log.Logger, config *config.WarehouseConfig) *warehouse {
 	return &warehouse{
 		logger: logger,
+        config: config,
 	}
 }
 
 var (
-	address = net.UDPAddr{
-		Port: 4444,
-		IP:   net.ParseIP("0.0.0.0"),
-	}
 	logger = &log.Logger{}
 )
 
@@ -40,13 +43,19 @@ const (
 // and it also listens on a TCP Port to handle HTTP requests
 func (w *warehouse) Start() {
 	logger = w.logger
-	listen, err := net.ListenUDP("udp", &address)
+    address := &net.UDPAddr{
+        Port: w.config.UdpPort,
+        IP: net.ParseIP(w.config.ListenIP),
+    }
+	listen, err := net.ListenUDP("udp", address)
 	if err != nil {
 		return
 	}
 	defer listen.Close()
 	go recvDataFromSensor(listen)
-	ln, err := net.Listen("tcp", "0.0.0.0:8000")
+    tcpPort := strconv.Itoa(w.config.TcpPort)
+    tcpListenIP := w.config.ListenIP + ":" + tcpPort
+    ln, err := net.Listen("tcp", tcpListenIP)
 	if err != nil {
 		w.logger.Error(err.Error())
 		return
