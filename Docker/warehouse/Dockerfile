@@ -22,7 +22,7 @@ WORKDIR /dist
 
 # Copy the build artifacts from the previous stage
 COPY --from=builder /build/service .
-COPY --from=builder /build/config/warehouse.yml .
+COPY --from=builder /build/config.yml .
 
 # Run the executable
 CMD ["./service"]

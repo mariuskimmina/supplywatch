@@ -17,13 +17,13 @@ import (
 
 type warehouse struct {
 	logger *log.Logger
-    config *config.WarehouseConfig
+    config *config.Config
 }
 
 // Create a new warehouse object 
 // TODO: the arguments here should probably be interfaces, I think..
 // this way, I think I'm doing depency injection wrong here...
-func NewWarehouse(logger *log.Logger, config *config.WarehouseConfig) *warehouse {
+func NewWarehouse(logger *log.Logger, config *config.Config) *warehouse {
 	return &warehouse{
 		logger: logger,
         config: config,
@@ -44,8 +44,8 @@ const (
 func (w *warehouse) Start() {
 	logger = w.logger
     address := &net.UDPAddr{
-        Port: w.config.UdpPort,
-        IP: net.ParseIP(w.config.ListenIP),
+        Port: w.config.Warehouse.UDPPort,
+        IP: net.ParseIP(w.config.Warehouse.ListenIP),
     }
 	listen, err := net.ListenUDP("udp", address)
 	if err != nil {
@@ -53,8 +53,8 @@ func (w *warehouse) Start() {
 	}
 	defer listen.Close()
 	go recvDataFromSensor(listen)
-    tcpPort := strconv.Itoa(w.config.TcpPort)
-    tcpListenIP := w.config.ListenIP + ":" + tcpPort
+    tcpPort := strconv.Itoa(w.config.Warehouse.TCPPort)
+    tcpListenIP := w.config.Warehouse.ListenIP + ":" + tcpPort
     ln, err := net.Listen("tcp", tcpListenIP)
 	if err != nil {
 		w.logger.Error(err.Error())

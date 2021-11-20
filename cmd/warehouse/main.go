@@ -8,7 +8,7 @@ import (
 
 func main() {
 	logger := log.NewLogger()
-    config, err := config.LoadWarehouseConfig(".")
+    config, err := config.LoadConfig(".")
     if err != nil {
         logger.Error(err)
         logger.Fatal("Failed to load warehouse configuration")

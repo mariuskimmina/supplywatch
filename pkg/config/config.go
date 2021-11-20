@@ -2,15 +2,20 @@ package config
 
 import "github.com/spf13/viper"
 
-type WarehouseConfig struct {
-    ListenIP    string `mapstructure:"listenIP"`
-    UdpPort     int `mapstructure:"udpPort"`
-    TcpPort     int `mapstructure:"tcpPort"`
+type Config struct {
+    Warehouse struct {
+        ListenIP    string `yaml:"listenIP"`
+        UDPPort     int `yaml:"udpPort"`
+        TCPPort     int `yaml:"tcpPort"`
+    }
+    SensorWarehouse struct {
+        UDPPort     int `yaml:"udpPort"`
+    }
 }
 
-func LoadWarehouseConfig(path string) (config WarehouseConfig, err error) {
+func LoadConfig(path string) (config Config, err error) {
     viper.AddConfigPath(path)
-    viper.SetConfigName("warehouse.yml")
+    viper.SetConfigName("config.yml")
     viper.SetConfigType("yaml")
 
     viper.AutomaticEnv()
