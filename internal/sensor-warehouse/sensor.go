@@ -6,14 +6,18 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/mariuskimmina/supplywatch/pkg/config"
 	"github.com/mariuskimmina/supplywatch/pkg/log"
 )
 
 type Sensor struct {
 	logger *log.Logger
+    config *config.Config
+
 }
 
 type Message struct {
@@ -22,9 +26,10 @@ type Message struct {
 	MessageBody string `json:"message"`
 }
 
-func NewSensor(logger *log.Logger) *Sensor {
+func NewSensor(logger *log.Logger, config *config.Config) *Sensor {
 	return &Sensor{
 		logger: logger,
+        config: config,
 	}
 }
 
@@ -56,7 +61,9 @@ func (s *Sensor) Start() {
 	if err != nil {
 		s.logger.Fatal("Failed to create ID for sensor")
 	}
-	conn, err := net.Dial("udp", "warehouse:4444")
+    warehousePort :=strconv.Itoa(s.config.SensorWarehouse.UDPPort)
+    warehouseAdr := "warehouse" + ":" +  warehousePort
+	conn, err := net.Dial("udp", warehouseAdr)
 	if err != nil {
 		s.logger.Error("Failed to dial the warehouse")
 	}
