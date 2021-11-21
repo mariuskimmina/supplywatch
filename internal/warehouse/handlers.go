@@ -25,7 +25,7 @@ func (w *warehouse) handleConnection(c net.Conn) {
 	if len(queryString) > 1 {
 		request.query = queryString[1]
 	}
-    fmt.Printf("Received Request: %s, %s, %s", request.method, request.path, request.version)
+	fmt.Printf("Received Request: %s, %s, %s", request.method, request.path, request.version)
 	if request.path == "/allsensordata" {
 		w.handleGetAllSensorData(&request, c)
 	} else if request.path == "/sensordata" {
@@ -37,17 +37,16 @@ func (w *warehouse) handleConnection(c net.Conn) {
 	//}
 }
 
-
 func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
-    response, err := NewHTTPResponse()
-    response.SetHeader("Access-Control-Allow-Origin", "*")
-    response.SetHeader("Content-Type", "application/json")
-    response.SetHeader("Server", "Supplywatch")
-    if err != nil {
-        c.Write([]byte(err.Error()))
-    }
-    byteResponse, _ := w.ResponseToBytes(response)
-    c.Write(byteResponse)
+	response, err := NewHTTPResponse()
+	response.SetHeader("Access-Control-Allow-Origin", "*")
+	response.SetHeader("Content-Type", "application/json")
+	response.SetHeader("Server", "Supplywatch")
+	if err != nil {
+		c.Write([]byte(err.Error()))
+	}
+	byteResponse, _ := w.ResponseToBytes(response)
+	c.Write(byteResponse)
 }
 
 func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
