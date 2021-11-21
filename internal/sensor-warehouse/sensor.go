@@ -16,24 +16,23 @@ import (
 
 type Sensor struct {
 	logger *log.Logger
-    config *config.Config
-
+	config *config.Config
 }
 
 type Message struct {
-    SensorID    uuid.UUID `json:"sensor_id"`
-	SensorType  string `json:"sensor_type"`
-	MessageBody string `json:"message"`
+	SensorID    uuid.UUID `json:"sensor_id"`
+	SensorType  string    `json:"sensor_type"`
+	MessageBody string    `json:"message"`
 }
 
 func NewSensor(logger *log.Logger, config *config.Config) *Sensor {
 	return &Sensor{
 		logger: logger,
-        config: config,
+		config: config,
 	}
 }
 
-var(
+var (
 	products = []string{
 		"butter",
 		"sugar",
@@ -46,33 +45,33 @@ var(
 		"carrots",
 		"raisins",
 		"walnuts",
-    }
-    SensorType = []string{
-        "BarcodeReader",
-        "RFID-Reader",
-    }
+	}
+	SensorType = []string{
+		"BarcodeReader",
+		"RFID-Reader",
+	}
 )
 
 func (s *Sensor) Start() {
-    SeedRandom()
-    n := rand.Int() % len(SensorType)
-    sensorType := SensorType[n]
-    sensorID, err := uuid.NewUUID()
+	SeedRandom()
+	n := rand.Int() % len(SensorType)
+	sensorType := SensorType[n]
+	sensorID, err := uuid.NewUUID()
 	if err != nil {
 		s.logger.Fatal("Failed to create ID for sensor")
 	}
-    warehousePort :=strconv.Itoa(s.config.SensorWarehouse.UDPPort)
-    warehouseAdr := "warehouse" + ":" +  warehousePort
+	warehousePort := strconv.Itoa(s.config.SensorWarehouse.UDPPort)
+	warehouseAdr := "warehouse" + ":" + warehousePort
 	conn, err := net.Dial("udp", warehouseAdr)
 	if err != nil {
 		s.logger.Error("Failed to dial the warehouse")
 	}
 
 	for {
-        n = rand.Int() % len(products)
+		n = rand.Int() % len(products)
 		product := products[n]
 		message := Message{
-            SensorID: sensorID,
+			SensorID:    sensorID,
 			SensorType:  sensorType,
 			MessageBody: product,
 		}
@@ -90,10 +89,10 @@ func (s *Sensor) Start() {
 // SeedRandom makes sure that multiple sensors will send different random products
 // using the simple time.Now() seeding did not work for this case as both containers start at the same time
 func SeedRandom() {
-    var b [8]byte
-    _, err := crypto_rand.Read(b[:])
-    if err != nil {
-        panic("cannot seed math/rand package with cryptographically secure random number generator")
-    }
-    rand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
+	var b [8]byte
+	_, err := crypto_rand.Read(b[:])
+	if err != nil {
+		panic("cannot seed math/rand package with cryptographically secure random number generator")
+	}
+	rand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
 }
