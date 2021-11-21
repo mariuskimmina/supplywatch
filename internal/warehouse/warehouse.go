@@ -30,10 +30,6 @@ func NewWarehouse(logger *log.Logger, config *config.Config) *warehouse {
 	}
 }
 
-var (
-	logger = &log.Logger{}
-)
-
 const (
 	maxBufferSize = 1024
 )
@@ -42,7 +38,6 @@ const (
 // The warehouse listens on a UPD Port to reiceive data from sensors
 // and it also listens on a TCP Port to handle HTTP requests
 func (w *warehouse) Start() {
-	logger = w.logger
 	address := &net.UDPAddr{
 		Port: w.config.Warehouse.UDPPort,
 		IP:   net.ParseIP(w.config.Warehouse.ListenIP),
@@ -52,7 +47,7 @@ func (w *warehouse) Start() {
 		return
 	}
 	defer listen.Close()
-	go recvDataFromSensor(listen)
+	go w.recvDataFromSensor(listen)
 	tcpPort := strconv.Itoa(w.config.Warehouse.TCPPort)
 	tcpListenIP := w.config.Warehouse.ListenIP + ":" + tcpPort
 	ln, err := net.Listen("tcp", tcpListenIP)
@@ -67,7 +62,7 @@ func (w *warehouse) Start() {
 			w.logger.Error(err.Error())
 			return
 		}
-		go handleConnection(c)
+		go w.handleConnection(c)
 	}
 }
 
@@ -96,7 +91,7 @@ type SensorMesage struct {
 }
 
 // recvDataFromSensor handles incoming UPD Packets
-func recvDataFromSensor(listen *net.UDPConn) {
+func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
 	f, err := os.Create("/tmp/warehouselog")
 	if err != nil {
 		return
@@ -106,17 +101,17 @@ func recvDataFromSensor(listen *net.UDPConn) {
 		p := make([]byte, maxBufferSize)
 		_, remoteaddr, err := listen.ReadFromUDP(p)
 		if err != nil {
-			logger.Error("Error reading data from UDP: ", err)
+			w.logger.Error("Error reading data from UDP: ", err)
 			return
 		}
 		sensorCleanBytes := bytes.Trim(p, "\x00")
 		var sensorMessage SensorMesage
 		err = json.Unmarshal(sensorCleanBytes, &sensorMessage)
 		if err != nil {
-			logger.Error("Error unmarshaling sensor data: ", err)
+			w.logger.Error("Error unmarshaling sensor data: ", err)
 			return
 		}
-		logger.Infof("Received %s", sensorMessage.Message)
+		w.logger.Infof("Received %s", sensorMessage.Message)
 		logentry := &logEntry{
 			SensorType: sensorMessage.SensorType,
 			SensorID:   sensorMessage.SensorID,
@@ -126,7 +121,7 @@ func recvDataFromSensor(listen *net.UDPConn) {
 		}
 		jsonLogEntry, err := json.Marshal(logentry)
 		if err != nil {
-			logger.Error("Error marshaling log entry to json: ", err)
+			w.logger.Error("Error marshaling log entry to json: ", err)
 			return
 		}
 		f.Write(jsonLogEntry)
@@ -135,7 +130,7 @@ func recvDataFromSensor(listen *net.UDPConn) {
 }
 
 // handleConnection handles incoming HTTP requests
-func handleConnection(c net.Conn) {
+func (w *warehouse) handleConnection(c net.Conn) {
 	fmt.Printf("Serving %s\n", c.RemoteAddr().String())
 	//for {
 	netData, err := bufio.NewReader(c).ReadString('\n')
@@ -159,9 +154,9 @@ func handleConnection(c net.Conn) {
 	fmt.Println(request.version)
 	fmt.Println(request.query)
 	if request.path == "/allsensordata" {
-		handleGetAllSensorData(&request, c)
+		w.handleGetAllSensorData(&request, c)
 	} else if request.path == "/sensordata" {
-		handleGetOneSensorData(&request, c)
+		w.handleGetOneSensorData(&request, c)
 	} else {
 		c.Write([]byte(string(request.path)))
 	}
@@ -176,7 +171,7 @@ type HTTPResponse struct {
 	body        string // content
 }
 
-func handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
+func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response := HTTPResponse{
 		HTTPVersion: "HTTP/1.1",
 		statuscode:  200,
@@ -186,7 +181,7 @@ func handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	c.Write([]byte(fmt.Sprintf("%v", response)))
 }
 
-func handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
+func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
 	c.Write([]byte("One Sensor Data"))
 }
 
