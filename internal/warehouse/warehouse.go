@@ -1,11 +1,9 @@
 package warehouse
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"os"
-	"strings"
 
 	log "github.com/mariuskimmina/supplywatch/pkg/log"
 )
@@ -39,7 +37,7 @@ func (w *warehouse) Start() {
 		return
 	}
 	defer listen.Close()
-	go recvDataFromSensor(listen)
+	go w.recvDataFromSensor(listen)
 	ln, err := net.Listen("tcp", "0.0.0.0:8000")
 	if err != nil {
 		w.logger.Error(err.Error())
@@ -52,12 +50,12 @@ func (w *warehouse) Start() {
 			w.logger.Error(err.Error())
 			return
 		}
-		go handleConnection(c)
+		go w.handleConnection(c)
 	}
 }
 
 
-func recvDataFromSensor(listen *net.UDPConn) {
+func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
     f, err := os.Create("/tmp/log2")
     if err != nil {
         return

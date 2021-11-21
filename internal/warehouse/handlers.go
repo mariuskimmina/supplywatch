@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func handleConnection(c net.Conn) {
+func (w *warehouse) handleConnection(c net.Conn) {
 	fmt.Printf("Serving %s\n", c.RemoteAddr().String())
 	netData, err := bufio.NewReader(c).ReadString('\n')
 	if err != nil {
@@ -27,9 +27,9 @@ func handleConnection(c net.Conn) {
 	}
     fmt.Printf("Received Request: %s, %s, %s", request.method, request.path, request.version)
 	if request.path == "/allsensordata" {
-		handleGetAllSensorData(&request, c)
+		w.handleGetAllSensorData(&request, c)
 	} else if request.path == "/sensordata" {
-		handleGetOneSensorData(&request, c)
+		w.handleGetOneSensorData(&request, c)
 	} else {
 		c.Write([]byte(string(request.path)))
 	}
@@ -38,7 +38,7 @@ func handleConnection(c net.Conn) {
 }
 
 
-func handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
+func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
     response, err := NewHTTPResponse()
     if err != nil {
         c.Write([]byte(err.Error()))
@@ -46,10 +46,10 @@ func handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
     c.Write([]byte(fmt.Sprintf("%v", response)))
 }
 
-func handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
+func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
 	c.Write([]byte("One Sensor Data"))
 }
 
-func handleGetSensorHistorie() {
+func (w *warehouse) handleGetSensorHistorie() {
 
 }
