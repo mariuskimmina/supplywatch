@@ -3,5 +3,5 @@ warehouse:
   udpPort: 4444
   tcpPort: 80
 
-sensor-warehouse:
+sensorWarehouse:
   udpPort: 4444 # should match warehouse udpPort

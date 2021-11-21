@@ -1,18 +1,23 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/kelseyhightower/envconfig"
+	"github.com/spf13/viper"
+)
 
 type Config struct {
     Warehouse struct {
-        ListenIP    string `yaml:"listenIP"`
-        UDPPort     int `yaml:"udpPort"`
-        TCPPort     int `yaml:"tcpPort"`
-    }
+        ListenIP    string `yaml:"listenIP" envconfig:"SW_LISTENIP"`
+        UDPPort     int `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
+        TCPPort     int `yaml:"tcpPort" envconfig:"SW_TCP_PORT"`
+    }`yaml:"warehouse"`
     SensorWarehouse struct {
-        UDPPort     int `yaml:"udpPort"`
-    }
+        UDPPort     int `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
+    }`yaml:"sensorWarehouse"`
 }
 
+// LoadConfig first gets all values from the config.yml file
+// if the environment variables are set, they will overrider the config
 func LoadConfig(path string) (config Config, err error) {
     viper.AddConfigPath(path)
     viper.SetConfigName("config.yml")
@@ -26,5 +31,6 @@ func LoadConfig(path string) (config Config, err error) {
     }
 
     err = viper.Unmarshal(&config)
+    err = envconfig.Process("", &config)
     return
 }

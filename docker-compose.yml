@@ -8,12 +8,11 @@ services:
       dockerfile: ./Docker/warehouse/Dockerfile
       args:
         project: ./cmd/warehouse/
-    environment:
-      - PORT=4444
-      - APP_NAME=warehouse
     ports:
       - "4444:4444/udp"
       - "8000:8000/tcp"
+    environment:
+      - APP_NAME=warehouse
     networks:
       - monorepo_net
   sensor-warehouse_1:
