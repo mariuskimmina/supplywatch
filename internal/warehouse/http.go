@@ -1,12 +1,16 @@
 package warehouse
 
+import (
+	"strconv"
+	"strings"
+)
+
 type HTTPResponse struct {
 	HTTPVersion string // HTTP/1.1
 	statuscode  int    // 200
 	reason      string // ok
+    headers     string // key:value\r\n
 	body        string // content
-    headers     []HTTPHeader
-    endHeaders  string
 }
 
 type HTTPRequest struct {
@@ -17,8 +21,18 @@ type HTTPRequest struct {
 }
 
 type HTTPHeader struct {
-    name    string
-    value   string
+    string
+}
+
+func (w *warehouse) ResponseToBytes(res *HTTPResponse) (response []byte, err error) {
+    var parts []string
+    for _, s := range []string{res.HTTPVersion, strconv.Itoa(res.statuscode), res.reason, res.headers, res.body} {
+        parts = append(parts, s)
+    }
+    stringResponse := strings.Join(parts, "")
+    w.logger.Info(response)
+    response = []byte(stringResponse)
+    return response, nil
 }
 
 
@@ -26,25 +40,29 @@ func NewHTTPResponse() (res *HTTPResponse, err error) {
 	response := &HTTPResponse{
 		HTTPVersion: "HTTP/1.1",
 		statuscode:  200,
-		reason:      "OK \r\n",
-        headers:     []HTTPHeader{},
-        endHeaders:  "\r\n\r\n",
-		body:        "All Sensor Data",
+		reason:      "OK\r\n",
+        headers:     "\r\n",
+        body:        "HTTP BODY HERE",
 	}
 
     return response, nil
 }
 
-func NewHTTPHeader(name, value string) HTTPHeader {
-    return HTTPHeader{
-        name: name,
-        value: value,
-    }
+func NewHTTPHeader(name, value string) string {
+    endOfHeader := "\r\n"
+    header := name + ":" + value + endOfHeader
+    return header
 }
 
+// SetHeader first removes the newline at the end of headers
+// it then creates a new header, inserts the header into headers
+// and appends a newline again to end the headers section
 func (r *HTTPResponse) SetHeader(name, value string) error {
+    r.headers = r.headers[:len(r.headers)-2]
     header := NewHTTPHeader(name, value)
-    r.headers = append(r.headers, header)
+    r.headers += header
+    endOfHeaders := "\r\n"
+    r.headers += endOfHeaders
     return nil
 }
 

@@ -1,7 +1,7 @@
 warehouse:
   listenIP: "0.0.0.0"
   udpPort: 4444
-  tcpPort: 80
+  tcpPort: 8000
 
 sensorWarehouse:
   udpPort: 4444 # should match warehouse udpPort

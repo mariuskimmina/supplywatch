@@ -40,10 +40,14 @@ func (w *warehouse) handleConnection(c net.Conn) {
 
 func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
     response, err := NewHTTPResponse()
+    response.SetHeader("Access-Control-Allow-Origin", "*")
+    response.SetHeader("Content-Type", "application/json")
+    response.SetHeader("Server", "Supplywatch")
     if err != nil {
         c.Write([]byte(err.Error()))
     }
-    c.Write([]byte(fmt.Sprintf("%v", response)))
+    byteResponse, _ := w.ResponseToBytes(response)
+    c.Write(byteResponse)
 }
 
 func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
