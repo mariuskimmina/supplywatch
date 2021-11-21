@@ -1,22 +1,23 @@
 version: '3'
 services:
   warehouse:
+    container_name: warehouse
+    hostname: warehouse
     build:
       context: .
       dockerfile: ./Docker/warehouse/Dockerfile
       args:
         project: ./cmd/warehouse/
-    environment:
-      - PORT=4444
-      - APP_NAME=warehouse
     ports:
       - "4444:4444/udp"
       - "8000:8000/tcp"
-    volumes:
-      - warehouse_vol:/usr/src/echo/
+    environment:
+      - APP_NAME=warehouse
     networks:
       - monorepo_net
-  sensor-warehouse:
+  sensor-warehouse_1:
+    container_name: sensor-warehouse_1
+    hostname: sensor-warehouse_1
     depends_on:
       - warehouse
     build:
@@ -26,14 +27,22 @@ services:
         project: ./cmd/sensor-warehouse/
     environment:
       - APP_NAME=sensor-warehouse
-    volumes:
-      - sensor-warehouse_vol:/usr/src/calypso/
     networks:
       - monorepo_net
-
-volumes:
-  sensor-warehouse_vol:
-  warehouse_vol:
+  sensor-warehouse_2:
+    container_name: sensor-warehouse_2
+    hostname: sensor-warehouse_2
+    depends_on:
+      - warehouse
+    build:
+      context: .
+      dockerfile: ./Docker/sensor-warehouse/Dockerfile
+      args:
+        project: ./cmd/sensor-warehouse/
+    environment:
+      - APP_NAME=sensor-warehouse
+    networks:
+      - monorepo_net
 
 networks:
   monorepo_net:

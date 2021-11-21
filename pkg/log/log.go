@@ -1,28 +1,25 @@
 package log
 
 import (
-	"fmt"
-	"path"
-	"runtime"
+	"time"
 
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Logger struct {
-	*logrus.Logger
+	*zap.SugaredLogger
 }
 
 func NewLogger() *Logger {
-	log := logrus.New()
-	log.SetLevel(logrus.DebugLevel)
-	log.SetReportCaller(true)
-	log.Formatter = &logrus.TextFormatter{
-		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-			filename := path.Base(f.File)
-			return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", filename, f.Line)
-		},
-	}
+	logcfg := zap.NewProductionConfig()
+	logcfg.EncoderConfig.EncodeTime = zapcore.TimeEncoder(func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(t.Format(time.Stamp))
+	})
+	log, _ := logcfg.Build()
+	defer log.Sync()
+	sugar := log.Sugar()
 	return &Logger{
-		log,
+		sugar,
 	}
 }
