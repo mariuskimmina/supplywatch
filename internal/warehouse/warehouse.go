@@ -79,13 +79,31 @@ type SensorMesage struct {
 	Message    string    `json:"message"`
 }
 
+type SensorMessageCounter struct {
+    SensorID    uuid.UUID
+    Counter     int
+}
+
+func NewSensorMessageCounter(id uuid.UUID) *SensorMessageCounter {
+    return &SensorMessageCounter{
+        SensorID: id,
+        Counter: 1,
+    }
+}
+
+func (smc *SensorMessageCounter) increment() {
+    smc.Counter += 1
+}
+
 // recvDataFromSensor handles incoming UPD Packets
 func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
-	f, err := os.Create("/tmp/warehouselog")
+	logfile, err := os.Create("/tmp/warehouselog")
+	logcount, err := os.Create("/tmp/logcount")
+    sensorCounter := []*SensorMessageCounter{}
 	if err != nil {
 		return
 	}
-	defer f.Close()
+	defer logfile.Close()
 	for {
 		p := make([]byte, maxBufferSize)
 		_, remoteaddr, err := listen.ReadFromUDP(p)
@@ -108,12 +126,53 @@ func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
 			IP:         remoteaddr.IP,
 			Port:       remoteaddr.Port,
 		}
+
+        // to keep track of how many messages we have received form each sensor
+        // check if we know any sensor yet, if not create a new one
+        // else check if we have seen this sensor before
+        // if yes, we increase it's counter
+        // if not, we create a new counter for it
+        var found bool
+        if len(sensorCounter) == 0 {
+            w.logger.Info("Sensor added to list of sensors")
+            newSensorCounter := NewSensorMessageCounter(logentry.SensorID)
+            sensorCounter = append(sensorCounter, newSensorCounter)
+        } else {
+            for _, counter := range sensorCounter {
+                if counter.SensorID == logentry.SensorID {
+                    found = true
+                    counter.increment()
+                    w.logger.Info(counter.Counter)
+                    w.logger.Info("Increased Counter")
+                    break
+                } else {
+                    found = false
+                }
+            }
+            if !found {
+                w.logger.Info("Sensor added to list of sensors")
+                newSensorCounter := NewSensorMessageCounter(logentry.SensorID)
+                sensorCounter = append(sensorCounter, newSensorCounter)
+            }
+        }
+
 		jsonLogEntry, err := json.Marshal(logentry)
+		logfile.Write(jsonLogEntry)
+		logfile.Write([]byte("\n"))
 		if err != nil {
 			w.logger.Error("Error marshaling log entry to json: ", err)
 			return
 		}
-		f.Write(jsonLogEntry)
-		f.Write([]byte("\n"))
+
+        for _, counter := range sensorCounter {
+            jsonLogCount, err := json.Marshal(counter)
+            if err != nil {
+                w.logger.Error("Error marshaling log counter to json: ", err)
+                return
+            }
+            jsonLogCount = append(jsonLogCount, []byte("\n")...)
+            //ioutil.WriteFile(logcount.Name(), jsonLogCount, 0644)
+            logcount.WriteAt(jsonLogCount, 0)
+        }
 	}
 }
