@@ -118,7 +118,7 @@ func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
 		// if not, we create a new counter for it
 		var found bool
 		if len(sensorCounter) == 0 {
-			w.logger.Info("Sensor added to list of sensors")
+			w.logger.Debug("Sensor added to list of sensors")
 			newSensorCounter := NewSensorMessageCounter(logentry.SensorID)
 			sensorCounter = append(sensorCounter, newSensorCounter)
 		} else {
@@ -126,15 +126,14 @@ func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
 				if counter.SensorID == logentry.SensorID {
 					found = true
 					counter.increment()
-					w.logger.Info(counter.Counter)
-					w.logger.Info("Increased Counter")
+					w.logger.Debug("Increased Counter")
 					break
 				} else {
 					found = false
 				}
 			}
 			if !found {
-				w.logger.Info("Sensor added to list of sensors")
+				w.logger.Debug("Sensor added to list of sensors")
 				newSensorCounter := NewSensorMessageCounter(logentry.SensorID)
 				sensorCounter = append(sensorCounter, newSensorCounter)
 			}
