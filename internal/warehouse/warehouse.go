@@ -164,15 +164,17 @@ func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
 			return
 		}
 
+        var jsonLogCount []byte
         for _, counter := range sensorCounter {
-            jsonLogCount, err := json.Marshal(counter)
+            jsonLogCountEntry, err := json.Marshal(counter)
+            jsonLogCount = append(jsonLogCount, jsonLogCountEntry...)
             if err != nil {
                 w.logger.Error("Error marshaling log counter to json: ", err)
                 return
             }
             jsonLogCount = append(jsonLogCount, []byte("\n")...)
             //ioutil.WriteFile(logcount.Name(), jsonLogCount, 0644)
-            logcount.WriteAt(jsonLogCount, 0)
         }
+        logcount.WriteAt(jsonLogCount, 0)
 	}
 }

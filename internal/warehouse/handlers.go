@@ -2,6 +2,7 @@ package warehouse
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"net"
 	"strings"
@@ -39,12 +40,18 @@ func (w *warehouse) handleConnection(c net.Conn) {
 
 func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response, err := NewHTTPResponse()
-	response.SetHeader("Access-Control-Allow-Origin", "*")
-	response.SetHeader("Content-Type", "application/json")
-	response.SetHeader("Server", "Supplywatch")
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
+	response.SetHeader("Access-Control-Allow-Origin", "*")
+	response.SetHeader("Content-Type", "application/json")
+	response.SetHeader("Server", "Supplywatch")
+    testResponse := map[string]string{"test": "auch test"}
+    testJson, err := json.Marshal(testResponse)
+	if err != nil {
+		c.Write([]byte(err.Error()))
+	}
+    response.SetBody(testJson)
 	byteResponse, _ := w.ResponseToBytes(response)
 	c.Write(byteResponse)
 }

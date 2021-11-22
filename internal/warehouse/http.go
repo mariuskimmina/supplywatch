@@ -10,7 +10,7 @@ type HTTPResponse struct {
 	statuscode  int    // 200
 	reason      string // ok
 	headers     string // key:value\r\n
-	body        string // content
+	body        []byte // content
 }
 
 type HTTPRequest struct {
@@ -26,7 +26,7 @@ type HTTPHeader struct {
 
 func (w *warehouse) ResponseToBytes(res *HTTPResponse) (response []byte, err error) {
 	var parts []string
-	for _, s := range []string{res.HTTPVersion, strconv.Itoa(res.statuscode), res.reason, res.headers, res.body} {
+	for _, s := range []string{res.HTTPVersion, strconv.Itoa(res.statuscode), res.reason, res.headers, string(res.body)} {
 		parts = append(parts, s)
 	}
 	stringResponse := strings.Join(parts, "")
@@ -41,7 +41,7 @@ func NewHTTPResponse() (res *HTTPResponse, err error) {
 		statuscode:  200,
 		reason:      "OK\r\n",
 		headers:     "\r\n",
-		body:        "HTTP BODY HERE",
+		body:        []byte{},
 	}
 
 	return response, nil
@@ -62,6 +62,11 @@ func (r *HTTPResponse) SetHeader(name, value string) error {
 	r.headers += header
 	endOfHeaders := "\r\n"
 	r.headers += endOfHeaders
+	return nil
+}
+
+func (r *HTTPResponse) SetBody(body []byte) error {
+    r.body = body
 	return nil
 }
 
