@@ -46,12 +46,12 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response.SetHeader("Access-Control-Allow-Origin", "*")
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
-    testResponse := map[string]string{"test": "auch test"}
-    testJson, err := json.Marshal(testResponse)
+	testResponse := map[string]string{"test": "auch test"}
+	testJson, err := json.Marshal(testResponse)
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
-    response.SetBody(testJson)
+	response.SetBody(testJson)
 	byteResponse, _ := w.ResponseToBytes(response)
 	c.Write(byteResponse)
 }

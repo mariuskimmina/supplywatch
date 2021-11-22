@@ -66,7 +66,7 @@ func (r *HTTPResponse) SetHeader(name, value string) error {
 }
 
 func (r *HTTPResponse) SetBody(body []byte) error {
-    r.body = body
+	r.body = body
 	return nil
 }
 
