@@ -24,13 +24,12 @@ type HTTPHeader struct {
 	string
 }
 
-func (w *warehouse) ResponseToBytes(res *HTTPResponse) (response []byte, err error) {
+func ResponseToBytes(res *HTTPResponse) (response []byte, err error) {
 	var parts []string
 	for _, s := range []string{res.HTTPVersion, strconv.Itoa(res.statuscode), res.reason, res.headers, string(res.body)} {
 		parts = append(parts, s)
 	}
 	stringResponse := strings.Join(parts, "")
-	w.logger.Info(response)
 	response = []byte(stringResponse)
 	return response, nil
 }

@@ -52,7 +52,7 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 		c.Write([]byte(err.Error()))
 	}
 	response.SetBody(testJson)
-	byteResponse, _ := w.ResponseToBytes(response)
+	byteResponse, _ := ResponseToBytes(response)
 	c.Write(byteResponse)
 }
 

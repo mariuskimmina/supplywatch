@@ -26,3 +26,11 @@ func TestSetHeader(t *testing.T) {
     res.SetHeader("Server", "NotApache")
     require.Equal(t, "Content-Type:application/json\r\nServer:NotApache\r\n\r\n", res.headers)
 }
+
+func TestResponseToBytes(t *testing.T) {
+    t.Parallel()
+    res, err := NewHTTPResponse()
+    require.NoError(t, err)
+    _, err = ResponseToBytes(res)
+    require.NoError(t, err)
+}
