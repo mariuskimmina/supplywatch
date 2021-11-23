@@ -12,3 +12,6 @@ run-sensor-warehouse:
 
 fmt:
 	go fmt ./...
+
+test:
+	go test -race ./...
