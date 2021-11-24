@@ -2,7 +2,6 @@ package warehouse
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"net"
 	"strings"
@@ -38,6 +37,8 @@ func (w *warehouse) handleConnection(c net.Conn) {
 	//}
 }
 
+// handleGetAllSensorData handles requests to /allsensordata 
+// we read the log file and return all entrys to the user
 func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response, err := NewHTTPResponse()
 	if err != nil {
@@ -46,12 +47,23 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response.SetHeader("Access-Control-Allow-Origin", "*")
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
-	testResponse := map[string]string{"test": "auch test"}
-	testJson, err := json.Marshal(testResponse)
+
+    allLogData, err := ReadAllLogs()
 	if err != nil {
-		c.Write([]byte(err.Error()))
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to read all logs")
 	}
-	response.SetBody(testJson)
+
+    //properJsonLogs := TurnLogsIntoJson(allLogData)
+
+    w.logger.Infof("Read the logs: %s", string(allLogData))
+
+	//testResponse := map[string]string{"test": "auch test"}
+	//testJson, err := json.Marshal(allLogData)
+	//if err != nil {
+		//c.Write([]byte(err.Error()))
+	//}
+	response.SetBody(allLogData)
 	byteResponse, _ := ResponseToBytes(response)
 	c.Write(byteResponse)
 }
@@ -63,3 +75,5 @@ func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
 func (w *warehouse) handleGetSensorHistorie() {
 
 }
+
+

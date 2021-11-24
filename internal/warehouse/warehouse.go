@@ -63,14 +63,6 @@ func (w *warehouse) Start() {
 	}
 }
 
-// LogEntry represents a new entry in the log file
-type logEntry struct {
-	SensorID   uuid.UUID `json:"sensor_id"`
-	SensorType string    `json:"sensor_type"`
-	Message    string    `json:"message"`
-	IP         net.IP    `json:"ip"`
-	Port       int       `json:"port"`
-}
 
 // SensorMesage represents the data we hope to receive from a sensor
 type SensorMesage struct {
@@ -81,13 +73,14 @@ type SensorMesage struct {
 
 // recvDataFromSensor handles incoming UPD Packets
 func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
-	logfile, err := os.Create("/tmp/warehouselog")
+	logfile := NewLogFile("/tmp/warehouselog")
+    defer logfile.Close()
 	logcount, err := os.Create("/tmp/logcount")
+    defer logcount.Close()
 	sensorCounter := []*SensorMessageCounter{}
 	if err != nil {
 		return
 	}
-	defer logfile.Close()
 	for {
 		p := make([]byte, maxBufferSize)
 		_, remoteaddr, err := listen.ReadFromUDP(p)
@@ -103,7 +96,7 @@ func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
 			return
 		}
 		w.logger.Infof("Received %s", sensorMessage.Message)
-		logentry := &logEntry{
+		logentry := &LogEntry{
 			SensorType: sensorMessage.SensorType,
 			SensorID:   sensorMessage.SensorID,
 			Message:    sensorMessage.Message,
@@ -139,13 +132,12 @@ func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
 			}
 		}
 
-		jsonLogEntry, err := json.Marshal(logentry)
-		logfile.Write(jsonLogEntry)
-		logfile.Write([]byte("\n"))
-		if err != nil {
-			w.logger.Error("Error marshaling log entry to json: ", err)
-			return
-		}
+        logfile.addLog(*logentry)
+        err = logfile.WriteToFile()
+        if err != nil {
+            w.logger.Fatalf("Failed to write to logfile: %v", err)
+        }
+
 
 		var jsonLogCount []byte
 		for _, counter := range sensorCounter {
