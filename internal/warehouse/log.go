@@ -2,6 +2,7 @@ package warehouse
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
@@ -49,25 +50,39 @@ func ReadAllLogs() (logs []byte, err error) {
     if err != nil {
         return
     }
-
     defer jsonLogFile.Close()
-
     logs, _ = ioutil.ReadAll(jsonLogFile)
-
-    //fmt.Println(byteJsonLogFile)
-
-    //err = json.Unmarshal(byteJsonLogFile, &logEntrys)
-    //if err != nil {
-        //return
-    //}
-
-
     return logs, nil
 }
 
-//func TurnLogsIntoJson(log []byte) ([]byte, error) {
-    
-//}
+func ReadOneSensorLogs(SensorID string) ([]byte, error) {
+    jsonLogFile, err := os.Open("/tmp/warehouselog")
+    if err != nil {
+        return nil, err
+    }
+    jsonLogs, _ := ioutil.ReadAll(jsonLogFile)
+    var logfile LogFile
+    var filteredLogs []LogEntry
+    err = json.Unmarshal(jsonLogs, &logfile)
+    if err != nil {
+        panic("FAILED")
+    }
+    for _, log := range logfile.Logs {
+        fmt.Println("comparing")
+        fmt.Println(log.SensorID.String())
+        fmt.Println(SensorID)
+        if log.SensorID.String() == SensorID {
+            fmt.Println("match")
+            filteredLogs = append(filteredLogs, log)
+        }
+    }
+
+    JsonBytes, err := json.MarshalIndent(&filteredLogs, "", "  ")
+    if err != nil {
+        return nil, err
+    }
+    return JsonBytes, nil
+}
 
 func (l *LogFile) WriteToFile() error {
     jsonStruct, err := json.MarshalIndent(&l, "", "  ")
@@ -78,9 +93,6 @@ func (l *LogFile) WriteToFile() error {
     return nil
 }
 
-//func InitLogFile(path string) (*os.File, error) {
-    //file, err := os.Create(path)
-    //if err != nil {
-        //return file, err
-    //}
-//}
+func (l *LogFile) UpdateLogFile() error {
+    return nil
+}

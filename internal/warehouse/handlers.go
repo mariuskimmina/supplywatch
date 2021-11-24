@@ -54,22 +54,21 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
         w.logger.Fatal("Failed to read all logs")
 	}
 
-    //properJsonLogs := TurnLogsIntoJson(allLogData)
-
     w.logger.Infof("Read the logs: %s", string(allLogData))
 
-	//testResponse := map[string]string{"test": "auch test"}
-	//testJson, err := json.Marshal(allLogData)
-	//if err != nil {
-		//c.Write([]byte(err.Error()))
-	//}
 	response.SetBody(allLogData)
 	byteResponse, _ := ResponseToBytes(response)
 	c.Write(byteResponse)
 }
 
 func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
-	c.Write([]byte("One Sensor Data"))
+	queryValue := strings.Split(request.query, "=")
+    sensorData, err := ReadOneSensorLogs(queryValue[1])
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to read all logs")
+	}
+    c.Write(sensorData)
 }
 
 func (w *warehouse) handleGetSensorHistorie() {
