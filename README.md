@@ -17,6 +17,17 @@ the system design, the tests and the deployment of the application.
 
 ![Architecture Diagramm](media/images/architecture.png)
 
+## Project Structure
+
+
+* `build/`: defines the infrastructure
+  * `<service-name>/`: define a Dockerfile for the concrete service.
+* `cmd/`: entrypoints
+  * `<service-name>/`: primary entrypoint for this service - short main functions.
+* `internal/`: defines the _core domain_.
+  * `<service-name>/`: concrete implementation of the service - source code.
+* `pkg/`: code that is used by multiple services.
+
 ## Requirements analysis
 
 ### Assignment 1

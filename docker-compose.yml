@@ -5,7 +5,7 @@ services:
     hostname: warehouse
     build:
       context: .
-      dockerfile: ./Docker/warehouse/Dockerfile
+      dockerfile: ./build/warehouse/Dockerfile
       args:
         project: ./cmd/warehouse/
     ports:
@@ -22,7 +22,7 @@ services:
       - warehouse
     build:
       context: .
-      dockerfile: ./Docker/sensor-warehouse/Dockerfile
+      dockerfile: ./build/sensor-warehouse/Dockerfile
       args:
         project: ./cmd/sensor-warehouse/
     environment:
@@ -36,7 +36,7 @@ services:
       - warehouse
     build:
       context: .
-      dockerfile: ./Docker/sensor-warehouse/Dockerfile
+      dockerfile: ./build/sensor-warehouse/Dockerfile
       args:
         project: ./cmd/sensor-warehouse/
     environment:
