@@ -15,46 +15,46 @@ services:
       - APP_NAME=warehouse
     networks:
       - monorepo_net
-  sensor-warehouse_1:
-    container_name: sensor-warehouse_1
-    hostname: sensor-warehouse_1
+  sensor_1:
+    container_name: sensor_1
+    hostname: sensor_1
     depends_on:
       - warehouse
     build:
       context: .
-      dockerfile: ./build/sensor-warehouse/Dockerfile
+      dockerfile: ./build/sensor/Dockerfile
       args:
-        project: ./cmd/sensor-warehouse/
+        project: ./cmd/sensor/
     environment:
-      - APP_NAME=sensor-warehouse
+      - APP_NAME=sensor
     networks:
       - monorepo_net
-  sensor-warehouse_2:
-    container_name: sensor-warehouse_2
-    hostname: sensor-warehouse_2
+  sensor_2:
+    container_name: sensor_2
+    hostname: sensor_2
     depends_on:
       - warehouse
     build:
       context: .
-      dockerfile: ./build/sensor-warehouse/Dockerfile
+      dockerfile: ./build/sensor/Dockerfile
       args:
-        project: ./cmd/sensor-warehouse/
+        project: ./cmd/sensor/
     environment:
-      - APP_NAME=sensor-warehouse
+      - APP_NAME=sensor
     networks:
       - monorepo_net
-  sensor-warehouse_3:
-    container_name: sensor-warehouse_3
-    hostname: sensor-warehouse_3
+  sensor_3:
+    container_name: sensor_3
+    hostname: sensor_3
     depends_on:
       - warehouse
     build:
       context: .
-      dockerfile: ./build/sensor-warehouse/Dockerfile
+      dockerfile: ./build/sensor/Dockerfile
       args:
-        project: ./cmd/sensor-warehouse/
+        project: ./cmd/sensor/
     environment:
-      - APP_NAME=sensor-warehouse
+      - APP_NAME=sensor
     networks:
       - monorepo_net
 

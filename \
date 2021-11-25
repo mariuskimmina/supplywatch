@@ -1,4 +1,4 @@
-package sensorwarehouse
+package sensor
 
 import (
 	crypto_rand "crypto/rand"
