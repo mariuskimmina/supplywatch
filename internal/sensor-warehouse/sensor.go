@@ -92,7 +92,7 @@ func (s *Sensor) Start() {
             }
         }
 
-		time.Sleep(time.Duration(s.config.SensorWarehouse.Delay) * time.Second)
+		time.Sleep(time.Duration(s.config.SensorWarehouse.Delay) * time.Millisecond)
 	}
 }
 
