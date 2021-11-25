@@ -67,6 +67,7 @@ func (s *Sensor) Start() {
 		s.logger.Error("Failed to dial the warehouse")
 	}
 
+    var packetCounter = 0
 	for {
 		n = rand.Int() % len(products)
 		product := products[n]
@@ -82,7 +83,16 @@ func (s *Sensor) Start() {
 		}
 		s.logger.Infof("Sending %s", product)
 		conn.Write([]byte(jsonMessage))
-		time.Sleep(5 * time.Second)
+        
+        // If NumOfPackets is not 0 we stop sending once the NumOfPackets has been reached
+        if s.config.SensorWarehouse.NumOfPackets != 0 {
+            packetCounter += 1
+            if packetCounter == s.config.SensorWarehouse.NumOfPackets {
+                break
+            }
+        }
+
+		time.Sleep(time.Duration(s.config.SensorWarehouse.Delay) * time.Second)
 	}
 }
 

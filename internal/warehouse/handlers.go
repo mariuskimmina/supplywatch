@@ -55,9 +55,6 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to read all logs")
 	}
-
-	w.logger.Infof("Read the logs: %s", string(allLogData))
-
 	response.SetBody(allLogData)
 	byteResponse, _ := ResponseToBytes(response)
 	c.Write(byteResponse)
