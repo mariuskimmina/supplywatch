@@ -63,7 +63,6 @@ func (w *warehouse) Start() {
 	}
 }
 
-
 // SensorMesage represents the data we hope to receive from a sensor
 type SensorMesage struct {
 	SensorID   uuid.UUID `json:"sensor_id"`
@@ -74,9 +73,9 @@ type SensorMesage struct {
 // recvDataFromSensor handles incoming UPD Packets
 func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
 	logfile := NewLogFile("/tmp/warehouselog")
-    defer logfile.Close()
+	defer logfile.Close()
 	logcount, err := os.Create("/tmp/logcount")
-    defer logcount.Close()
+	defer logcount.Close()
 	sensorCounter := []*SensorMessageCounter{}
 	if err != nil {
 		return
@@ -132,12 +131,11 @@ func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
 			}
 		}
 
-        logfile.addLog(*logentry)
-        err = logfile.WriteToFile()
-        if err != nil {
-            w.logger.Fatalf("Failed to write to logfile: %v", err)
-        }
-
+		logfile.addLog(*logentry)
+		err = logfile.WriteToFile()
+		if err != nil {
+			w.logger.Fatalf("Failed to write to logfile: %v", err)
+		}
 
 		var jsonLogCount []byte
 		for _, counter := range sensorCounter {

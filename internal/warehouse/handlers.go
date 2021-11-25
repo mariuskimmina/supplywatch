@@ -39,7 +39,7 @@ func (w *warehouse) handleConnection(c net.Conn) {
 	//}
 }
 
-// handleGetAllSensorData handles requests to /allsensordata 
+// handleGetAllSensorData handles requests to /allsensordata
 // we read the log file and return all entrys to the user
 func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response, err := NewHTTPResponse()
@@ -50,13 +50,13 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
 
-    allLogData, err := ReadAllLogs()
+	allLogData, err := ReadAllLogs()
 	if err != nil {
-        w.logger.Error(err)
-        w.logger.Fatal("Failed to read all logs")
+		w.logger.Error(err)
+		w.logger.Fatal("Failed to read all logs")
 	}
 
-    w.logger.Infof("Read the logs: %s", string(allLogData))
+	w.logger.Infof("Read the logs: %s", string(allLogData))
 
 	response.SetBody(allLogData)
 	byteResponse, _ := ResponseToBytes(response)
@@ -72,18 +72,16 @@ func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
 	queryValue := strings.Split(request.query, "=")
-    sensorData, err := ReadOneSensorLogs(queryValue[1])
+	sensorData, err := ReadOneSensorLogs(queryValue[1])
 	if err != nil {
-        w.logger.Error(err)
-        w.logger.Fatal("Failed to read all logs")
+		w.logger.Error(err)
+		w.logger.Fatal("Failed to read all logs")
 	}
 	response.SetBody(sensorData)
 	byteResponse, _ := ResponseToBytes(response)
-    c.Write(byteResponse)
+	c.Write(byteResponse)
 }
 
 func (w *warehouse) handleGetSensorHistory(request *HTTPRequest, c net.Conn) {
 
 }
-
-
