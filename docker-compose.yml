@@ -43,6 +43,20 @@ services:
       - APP_NAME=sensor-warehouse
     networks:
       - monorepo_net
+  sensor-warehouse_3:
+    container_name: sensor-warehouse_3
+    hostname: sensor-warehouse_3
+    depends_on:
+      - warehouse
+    build:
+      context: .
+      dockerfile: ./build/sensor-warehouse/Dockerfile
+      args:
+        project: ./cmd/sensor-warehouse/
+    environment:
+      - APP_NAME=sensor-warehouse
+    networks:
+      - monorepo_net
 
 networks:
   monorepo_net:

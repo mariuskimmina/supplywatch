@@ -1,5 +1,5 @@
 package internal
-
+/*
 import "fmt"
 
 type Error struct {
@@ -42,3 +42,4 @@ func (e *Error) Unwrap() error {
 func (e *Error) Code() ErrorCode {
 	return e.code
 }
+*/
