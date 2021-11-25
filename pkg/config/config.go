@@ -12,8 +12,8 @@ type Config struct {
 		TCPPort  int    `yaml:"tcpPort" envconfig:"SW_TCP_PORT"`
 	} `yaml:"warehouse"`
 	SensorWarehouse struct {
-		UDPPort int `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
-		Delay int `yaml:"delay" envconfig:"SW_DELAY"`
+		UDPPort      int `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
+		Delay        int `yaml:"delay" envconfig:"SW_DELAY"`
 		NumOfPackets int `yaml:"numOfPackets" envconfig:"SW_NUMOFPACKETS"`
 	} `yaml:"sensorWarehouse"`
 }

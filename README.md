@@ -27,6 +27,7 @@ the system design, the tests and the deployment of the application.
 * `internal/`: defines the _core domain_.
   * `<service-name>/`: concrete implementation of the service - source code.
 * `pkg/`: code that is used by multiple services.
+* `tests/`: describtions of test cases.
 
 ## Requirements analysis
 
