@@ -30,6 +30,8 @@ func (w *warehouse) handleConnection(c net.Conn) {
 		w.handleGetAllSensorData(&request, c)
 	} else if request.path == "/sensordata" {
 		w.handleGetOneSensorData(&request, c)
+	} else if request.path == "/sensorhistory" {
+		w.handleGetSensorHistory(&request, c)
 	} else {
 		c.Write([]byte(string(request.path)))
 	}
@@ -62,16 +64,25 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 }
 
 func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
+	response, err := NewHTTPResponse()
+	if err != nil {
+		c.Write([]byte(err.Error()))
+	}
+	response.SetHeader("Access-Control-Allow-Origin", "*")
+	response.SetHeader("Content-Type", "application/json")
+	response.SetHeader("Server", "Supplywatch")
 	queryValue := strings.Split(request.query, "=")
     sensorData, err := ReadOneSensorLogs(queryValue[1])
 	if err != nil {
         w.logger.Error(err)
         w.logger.Fatal("Failed to read all logs")
 	}
-    c.Write(sensorData)
+	response.SetBody(sensorData)
+	byteResponse, _ := ResponseToBytes(response)
+    c.Write(byteResponse)
 }
 
-func (w *warehouse) handleGetSensorHistorie() {
+func (w *warehouse) handleGetSensorHistory(request *HTTPRequest, c net.Conn) {
 
 }
 
