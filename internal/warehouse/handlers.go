@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 )
 
 func (w *warehouse) handleConnection(c net.Conn) {
@@ -50,7 +51,9 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
 
-	allLogData, err := ReadAllLogs()
+    todayTimeStamp := time.Now().Format("01-02-2006")
+    logfileName := w.config.Warehouse.LogBaseFile + todayTimeStamp
+	allLogData, err := ReadAllLogs(logfileName)
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to read all logs")
@@ -69,7 +72,11 @@ func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
 	queryValue := strings.Split(request.query, "=")
-	sensorData, err := ReadOneSensorLogs(queryValue[1])
+
+    todayTimeStamp := time.Now().Format("01-02-2006")
+    logfileName := w.config.Warehouse.LogBaseFile + todayTimeStamp
+
+	sensorData, err := ReadOneSensorLogs(logfileName, queryValue[1])
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to read all logs")
@@ -79,6 +86,25 @@ func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
 	c.Write(byteResponse)
 }
 
+// handleGetSensorHistory takes a query parameter `date` and returns all
+// all logs from that day
 func (w *warehouse) handleGetSensorHistory(request *HTTPRequest, c net.Conn) {
-
+	response, err := NewHTTPResponse()
+	if err != nil {
+		c.Write([]byte(err.Error()))
+	}
+	response.SetHeader("Access-Control-Allow-Origin", "*")
+	response.SetHeader("Content-Type", "application/json")
+	response.SetHeader("Server", "Supplywatch")
+	queryValue := strings.Split(request.query, "=")
+    logfileName := w.config.Warehouse.LogBaseFile + queryValue[1]
+    fmt.Println(logfileName)
+	sensorData, err := ReadLogsFromDate(logfileName)
+	if err != nil {
+		w.logger.Error(err)
+		w.logger.Fatal("Failed to read all logs")
+	}
+	response.SetBody(sensorData)
+	byteResponse, _ := ResponseToBytes(response)
+	c.Write(byteResponse)
 }

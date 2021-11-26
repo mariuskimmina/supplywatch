@@ -2,8 +2,9 @@ warehouse:
   listenIP: "0.0.0.0"
   udpPort: 4444
   tcpPort: 8000
+  logFileBase: "/var/supplywatch/log/warehouselog-"
 
 sensorWarehouse:
   udpPort: 4444 # should match warehouse udpPort
   delay: 500 # time between packets in milliseconds
-  numOfPackets: 100 # 0 means infinite
+  numOfPackets: 5 # 0 means infinite

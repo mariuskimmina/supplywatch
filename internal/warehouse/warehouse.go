@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
@@ -72,7 +73,9 @@ type SensorMesage struct {
 
 // recvDataFromSensor handles incoming UPD Packets
 func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
-	logfile := NewLogFile("/tmp/warehouselog")
+    todayTimeStamp := time.Now().Format("01-02-2006")
+    logfileName := w.config.Warehouse.LogBaseFile + todayTimeStamp
+    logfile := NewLogFile(logfileName)
 	defer logfile.Close()
 	logcount, err := os.Create("/tmp/logcount")
 	defer logcount.Close()

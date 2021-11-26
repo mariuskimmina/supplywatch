@@ -15,6 +15,8 @@ services:
       - APP_NAME=warehouse
     networks:
       - monorepo_net
+    volumes:
+      - /var/supplywatch/log:/var/supplywatch/log
   sensor_1:
     container_name: sensor_1
     hostname: sensor_1

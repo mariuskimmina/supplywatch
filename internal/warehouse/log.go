@@ -2,7 +2,10 @@ package warehouse
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"os"
 
@@ -18,6 +21,7 @@ type LogEntry struct {
 	Port       int       `json:"port"`
 }
 
+// LogFile is a wrapper around os.File which represents our log file
 type LogFile struct {
 	*os.File
 	Logs []LogEntry
@@ -27,25 +31,55 @@ func (l *LogFile) addLog(log LogEntry) {
 	l.Logs = append(l.Logs, log)
 }
 
+// NewLogFile Creates a new log file if one does not exist for today
+// if a log file for today already exist it will open it at the end of the NewLogFile
+// thus new data will be appended to an existing log file
 func NewLogFile(path string) *LogFile {
-	file, err := os.Create(path)
-	if err != nil {
-		panic("Failed to create LogFile")
-	}
-	logFile := &LogFile{
-		File: file,
-	}
+    if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+        file, err := os.Create(path)
+        if err != nil {
+            panic("Failed to create LogFile")
+        }
+        logFile := &LogFile{
+           File: file,
+        }
 
-	jsonStruct, err := json.MarshalIndent(&logFile, "", "  ")
-	if err != nil {
-		panic("Failed to create LogFile")
-	}
-	logFile.WriteString(string(jsonStruct))
-	return logFile
+        jsonStruct, err := json.MarshalIndent(&logFile, "", "  ")
+        if err != nil {
+            panic("Failed to create LogFile")
+        }
+        logFile.WriteString(string(jsonStruct))
+        return logFile
+    } else {
+        file, err := os.OpenFile(path, os.O_WRONLY, 0644) 
+        if err != nil {
+            panic("Failed to open LogFile")
+        }
+        logFile := &LogFile{
+            File: file,
+        }
+        filecontent, err := ioutil.ReadFile(path)
+        if err != nil {
+            panic("Failed to read LogFile")
+        }
+        err = json.Unmarshal(filecontent, &logFile)
+        if err != nil {
+            panic("Failed to unmarshal LogFile")
+        }
+
+        // this should not be done
+        jsonStruct, err := json.MarshalIndent(&logFile, "", "  ")
+        if err != nil {
+            panic("Failed to create LogFile")
+        }
+        logFile.WriteString(string(jsonStruct))
+
+        return logFile
+    }
 }
 
-func ReadAllLogs() (logs []byte, err error) {
-	jsonLogFile, err := os.Open("/tmp/warehouselog")
+func ReadAllLogs(file string) (logs []byte, err error) {
+	jsonLogFile, err := os.Open(file)
 	if err != nil {
 		return
 	}
@@ -54,8 +88,8 @@ func ReadAllLogs() (logs []byte, err error) {
 	return logs, nil
 }
 
-func ReadOneSensorLogs(SensorID string) ([]byte, error) {
-	jsonLogFile, err := os.Open("/tmp/warehouselog")
+func ReadOneSensorLogs(file string, SensorID string) ([]byte, error) {
+	jsonLogFile, err := os.Open(file)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +113,35 @@ func ReadOneSensorLogs(SensorID string) ([]byte, error) {
 	return JsonBytes, nil
 }
 
+func ReadLogsFromDate(file string) ([]byte, error) {
+	jsonLogFile, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	jsonLogs, _ := ioutil.ReadAll(jsonLogFile)
+	var logfile LogFile
+	err = json.Unmarshal(jsonLogs, &logfile)
+	if err != nil {
+		panic("failed to unmarshal logfile")
+	}
+	JsonBytes, err := json.MarshalIndent(&logfile.Logs, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+    return JsonBytes, nil
+}
+
 func (l *LogFile) WriteToFile() error {
 	jsonStruct, err := json.MarshalIndent(&l, "", "  ")
 	if err != nil {
 		return err
 	}
-	l.WriteAt(jsonStruct, 0)
+    b, err := l.WriteAt(jsonStruct, 0)
+	if err != nil {
+        fmt.Println(err)
+        fmt.Println(b)
+        log.Fatal("writeat error")
+	}
 	return nil
 }
 

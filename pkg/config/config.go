@@ -10,6 +10,7 @@ type Config struct {
 		ListenIP string `yaml:"listenIP" envconfig:"SW_LISTENIP"`
 		UDPPort  int    `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
 		TCPPort  int    `yaml:"tcpPort" envconfig:"SW_TCP_PORT"`
+		LogBaseFile  string    `yaml:"logBaseFile" envconfig:"SW_LOG_BASE_FILE"`
 	} `yaml:"warehouse"`
 	SensorWarehouse struct {
 		UDPPort      int `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
