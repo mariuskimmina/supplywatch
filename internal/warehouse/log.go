@@ -8,7 +8,6 @@ package warehouse
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
