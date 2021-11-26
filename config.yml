@@ -2,7 +2,8 @@ warehouse:
   listenIP: "0.0.0.0"
   udpPort: 4444
   tcpPort: 8000
-  logFileBase: "/var/supplywatch/log/warehouselog-"
+  logFileDir: "/var/supplywatch/log/"
+  logFileBaseName: "warehouselog-"
 
 sensorWarehouse:
   udpPort: 4444 # should match warehouse udpPort

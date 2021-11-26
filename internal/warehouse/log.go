@@ -1,5 +1,10 @@
 package warehouse
 
+// Disclaimer: how we handle our log files here is terrible inefficent
+// we constantly overwrite data with the same data or read more than we would need to
+// the focus of this application is to build a distributed system and not to be the most
+// performant it could be
+
 import (
 	"encoding/json"
 	"errors"
@@ -8,6 +13,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"path/filepath"
 
 	"github.com/google/uuid"
 )
@@ -78,40 +84,91 @@ func NewLogFile(path string) *LogFile {
     }
 }
 
-func ReadAllLogs(file string) (logs []byte, err error) {
-	jsonLogFile, err := os.Open(file)
+// GetAllSensorLogs goes over all log files in the LogFileDir defined in config.yml
+// and puts them together 
+func GetAllSensorLogs(path string) (logs []byte, err error) {
+    allLogFiles, err := ioutil.ReadDir(path)
 	if err != nil {
 		return
 	}
-	defer jsonLogFile.Close()
-	logs, _ = ioutil.ReadAll(jsonLogFile)
-	return logs, nil
-}
-
-func ReadOneSensorLogs(file string, SensorID string) ([]byte, error) {
-	jsonLogFile, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	jsonLogs, _ := ioutil.ReadAll(jsonLogFile)
-	var logfile LogFile
-	var filteredLogs []LogEntry
-	err = json.Unmarshal(jsonLogs, &logfile)
-	if err != nil {
-		panic("failed to unmarshal logfile")
-	}
-	for _, log := range logfile.Logs {
-		if log.SensorID.String() == SensorID {
-			filteredLogs = append(filteredLogs, log)
-		}
-	}
-
-	JsonBytes, err := json.MarshalIndent(&filteredLogs, "", "  ")
+	var allLogs []LogEntry
+    for _, f := range allLogFiles {
+        var logfile LogFile
+        filename := filepath.Join(path, f.Name())
+        jsonLogFile, err := os.Open(filename)
+        if err != nil {
+            return nil, err
+        }
+        defer jsonLogFile.Close()
+        logs, _ = ioutil.ReadAll(jsonLogFile)
+        err = json.Unmarshal(logs, &logfile)
+        for _, log := range logfile.Logs {
+            allLogs = append(allLogs, log)
+        }
+    }
+	JsonBytes, err := json.MarshalIndent(&allLogs, "", "  ")
 	if err != nil {
 		return nil, err
 	}
 	return JsonBytes, nil
 }
+
+
+// GetAllSensorLogs goes over all log files in the LogFileDir defined in config.yml
+// and puts all logs together that match the specified sensorID
+func GetOneSensorLogs(path string, sensorID string) (logs []byte, err error) {
+    allLogFiles, err := ioutil.ReadDir(path)
+	if err != nil {
+		return
+	}
+	var allLogs []LogEntry
+    for _, f := range allLogFiles {
+        var logfile LogFile
+        filename := filepath.Join(path, f.Name())
+        jsonLogFile, err := os.Open(filename)
+        if err != nil {
+            return nil, err
+        }
+        defer jsonLogFile.Close()
+        logs, _ = ioutil.ReadAll(jsonLogFile)
+        err = json.Unmarshal(logs, &logfile)
+        for _, log := range logfile.Logs {
+            if log.SensorID.String() == sensorID {
+                allLogs = append(allLogs, log)
+            }
+        }
+    }
+	JsonBytes, err := json.MarshalIndent(&allLogs, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return JsonBytes, nil
+}
+
+//func ReadOneSensorLogs(file string, SensorID string) ([]byte, error) {
+	//jsonLogFile, err := os.Open(file)
+	//if err != nil {
+		//return nil, err
+	//}
+	//jsonLogs, _ := ioutil.ReadAll(jsonLogFile)
+	//var logfile LogFile
+	//var filteredLogs []LogEntry
+	//err = json.Unmarshal(jsonLogs, &logfile)
+	//if err != nil {
+		//panic("failed to unmarshal logfile")
+	//}
+	//for _, log := range logfile.Logs {
+		//if log.SensorID.String() == SensorID {
+			//filteredLogs = append(filteredLogs, log)
+		//}
+	//}
+
+	//JsonBytes, err := json.MarshalIndent(&filteredLogs, "", "  ")
+	//if err != nil {
+		//return nil, err
+	//}
+	//return JsonBytes, nil
+//}
 
 func ReadLogsFromDate(file string) ([]byte, error) {
 	jsonLogFile, err := os.Open(file)
@@ -136,11 +193,9 @@ func (l *LogFile) WriteToFile() error {
 	if err != nil {
 		return err
 	}
-    b, err := l.WriteAt(jsonStruct, 0)
+    _, err = l.WriteAt(jsonStruct, 0)
 	if err != nil {
-        fmt.Println(err)
-        fmt.Println(b)
-        log.Fatal("writeat error")
+        log.Fatal("WriteAt error")
 	}
 	return nil
 }

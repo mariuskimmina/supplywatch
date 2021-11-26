@@ -1,0 +1,212 @@
+[
+  {
+    "sensor_id": "58a9694a-4eaa-11ec-83ee-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "sugar",
+    "ip": "172.25.0.3",
+    "port": 44989
+  },
+  {
+    "sensor_id": "58cf2205-4eaa-11ec-9bf5-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "cheese",
+    "ip": "172.25.0.5",
+    "port": 58616
+  },
+  {
+    "sensor_id": "58e173d8-4eaa-11ec-b43a-0242ac190004",
+    "sensor_type": "RFID-Reader",
+    "message": "lemons",
+    "ip": "172.25.0.4",
+    "port": 45011
+  },
+  {
+    "sensor_id": "58a9694a-4eaa-11ec-83ee-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "sugar",
+    "ip": "172.25.0.3",
+    "port": 44989
+  },
+  {
+    "sensor_id": "58cf2205-4eaa-11ec-9bf5-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "baking powder",
+    "ip": "172.25.0.5",
+    "port": 58616
+  },
+  {
+    "sensor_id": "58e173d8-4eaa-11ec-b43a-0242ac190004",
+    "sensor_type": "RFID-Reader",
+    "message": "butter",
+    "ip": "172.25.0.4",
+    "port": 45011
+  },
+  {
+    "sensor_id": "58a9694a-4eaa-11ec-83ee-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "oil",
+    "ip": "172.25.0.3",
+    "port": 44989
+  },
+  {
+    "sensor_id": "58cf2205-4eaa-11ec-9bf5-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "carrots",
+    "ip": "172.25.0.5",
+    "port": 58616
+  },
+  {
+    "sensor_id": "58e173d8-4eaa-11ec-b43a-0242ac190004",
+    "sensor_type": "RFID-Reader",
+    "message": "sugar",
+    "ip": "172.25.0.4",
+    "port": 45011
+  },
+  {
+    "sensor_id": "58a9694a-4eaa-11ec-83ee-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "walnuts",
+    "ip": "172.25.0.3",
+    "port": 44989
+  },
+  {
+    "sensor_id": "58cf2205-4eaa-11ec-9bf5-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "eggs",
+    "ip": "172.25.0.5",
+    "port": 58616
+  },
+  {
+    "sensor_id": "58e173d8-4eaa-11ec-b43a-0242ac190004",
+    "sensor_type": "RFID-Reader",
+    "message": "cheese",
+    "ip": "172.25.0.4",
+    "port": 45011
+  },
+  {
+    "sensor_id": "58a9694a-4eaa-11ec-83ee-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "baking powder",
+    "ip": "172.25.0.3",
+    "port": 44989
+  },
+  {
+    "sensor_id": "58cf2205-4eaa-11ec-9bf5-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "baking powder",
+    "ip": "172.25.0.5",
+    "port": 58616
+  },
+  {
+    "sensor_id": "58e173d8-4eaa-11ec-b43a-0242ac190004",
+    "sensor_type": "RFID-Reader",
+    "message": "eggs",
+    "ip": "172.25.0.4",
+    "port": 45011
+  },
+  {
+    "sensor_id": "2c8eb693-4eab-11ec-bceb-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "raisins",
+    "ip": "172.25.0.3",
+    "port": 54068
+  },
+  {
+    "sensor_id": "2ca3720d-4eab-11ec-b81b-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "eggs",
+    "ip": "172.25.0.5",
+    "port": 37398
+  },
+  {
+    "sensor_id": "2ca44267-4eab-11ec-9b8c-0242ac190004",
+    "sensor_type": "BarcodeReader",
+    "message": "baking powder",
+    "ip": "172.25.0.4",
+    "port": 49855
+  },
+  {
+    "sensor_id": "2c8eb693-4eab-11ec-bceb-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "raisins",
+    "ip": "172.25.0.3",
+    "port": 54068
+  },
+  {
+    "sensor_id": "2ca3720d-4eab-11ec-b81b-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "lemons",
+    "ip": "172.25.0.5",
+    "port": 37398
+  },
+  {
+    "sensor_id": "2ca44267-4eab-11ec-9b8c-0242ac190004",
+    "sensor_type": "BarcodeReader",
+    "message": "cinnamon",
+    "ip": "172.25.0.4",
+    "port": 49855
+  },
+  {
+    "sensor_id": "2c8eb693-4eab-11ec-bceb-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "lemons",
+    "ip": "172.25.0.3",
+    "port": 54068
+  },
+  {
+    "sensor_id": "2ca3720d-4eab-11ec-b81b-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "butter",
+    "ip": "172.25.0.5",
+    "port": 37398
+  },
+  {
+    "sensor_id": "2ca44267-4eab-11ec-9b8c-0242ac190004",
+    "sensor_type": "BarcodeReader",
+    "message": "carrots",
+    "ip": "172.25.0.4",
+    "port": 49855
+  },
+  {
+    "sensor_id": "2c8eb693-4eab-11ec-bceb-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "cinnamon",
+    "ip": "172.25.0.3",
+    "port": 54068
+  },
+  {
+    "sensor_id": "2ca3720d-4eab-11ec-b81b-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "cheese",
+    "ip": "172.25.0.5",
+    "port": 37398
+  },
+  {
+    "sensor_id": "2ca44267-4eab-11ec-9b8c-0242ac190004",
+    "sensor_type": "BarcodeReader",
+    "message": "cinnamon",
+    "ip": "172.25.0.4",
+    "port": 49855
+  },
+  {
+    "sensor_id": "2c8eb693-4eab-11ec-bceb-0242ac190003",
+    "sensor_type": "BarcodeReader",
+    "message": "eggs",
+    "ip": "172.25.0.3",
+    "port": 54068
+  },
+  {
+    "sensor_id": "2ca3720d-4eab-11ec-b81b-0242ac190005",
+    "sensor_type": "BarcodeReader",
+    "message": "cinnamon",
+    "ip": "172.25.0.5",
+    "port": 37398
+  },
+  {
+    "sensor_id": "2ca44267-4eab-11ec-9b8c-0242ac190004",
+    "sensor_type": "BarcodeReader",
+    "message": "raisins",
+    "ip": "172.25.0.4",
+    "port": 49855
+  }
+]

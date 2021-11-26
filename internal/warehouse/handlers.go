@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"time"
 )
 
 func (w *warehouse) handleConnection(c net.Conn) {
@@ -51,9 +50,7 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
 
-    todayTimeStamp := time.Now().Format("01-02-2006")
-    logfileName := w.config.Warehouse.LogBaseFile + todayTimeStamp
-	allLogData, err := ReadAllLogs(logfileName)
+	allLogData, err := GetAllSensorLogs(w.config.Warehouse.LogFileDir)
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to read all logs")
@@ -73,10 +70,7 @@ func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
 	response.SetHeader("Server", "Supplywatch")
 	queryValue := strings.Split(request.query, "=")
 
-    todayTimeStamp := time.Now().Format("01-02-2006")
-    logfileName := w.config.Warehouse.LogBaseFile + todayTimeStamp
-
-	sensorData, err := ReadOneSensorLogs(logfileName, queryValue[1])
+	sensorData, err := GetOneSensorLogs(w.config.Warehouse.LogFileDir, queryValue[1])
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to read all logs")
@@ -94,17 +88,26 @@ func (w *warehouse) handleGetSensorHistory(request *HTTPRequest, c net.Conn) {
 		c.Write([]byte(err.Error()))
 	}
 	response.SetHeader("Access-Control-Allow-Origin", "*")
-	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
 	queryValue := strings.Split(request.query, "=")
-    logfileName := w.config.Warehouse.LogBaseFile + queryValue[1]
-    fmt.Println(logfileName)
+	if queryValue[0] != "date" {
+        response.SetHeader("Content-Type", "text/plain")
+        response.SetBody([]byte("Unkown query parameter: " + queryValue[0]))
+        byteResponse, _ := ResponseToBytes(response)
+        c.Write(byteResponse)
+        return
+    }
+    logfileName := w.config.Warehouse.LogFileBaseName + queryValue[1]
 	sensorData, err := ReadLogsFromDate(logfileName)
 	if err != nil {
-		w.logger.Error(err)
-		w.logger.Fatal("Failed to read all logs")
+        response.SetHeader("Content-Type", "text/plain")
+        response.SetBody([]byte("No data was found for this date"))
+        byteResponse, _ := ResponseToBytes(response)
+        c.Write(byteResponse)
+        return
 	}
-	response.SetBody(sensorData)
-	byteResponse, _ := ResponseToBytes(response)
+	response.SetHeader("Content-Type", "application/json")
+    response.SetBody(sensorData)
+    byteResponse, _ := ResponseToBytes(response)
 	c.Write(byteResponse)
 }
