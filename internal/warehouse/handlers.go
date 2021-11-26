@@ -91,23 +91,23 @@ func (w *warehouse) handleGetSensorHistory(request *HTTPRequest, c net.Conn) {
 	response.SetHeader("Server", "Supplywatch")
 	queryValue := strings.Split(request.query, "=")
 	if queryValue[0] != "date" {
-        response.SetHeader("Content-Type", "text/plain")
-        response.SetBody([]byte("Unkown query parameter: " + queryValue[0]))
-        byteResponse, _ := ResponseToBytes(response)
-        c.Write(byteResponse)
-        return
-    }
-    logfileName := w.config.Warehouse.LogFileBaseName + queryValue[1]
+		response.SetHeader("Content-Type", "text/plain")
+		response.SetBody([]byte("Unkown query parameter: " + queryValue[0]))
+		byteResponse, _ := ResponseToBytes(response)
+		c.Write(byteResponse)
+		return
+	}
+	logfileName := w.config.Warehouse.LogFileBaseName + queryValue[1]
 	sensorData, err := ReadLogsFromDate(logfileName)
 	if err != nil {
-        response.SetHeader("Content-Type", "text/plain")
-        response.SetBody([]byte("No data was found for this date"))
-        byteResponse, _ := ResponseToBytes(response)
-        c.Write(byteResponse)
-        return
+		response.SetHeader("Content-Type", "text/plain")
+		response.SetBody([]byte("No data was found for this date"))
+		byteResponse, _ := ResponseToBytes(response)
+		c.Write(byteResponse)
+		return
 	}
 	response.SetHeader("Content-Type", "application/json")
-    response.SetBody(sensorData)
-    byteResponse, _ := ResponseToBytes(response)
+	response.SetBody(sensorData)
+	byteResponse, _ := ResponseToBytes(response)
 	c.Write(byteResponse)
 }

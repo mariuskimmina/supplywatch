@@ -40,71 +40,71 @@ func (l *LogFile) addLog(log LogEntry) {
 // if a log file for today already exist it will open it at the end of the NewLogFile
 // thus new data will be appended to an existing log file
 func NewLogFile(path string) *LogFile {
-    if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-        file, err := os.Create(path)
-        if err != nil {
-            panic("Failed to create LogFile")
-        }
-        logFile := &LogFile{
-           File: file,
-        }
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		file, err := os.Create(path)
+		if err != nil {
+			panic("Failed to create LogFile")
+		}
+		logFile := &LogFile{
+			File: file,
+		}
 
-        jsonStruct, err := json.MarshalIndent(&logFile, "", "  ")
-        if err != nil {
-            panic("Failed to create LogFile")
-        }
-        logFile.WriteString(string(jsonStruct))
-        return logFile
-    } else {
-        file, err := os.OpenFile(path, os.O_WRONLY, 0644) 
-        if err != nil {
-            panic("Failed to open LogFile")
-        }
-        logFile := &LogFile{
-            File: file,
-        }
-        filecontent, err := ioutil.ReadFile(path)
-        if err != nil {
-            panic("Failed to read LogFile")
-        }
-        err = json.Unmarshal(filecontent, &logFile)
-        if err != nil {
-            panic("Failed to unmarshal LogFile")
-        }
+		jsonStruct, err := json.MarshalIndent(&logFile, "", "  ")
+		if err != nil {
+			panic("Failed to create LogFile")
+		}
+		logFile.WriteString(string(jsonStruct))
+		return logFile
+	} else {
+		file, err := os.OpenFile(path, os.O_WRONLY, 0644)
+		if err != nil {
+			panic("Failed to open LogFile")
+		}
+		logFile := &LogFile{
+			File: file,
+		}
+		filecontent, err := ioutil.ReadFile(path)
+		if err != nil {
+			panic("Failed to read LogFile")
+		}
+		err = json.Unmarshal(filecontent, &logFile)
+		if err != nil {
+			panic("Failed to unmarshal LogFile")
+		}
 
-        // this should not be done
-        jsonStruct, err := json.MarshalIndent(&logFile, "", "  ")
-        if err != nil {
-            panic("Failed to create LogFile")
-        }
-        logFile.WriteString(string(jsonStruct))
+		// this should not be done
+		jsonStruct, err := json.MarshalIndent(&logFile, "", "  ")
+		if err != nil {
+			panic("Failed to create LogFile")
+		}
+		logFile.WriteString(string(jsonStruct))
 
-        return logFile
-    }
+		return logFile
+	}
 }
 
 // GetAllSensorLogs goes over all log files in the LogFileDir defined in config.yml
-// and puts them together 
+// and puts them together
 func GetAllSensorLogs(path string) (logs []byte, err error) {
-    allLogFiles, err := ioutil.ReadDir(path)
+	allLogFiles, err := ioutil.ReadDir(path)
 	if err != nil {
 		return
 	}
 	var allLogs []LogEntry
-    for _, f := range allLogFiles {
-        var logfile LogFile
-        filename := filepath.Join(path, f.Name())
-        jsonLogFile, err := os.Open(filename)
-        if err != nil {
-            return nil, err
-        }
-        defer jsonLogFile.Close()
-        logs, _ = ioutil.ReadAll(jsonLogFile)
-        err = json.Unmarshal(logs, &logfile)
-        for _, log := range logfile.Logs {
-            allLogs = append(allLogs, log)
-        }
-    }
+	for _, f := range allLogFiles {
+		var logfile LogFile
+		filename := filepath.Join(path, f.Name())
+		jsonLogFile, err := os.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		defer jsonLogFile.Close()
+		logs, _ = ioutil.ReadAll(jsonLogFile)
+		err = json.Unmarshal(logs, &logfile)
+		for _, log := range logfile.Logs {
+			allLogs = append(allLogs, log)
+		}
+	}
 	JsonBytes, err := json.MarshalIndent(&allLogs, "", "  ")
 	if err != nil {
 		return nil, err
@@ -112,31 +112,30 @@ func GetAllSensorLogs(path string) (logs []byte, err error) {
 	return JsonBytes, nil
 }
 
-
 // GetAllSensorLogs goes over all log files in the LogFileDir defined in config.yml
 // and puts all logs together that match the specified sensorID
 func GetOneSensorLogs(path string, sensorID string) (logs []byte, err error) {
-    allLogFiles, err := ioutil.ReadDir(path)
+	allLogFiles, err := ioutil.ReadDir(path)
 	if err != nil {
 		return
 	}
 	var allLogs []LogEntry
-    for _, f := range allLogFiles {
-        var logfile LogFile
-        filename := filepath.Join(path, f.Name())
-        jsonLogFile, err := os.Open(filename)
-        if err != nil {
-            return nil, err
-        }
-        defer jsonLogFile.Close()
-        logs, _ = ioutil.ReadAll(jsonLogFile)
-        err = json.Unmarshal(logs, &logfile)
-        for _, log := range logfile.Logs {
-            if log.SensorID.String() == sensorID {
-                allLogs = append(allLogs, log)
-            }
-        }
-    }
+	for _, f := range allLogFiles {
+		var logfile LogFile
+		filename := filepath.Join(path, f.Name())
+		jsonLogFile, err := os.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		defer jsonLogFile.Close()
+		logs, _ = ioutil.ReadAll(jsonLogFile)
+		err = json.Unmarshal(logs, &logfile)
+		for _, log := range logfile.Logs {
+			if log.SensorID.String() == sensorID {
+				allLogs = append(allLogs, log)
+			}
+		}
+	}
 	JsonBytes, err := json.MarshalIndent(&allLogs, "", "  ")
 	if err != nil {
 		return nil, err
@@ -145,28 +144,28 @@ func GetOneSensorLogs(path string, sensorID string) (logs []byte, err error) {
 }
 
 //func ReadOneSensorLogs(file string, SensorID string) ([]byte, error) {
-	//jsonLogFile, err := os.Open(file)
-	//if err != nil {
-		//return nil, err
-	//}
-	//jsonLogs, _ := ioutil.ReadAll(jsonLogFile)
-	//var logfile LogFile
-	//var filteredLogs []LogEntry
-	//err = json.Unmarshal(jsonLogs, &logfile)
-	//if err != nil {
-		//panic("failed to unmarshal logfile")
-	//}
-	//for _, log := range logfile.Logs {
-		//if log.SensorID.String() == SensorID {
-			//filteredLogs = append(filteredLogs, log)
-		//}
-	//}
+//jsonLogFile, err := os.Open(file)
+//if err != nil {
+//return nil, err
+//}
+//jsonLogs, _ := ioutil.ReadAll(jsonLogFile)
+//var logfile LogFile
+//var filteredLogs []LogEntry
+//err = json.Unmarshal(jsonLogs, &logfile)
+//if err != nil {
+//panic("failed to unmarshal logfile")
+//}
+//for _, log := range logfile.Logs {
+//if log.SensorID.String() == SensorID {
+//filteredLogs = append(filteredLogs, log)
+//}
+//}
 
-	//JsonBytes, err := json.MarshalIndent(&filteredLogs, "", "  ")
-	//if err != nil {
-		//return nil, err
-	//}
-	//return JsonBytes, nil
+//JsonBytes, err := json.MarshalIndent(&filteredLogs, "", "  ")
+//if err != nil {
+//return nil, err
+//}
+//return JsonBytes, nil
 //}
 
 func ReadLogsFromDate(file string) ([]byte, error) {
@@ -184,7 +183,7 @@ func ReadLogsFromDate(file string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-    return JsonBytes, nil
+	return JsonBytes, nil
 }
 
 func (l *LogFile) WriteToFile() error {
@@ -192,9 +191,9 @@ func (l *LogFile) WriteToFile() error {
 	if err != nil {
 		return err
 	}
-    _, err = l.WriteAt(jsonStruct, 0)
+	_, err = l.WriteAt(jsonStruct, 0)
 	if err != nil {
-        log.Fatal("WriteAt error")
+		log.Fatal("WriteAt error")
 	}
 	return nil
 }

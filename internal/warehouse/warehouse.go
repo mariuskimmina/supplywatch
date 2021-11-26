@@ -28,8 +28,8 @@ func NewWarehouse(logger *log.Logger, config *config.Config) *warehouse {
 }
 
 const (
-	maxBufferSize = 1024
-    todayTimeStamp = "11-25-2021"
+	maxBufferSize  = 1024
+	todayTimeStamp = "11-25-2021"
 )
 
 // Start starts the warehouse server
@@ -73,8 +73,8 @@ type SensorMesage struct {
 
 // recvDataFromSensor handles incoming UPD Packets
 func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
-    logfileName := w.config.Warehouse.LogFileBaseName + todayTimeStamp
-    logfile := NewLogFile(logfileName)
+	logfileName := w.config.Warehouse.LogFileBaseName + todayTimeStamp
+	logfile := NewLogFile(logfileName)
 	defer logfile.Close()
 	logcount, err := os.Create("/tmp/logcount")
 	defer logcount.Close()
