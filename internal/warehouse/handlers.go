@@ -97,7 +97,7 @@ func (w *warehouse) handleGetSensorHistory(request *HTTPRequest, c net.Conn) {
 		c.Write(byteResponse)
 		return
 	}
-	logfileName := w.config.Warehouse.LogFileBaseName + queryValue[1]
+	logfileName := w.config.Warehouse.LogFileDir + w.config.Warehouse.LogFileBaseName + queryValue[1]
 	sensorData, err := ReadLogsFromDate(logfileName)
 	if err != nil {
 		response.SetHeader("Content-Type", "text/plain")

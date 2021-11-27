@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
@@ -29,7 +30,10 @@ func NewWarehouse(logger *log.Logger, config *config.Config) *warehouse {
 
 const (
 	maxBufferSize  = 1024
-	todayTimeStamp = "11-25-2021"
+)
+
+var (
+	todayTimeStamp = time.Now().Format("01-02-2006")
 )
 
 // Start starts the warehouse server
@@ -73,7 +77,7 @@ type SensorMesage struct {
 
 // recvDataFromSensor handles incoming UPD Packets
 func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
-	logfileName := w.config.Warehouse.LogFileBaseName + todayTimeStamp
+	logfileName := w.config.Warehouse.LogFileDir + w.config.Warehouse.LogFileBaseName + todayTimeStamp
 	logfile := NewLogFile(logfileName)
 	defer logfile.Close()
 	logcount, err := os.Create("/tmp/logcount")
