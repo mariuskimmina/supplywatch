@@ -8,6 +8,18 @@ import (
 	"strings"
 )
 
+func (w *warehouse) tcpListen(tcpConn net.Listener) {
+	for {
+		c, err := tcpConn.Accept()
+		if err != nil {
+			w.logger.Error(err.Error())
+			return
+		}
+		go w.handleConnection(c)
+	}
+	//}
+}
+
 func (w *warehouse) handleConnection(c net.Conn) {
 	fmt.Printf("Serving %s\n", c.RemoteAddr().String())
 	netData, err := bufio.NewReader(c).ReadString('\n')
@@ -37,7 +49,6 @@ func (w *warehouse) handleConnection(c net.Conn) {
 		c.Write([]byte(string(request.path)))
 	}
 	c.Close()
-	//}
 }
 
 // handleGetAllSensorData handles requests to /allsensordata

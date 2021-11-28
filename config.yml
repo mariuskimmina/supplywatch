@@ -1,9 +1,5 @@
 warehouse:
-  listenIP: "0.0.0.0"
-  udpPort: 4444
-  tcpPort: 8000
   logFileDir: "/var/supplywatch/log/"
-
 
 sensorWarehouse:
   delay: 500 # time between packets in milliseconds

@@ -12,8 +12,9 @@ services:
       - "4444:4444/udp"
       - "8000:8000/tcp"
     environment:
-      - UDPPORT=4444
-      - TCPPORT=8000
+      SW_UDPPORT: 4444
+      SW_TCPPORT: 8000
+      SW_LISTEN_IP: "0.0.0.0"
     networks:
       - monorepo_net
     volumes:
@@ -30,8 +31,9 @@ services:
       - "4445:4445/udp"
       - "8001:8001/tcp"
     environment:
-      - UDPPORT=4445
-      - TCPPORT=8001
+      SW_UDPPORT: 4445
+      SW_TCPPORT: 8001
+      SW_LISTEN_IP: "0.0.0.0"
     networks:
       - monorepo_net
     volumes:

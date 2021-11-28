@@ -1,11 +1,10 @@
 package warehouse
 
 import (
-	"bytes"
-	"encoding/json"
 	"net"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -40,36 +39,60 @@ var (
 // The warehouse listens on a UPD Port to reiceive data from sensors
 // and it also listens on a TCP Port to handle HTTP requests
 func (w *warehouse) Start() {
-	udpPort, err := strconv.Atoi(os.Getenv("UDPPORT"))
+    var wg sync.WaitGroup
+    wg.Add(2)
+    udpConn, err := setupUDPConn()
 	if err != nil {
-		w.logger.Fatal("Failed to convert UPDPORT")
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to setup UPD Listener")
+	}
+	defer udpConn.Close()
+    go func() {
+        w.udpListen(udpConn)
+        wg.Done()
+    }()
+
+    tcpConn, err := setupTCPConn()
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to setup TCP Listener")
+	}
+	defer tcpConn.Close()
+    go func() {
+        w.tcpListen(tcpConn)
+        wg.Done()
+    }()
+    wg.Wait()
+}
+
+func setupTCPConn() (net.Listener, error) {
+    var tcpConn net.Listener
+	tcpPort := os.Getenv("SW_TCPPORT")
+    listenIP := os.Getenv("SW_LISTEN_IP")
+	tcpListenIP := listenIP + ":" + tcpPort
+	tcpConn, err := net.Listen("tcp", tcpListenIP)
+	if err != nil {
+		return tcpConn, err
+	}
+    return tcpConn, nil
+}
+
+func setupUDPConn() (*net.UDPConn, error) {
+    var udpConn *net.UDPConn
+	udpPort, err := strconv.Atoi(os.Getenv("SW_UDPPORT"))
+    listenIP := os.Getenv("SW_LISTEN_IP")
+	if err != nil {
+        return udpConn, err
 	}
 	address := &net.UDPAddr{
 		Port: udpPort,
-		IP:   net.ParseIP(w.config.Warehouse.ListenIP),
+		IP:   net.ParseIP(listenIP),
 	}
-	listen, err := net.ListenUDP("udp", address)
+	udpConn, err = net.ListenUDP("udp", address)
 	if err != nil {
-		return
+		return udpConn, err
 	}
-	defer listen.Close()
-	go w.recvDataFromSensor(listen)
-	tcpPort := os.Getenv("TCPPORT")
-	tcpListenIP := w.config.Warehouse.ListenIP + ":" + tcpPort
-	ln, err := net.Listen("tcp", tcpListenIP)
-	if err != nil {
-		w.logger.Error(err.Error())
-		return
-	}
-	defer ln.Close()
-	for {
-		c, err := ln.Accept()
-		if err != nil {
-			w.logger.Error(err.Error())
-			return
-		}
-		go w.handleConnection(c)
-	}
+    return udpConn, nil
 }
 
 // SensorMesage represents the data we hope to receive from a sensor
@@ -79,92 +102,3 @@ type SensorMesage struct {
 	Message    string    `json:"message"`
 }
 
-// recvDataFromSensor handles incoming UPD Packets
-func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
-	hostname, err := os.Hostname()
-	if err != nil {
-		w.logger.Fatal("Failed to access hostname")
-	}
-	logfileName := w.config.Warehouse.LogFileDir + hostname + "-" + todayTimeStamp
-	logfile := NewLogFile(logfileName)
-	defer logfile.Close()
-	logcount, err := os.Create("/tmp/logcount")
-	defer logcount.Close()
-	sensorCounter := []*SensorMessageCounter{}
-	if err != nil {
-		return
-	}
-	for {
-		p := make([]byte, maxBufferSize)
-		_, remoteaddr, err := listen.ReadFromUDP(p)
-		if err != nil {
-			w.logger.Error("Error reading data from UDP: ", err)
-			return
-		}
-		sensorCleanBytes := bytes.Trim(p, "\x00")
-		var sensorMessage SensorMesage
-		err = json.Unmarshal(sensorCleanBytes, &sensorMessage)
-		if err != nil {
-			w.logger.Error("Error unmarshaling sensor data: ", err)
-			return
-		}
-		w.logger.Infof("Received %s", sensorMessage.Message)
-		logentry := &LogEntry{
-			SensorType: sensorMessage.SensorType,
-			SensorID:   sensorMessage.SensorID,
-			Message:    sensorMessage.Message,
-			IP:         remoteaddr.IP,
-			Port:       remoteaddr.Port,
-		}
-
-		// to keep track of how many messages we have received form each sensor
-		// check if we know any sensor yet, if not create a new one
-		// else check if we have seen this sensor before
-		// if yes, we increase it's counter
-		// if not, we create a new counter for it
-		var found bool
-		if len(sensorCounter) == 0 {
-			w.logger.Debug("Sensor added to list of sensors")
-			newSensorCounter := NewSensorMessageCounter(logentry.SensorID)
-			sensorCounter = append(sensorCounter, newSensorCounter)
-		} else {
-			for _, counter := range sensorCounter {
-				if counter.SensorID == logentry.SensorID {
-					found = true
-					counter.increment()
-					w.logger.Debug("Increased Counter")
-					break
-				} else {
-					found = false
-				}
-			}
-			if !found {
-				w.logger.Debug("Sensor added to list of sensors")
-				newSensorCounter := NewSensorMessageCounter(logentry.SensorID)
-				sensorCounter = append(sensorCounter, newSensorCounter)
-			}
-		}
-
-		logfile.addLog(*logentry)
-		err = logfile.WriteToFile()
-		if err != nil {
-			w.logger.Fatalf("Failed to write to logfile: %v", err)
-		}
-
-		var jsonLogCount []byte
-		for _, counter := range sensorCounter {
-			jsonLogCountEntry, err := json.Marshal(counter)
-			jsonLogCount = append(jsonLogCount, jsonLogCountEntry...)
-			if err != nil {
-				w.logger.Error("Error marshaling log counter to json: ", err)
-				return
-			}
-			jsonLogCount = append(jsonLogCount, []byte("\n")...)
-		}
-
-		// We write to the start of the file meaning everytime we receive a packet we update the
-		// /tmp/logcount file with the new counter - this way the file always contains only 1 line for
-		// each Sensor with updated values
-		logcount.WriteAt(jsonLogCount, 0)
-	}
-}
