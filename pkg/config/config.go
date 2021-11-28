@@ -7,11 +7,10 @@ import (
 
 type Config struct {
 	Warehouse struct {
-		ListenIP        string `yaml:"listenIP" envconfig:"SW_LISTENIP"`
-		UDPPort         int    `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
-		TCPPort         int    `yaml:"tcpPort" envconfig:"SW_TCP_PORT"`
-		LogFileBaseName string `yaml:"logFileBase" envconfig:"SW_LOG_FILE_BASE_NAME"`
-		LogFileDir      string `yaml:"logFileBase" envconfig:"SW_LOG_FILE_DIR"`
+		ListenIP   string `yaml:"listenIP" envconfig:"SW_LISTENIP"`
+		UDPPort    int    `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
+		TCPPort    int    `yaml:"tcpPort" envconfig:"SW_TCP_PORT"`
+		LogFileDir string `yaml:"logFileBase" envconfig:"SW_LOG_FILE_DIR"`
 	} `yaml:"warehouse"`
 	SensorWarehouse struct {
 		UDPPort      int `yaml:"udpPort" envconfig:"SW_UDP_PORT"`

@@ -3,9 +3,9 @@ warehouse:
   udpPort: 4444
   tcpPort: 8000
   logFileDir: "/var/supplywatch/log/"
-  logFileBaseName: "warehouselog-"
+
 
 sensorWarehouse:
-  udpPort: 4444 # should match warehouse udpPort
   delay: 500 # time between packets in milliseconds
   numOfPackets: 5 # 0 means infinite
+  #udpPort: 4444 # should match warehouse udpPort

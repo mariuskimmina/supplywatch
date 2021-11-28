@@ -29,7 +29,7 @@ func NewWarehouse(logger *log.Logger, config *config.Config) *warehouse {
 }
 
 const (
-	maxBufferSize  = 1024
+	maxBufferSize = 1024
 )
 
 var (
@@ -40,8 +40,12 @@ var (
 // The warehouse listens on a UPD Port to reiceive data from sensors
 // and it also listens on a TCP Port to handle HTTP requests
 func (w *warehouse) Start() {
+	udpPort, err := strconv.Atoi(os.Getenv("UDPPORT"))
+	if err != nil {
+		w.logger.Fatal("Failed to convert UPDPORT")
+	}
 	address := &net.UDPAddr{
-		Port: w.config.Warehouse.UDPPort,
+		Port: udpPort,
 		IP:   net.ParseIP(w.config.Warehouse.ListenIP),
 	}
 	listen, err := net.ListenUDP("udp", address)
@@ -50,7 +54,7 @@ func (w *warehouse) Start() {
 	}
 	defer listen.Close()
 	go w.recvDataFromSensor(listen)
-	tcpPort := strconv.Itoa(w.config.Warehouse.TCPPort)
+	tcpPort := os.Getenv("TCPPORT")
 	tcpListenIP := w.config.Warehouse.ListenIP + ":" + tcpPort
 	ln, err := net.Listen("tcp", tcpListenIP)
 	if err != nil {
@@ -77,7 +81,11 @@ type SensorMesage struct {
 
 // recvDataFromSensor handles incoming UPD Packets
 func (w *warehouse) recvDataFromSensor(listen *net.UDPConn) {
-	logfileName := w.config.Warehouse.LogFileDir + w.config.Warehouse.LogFileBaseName + todayTimeStamp
+	hostname, err := os.Hostname()
+	if err != nil {
+		w.logger.Fatal("Failed to access hostname")
+	}
+	logfileName := w.config.Warehouse.LogFileDir + hostname + "-" + todayTimeStamp
 	logfile := NewLogFile(logfileName)
 	defer logfile.Close()
 	logcount, err := os.Create("/tmp/logcount")

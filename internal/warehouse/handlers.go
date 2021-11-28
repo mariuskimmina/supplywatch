@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 )
 
@@ -97,7 +98,11 @@ func (w *warehouse) handleGetSensorHistory(request *HTTPRequest, c net.Conn) {
 		c.Write(byteResponse)
 		return
 	}
-	logfileName := w.config.Warehouse.LogFileDir + w.config.Warehouse.LogFileBaseName + queryValue[1]
+	hostname, err := os.Hostname()
+	if err != nil {
+		w.logger.Fatal("Failed to access hostname")
+	}
+	logfileName := w.config.Warehouse.LogFileDir + hostname + "-" + queryValue[1]
 	sensorData, err := ReadLogsFromDate(logfileName)
 	if err != nil {
 		response.SetHeader("Content-Type", "text/plain")
