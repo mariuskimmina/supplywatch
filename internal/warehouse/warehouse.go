@@ -102,3 +102,5 @@ type SensorMesage struct {
 	Message    string    `json:"message"`
 }
 
+
+

@@ -44,6 +44,7 @@ func (w *warehouse) udpListen(listen *net.UDPConn) {
 			IP:         remoteaddr.IP,
 			Port:       remoteaddr.Port,
 		}
+        GetorCreateProduct(sensorMessage.Message)
 
 		// to keep track of how many messages we have received form each sensor
 		// check if we know any sensor yet, if not create a new one
@@ -94,5 +95,6 @@ func (w *warehouse) udpListen(listen *net.UDPConn) {
 		// /tmp/logcount file with the new counter - this way the file always contains only 1 line for
 		// each Sensor with updated values
 		logcount.WriteAt(jsonLogCount, 0)
+        SaveProductsState()
 	}
 }
