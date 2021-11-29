@@ -9,18 +9,28 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
-	log "github.com/mariuskimmina/supplywatch/pkg/log"
 )
 
 type warehouse struct {
-	logger *log.Logger
+	logger Logger
 	config *config.Config
 }
 
+// Logger is a generic interface that can be implemented by any logging engine
+// this allows for dependency injection which results in easier testing
+type Logger interface {
+    Debug(args ...interface{})
+    Info(args ...interface{})
+    Infof(template string, args ...interface{})
+    Error(args ...interface{})
+    Errorf(template string, args ...interface{})
+    Fatal(args ...interface{})
+    Fatalf(template string, args ...interface{})
+}
+
 // Create a new warehouse object
-// TODO: the arguments here should probably be interfaces, I think..
-// this way, I think I'm doing depency injection wrong here...
-func NewWarehouse(logger *log.Logger, config *config.Config) *warehouse {
+// TODO: config.Config should also be replaced by a generic interface 
+func NewWarehouse(logger Logger, config *config.Config) *warehouse {
 	return &warehouse{
 		logger: logger,
 		config: config,

@@ -9,6 +9,10 @@ import (
 
 // recvDataFromSensor handles incoming UPD Packets
 func (w *warehouse) udpListen(listen *net.UDPConn) {
+    err := LoadProductsState()
+    if err != nil {
+        w.logger.Fatal("Failed load products")
+    }
 	hostname, err := os.Hostname()
 	if err != nil {
 		w.logger.Fatal("Failed to access hostname")

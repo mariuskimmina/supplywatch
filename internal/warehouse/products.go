@@ -2,9 +2,10 @@ package warehouse
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -65,19 +66,46 @@ func (p *Product) Decrement() {
 }
 
 
-func SaveProductsState() {
+func SaveProductsState() error {
     fmt.Println("Saving Products")
     jsonProducts, err := json.MarshalIndent(Products, "", "  ")
     if err != nil {
-        log.Fatal("Failed to marhal products - cannot save products")
+        return err
     }
-    err = ioutil.WriteFile("/var/supplywatch/log/products.json", jsonProducts, 0644)
+    hostname, err := os.Hostname()
     if err != nil {
-        log.Fatal("Failed to write products to file - cannot save products")
+        return err
     }
+    productsFileName := "/var/supplywatch/log/" + hostname + "-products.json"
+    err = ioutil.WriteFile(productsFileName, jsonProducts, 0644)
+    if err != nil {
+        return err
+    }
+    return nil
 }
 
-func LoadProductsState() {
+func LoadProductsState() error {
+    fmt.Println("Loading Products")
+    hostname, err := os.Hostname()
+    if err != nil {
+        return err
+    }
+    productsFileName := "/var/supplywatch/log/" + hostname + "-products.json"
+    if _, err := os.Stat(productsFileName); errors.Is(err, os.ErrNotExist) {
+        return nil
+    }
+    productsFile, err := os.Open(productsFileName)
+    if err != nil {
+        return err
+    }
+    defer productsFile.Close()
+    jsonProducts, err := ioutil.ReadAll(productsFile)
+    if err != nil {
+        return err
+    }
+    json.Unmarshal(jsonProducts, &Products)
+    return nil
+    
 
 }
 
