@@ -75,7 +75,7 @@ func (r *HTTPResponse) SetStatusCode(code int) error {
 }
 
 func (r *HTTPResponse) SetReason(reason string) error {
-    reason = reason + "\r\n"
+	reason = reason + "\r\n"
 	r.reason = reason
 	return nil
 }

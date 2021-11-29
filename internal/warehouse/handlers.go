@@ -43,11 +43,11 @@ func (w *warehouse) handleRessourceNotFound(request *HTTPRequest, c net.Conn) {
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
-    response.SetStatusCode(404)
-    response.SetReason("Not Found")
+	response.SetStatusCode(404)
+	response.SetReason("Not Found")
 	response.SetHeader("Server", "Supplywatch")
-    response.SetBody([]byte("404 Not Found"))
-    fmt.Println(response)
+	response.SetBody([]byte("404 Not Found"))
+	fmt.Println(response)
 	byteResponse, _ := ResponseToBytes(response)
 	c.Write(byteResponse)
 }
