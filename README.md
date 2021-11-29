@@ -35,6 +35,9 @@ the system design, the tests and the deployment of the application.
 
 Functional tests are descirbed in the `test` directory.
 
+![UDP Test](tests/sensor-udp-test.md)
+![HTTP Test](tests/http-tests.md)
+
 ### Unit tests
 
 Unit tests can be executed with `make test`  
