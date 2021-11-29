@@ -29,6 +29,18 @@ the system design, the tests and the deployment of the application.
 * `pkg/`: code that is used by multiple services.
 * `tests/`: describtions of test cases.
 
+## Tests
+
+### Functional tests
+
+Functional tests are descirbed in the `test` directory.
+
+### Unit tests
+
+Unit tests can be executed with `make test`
+Current test coverage (29.11.2021): ~10%
+
+
 ## Requirements analysis
 
 ### Assignment 1

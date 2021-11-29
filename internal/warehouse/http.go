@@ -29,7 +29,7 @@ func ResponseToBytes(res *HTTPResponse) (response []byte, err error) {
 	for _, s := range []string{res.HTTPVersion, strconv.Itoa(res.statuscode), res.reason, res.headers, string(res.body)} {
 		parts = append(parts, s)
 	}
-	stringResponse := strings.Join(parts, "")
+	stringResponse := strings.Join(parts, " ")
 	response = []byte(stringResponse)
 	return response, nil
 }
@@ -71,5 +71,11 @@ func (r *HTTPResponse) SetBody(body []byte) error {
 
 func (r *HTTPResponse) SetStatusCode(code int) error {
 	r.statuscode = code
+	return nil
+}
+
+func (r *HTTPResponse) SetReason(reason string) error {
+    reason = reason + "\r\n"
+	r.reason = reason
 	return nil
 }

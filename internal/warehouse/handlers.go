@@ -8,7 +8,6 @@ import (
 )
 
 func (w *warehouse) handleConnection(c net.Conn) {
-	fmt.Printf("Serving %s\n", c.RemoteAddr().String())
 	netData, err := bufio.NewReader(c).ReadString('\n')
 	if err != nil {
 		fmt.Println(err)
@@ -25,7 +24,7 @@ func (w *warehouse) handleConnection(c net.Conn) {
 	if len(queryString) > 1 {
 		request.query = queryString[1]
 	}
-	fmt.Printf("Received Request: %s, %s, %s", request.method, request.path, request.version)
+	fmt.Printf("Received Request: %s, %s, %s \n", request.method, request.path, request.version)
 	if request.path == "/allsensordata" {
 		w.handleGetAllSensorData(&request, c)
 	} else if request.path == "/sensordata" {
@@ -33,10 +32,24 @@ func (w *warehouse) handleConnection(c net.Conn) {
 	} else if request.path == "/sensorhistory" {
 		w.handleGetSensorHistory(&request, c)
 	} else {
-		c.Write([]byte(string(request.path)))
+		w.handleRessourceNotFound(&request, c)
 	}
 	c.Close()
 	//}
+}
+
+func (w *warehouse) handleRessourceNotFound(request *HTTPRequest, c net.Conn) {
+	response, err := NewHTTPResponse()
+	if err != nil {
+		c.Write([]byte(err.Error()))
+	}
+    response.SetStatusCode(404)
+    response.SetReason("Not Found")
+	response.SetHeader("Server", "Supplywatch")
+    response.SetBody([]byte("404 Not Found"))
+    fmt.Println(response)
+	byteResponse, _ := ResponseToBytes(response)
+	c.Write(byteResponse)
 }
 
 // handleGetAllSensorData handles requests to /allsensordata
