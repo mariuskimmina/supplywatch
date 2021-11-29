@@ -37,7 +37,7 @@ Functional tests are descirbed in the `test` directory.
 
 ### Unit tests
 
-Unit tests can be executed with `make test`
+Unit tests can be executed with `make test`  
 Current test coverage (29.11.2021): ~10%
 
 
