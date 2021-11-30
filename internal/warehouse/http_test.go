@@ -27,6 +27,32 @@ func TestSetHeader(t *testing.T) {
 	require.Equal(t, "Content-Type:application/json\r\nServer:NotApache\r\n\r\n", res.headers)
 }
 
+func TestSetStatusCode(t *testing.T) {
+	t.Parallel()
+	res, err := NewHTTPResponse()
+	require.NoError(t, err)
+	res.SetStatusCode(404)
+	require.Equal(t, 404, res.statuscode)
+	res.SetStatusCode(200)
+	require.Equal(t, 200, res.statuscode)
+}
+
+func TestSetBody(t *testing.T) {
+	t.Parallel()
+	res, err := NewHTTPResponse()
+	require.NoError(t, err)
+	res.SetBody([]byte("TestBody"))
+	require.Equal(t, []byte("TestBody"), res.body)
+}
+
+func TestSetReason(t *testing.T) {
+	t.Parallel()
+	res, err := NewHTTPResponse()
+	require.NoError(t, err)
+	res.SetReason("Not Found")
+	require.Equal(t, "Not Found\r\n", res.reason)
+}
+
 func TestResponseToBytes(t *testing.T) {
 	t.Parallel()
 	res, err := NewHTTPResponse()

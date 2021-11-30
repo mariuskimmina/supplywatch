@@ -29,6 +29,7 @@ the system design, the tests and the deployment of the application.
 * `pkg/`: code that is used by multiple services.
 * `tests/`: describtions of test cases.
 
+<<<<<<< HEAD
 ## Flow-Diagram
 
 ![Workflow Diagramm](media/images/Workflow_01.png)
@@ -51,6 +52,23 @@ Hier könnte ihre Werbung stehen
 
 
 // Ab hier wird gelöscht!
+=======
+## Tests
+
+### Functional tests
+
+Functional tests are descirbed in the `test` directory.  
+
+![UDP Test](tests/sensor-udp-test.md)  
+![HTTP Test](tests/http-tests.md)
+
+### Unit tests
+
+Unit tests can be executed with `make test`  
+Current test coverage (29.11.2021): ~10%
+
+
+>>>>>>> 342cff46cf3454cbe98a073099c0367e9945b81c
 ## Requirements analysis
 
 ### Assignment 1

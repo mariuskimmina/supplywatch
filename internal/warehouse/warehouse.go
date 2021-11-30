@@ -29,7 +29,7 @@ func NewWarehouse(logger *log.Logger, config *config.Config) *warehouse {
 }
 
 const (
-	maxBufferSize  = 1024
+	maxBufferSize = 1024
 )
 
 var (
