@@ -29,10 +29,9 @@ the system design, the tests and the deployment of the application.
 * `pkg/`: code that is used by multiple services.
 * `tests/`: describtions of test cases.
 
-<<<<<<< HEAD
 ## Flow-Diagram
 
-![Workflow Diagramm](media/images/Workflow_01.png)
+![Workflow Diagramm](media/images/Workflow_1.png)
 
 ## Functional Requirements
 
@@ -52,7 +51,6 @@ Hier könnte ihre Werbung stehen
 
 
 // Ab hier wird gelöscht!
-=======
 ## Tests
 
 ### Functional tests
@@ -68,7 +66,6 @@ Unit tests can be executed with `make test`
 Current test coverage (29.11.2021): ~10%
 
 
->>>>>>> 342cff46cf3454cbe98a073099c0367e9945b81c
 ## Requirements analysis
 
 ### Assignment 1
