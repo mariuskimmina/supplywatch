@@ -29,6 +29,28 @@ the system design, the tests and the deployment of the application.
 * `pkg/`: code that is used by multiple services.
 * `tests/`: describtions of test cases.
 
+## Flow-Diagram
+
+![Workflow Diagramm](media/images/Workflow_01.png)
+
+## Functional Requirements
+
+Hier könnte ihre Werbung stehen
+
+## Non-Functional Requirements
+
+Hier könnte ihre Werbung stehen
+
+## Realisierung
+
+Hier könnte ihre Werbung stehen
+
+## Testumgebung
+
+Hier könnte ihre Werbung stehen
+
+
+// Ab hier wird gelöscht!
 ## Requirements analysis
 
 ### Assignment 1
