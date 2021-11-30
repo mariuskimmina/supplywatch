@@ -35,15 +35,40 @@ the system design, the tests and the deployment of the application.
 
 ## Functional Requirements
 
-Hier könnte ihre Werbung stehen
+* Daten müssen von den Sensoren gescannt werden.
+* Daten müssen von den Sensoren geloggt werden.
+* Daten müssen via UDP von den Sensoren gesendet werden.
+* Daten müssen von den Warenhäusern auf dem UDP Socket empfangen werden.
+* Daten müssen von den Warenhäusern geloggt werden.
+  * Geloggte Daten müssen Sensor-ID, Zeitstempel und Mengen beinhalten.
+* Übertragene Daten müssen auf Transport-Verlust geprüft werden.
+* Übertragene Daten müssen über Jahre hinweg nachverfolgbar sein.
 
 ## Non-Functional Requirements
 
-Hier könnte ihre Werbung stehen
+* Hier noch was überlegen
 
 ## Realisierung
 
-Hier könnte ihre Werbung stehen
+Die erstellten Sensoren simulieren das Einscannen von Produkten durch verschiedene Arten von Scannern. Jeder Sensor stellt einen eigenständigen Prozess dar und ist mit folgenden Daten definiert:
+* `sensor_id`: Einzigartige Identifizierung des Sensors
+* `sensor_type`: Art des Scan-Verfahrens des Sensors
+* `message`: Übertragener Datenstring
+* `ip`: IP-Adresse des Sensors
+* `port`: Port-Nummer des Sensors
+
+Die Daten der Sensoren werden mittels UDP an die Warenhäuser übertragen.
+Die Warenhäuser nehmen die Datenpakete an und speichern diese in LOG-Dateien.
+Die LOG-Dateien werden pro Tag gespeichert und für spätere Verfolgung gelagert.
+
+## Hilfreiche Links
+
+Folgende Links sind auf den Warenhaus-Servern via TCP (Port: 8000) erreichbar:
+* `/allsensordata`: Anzeigen aller erhaltenen Sensordaten (des Tages)
+* `/sensordata?<sensor_id>`: Anzeigen der gescannten Daten von bestimmtem Sensor
+  * `<sensor_id>` muss hierbei ersetzt werden!
+* `/sensorhistory?date=<mm-dd-yyyy>`: Anzeigen aller erhaltenen Sensordaten (bestimmter Tag)
+  * `<mm-dd-yyyy>` muss hierbei ersetzt werden!
 
 ## Testumgebung
 
