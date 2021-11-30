@@ -19,7 +19,6 @@ the system design, the tests and the deployment of the application.
 
 ## Project Structure
 
-
 * `build/`: defines the infrastructure
   * `<service-name>/`: define a Dockerfile for the concrete service.
 * `cmd/`: entrypoints
@@ -35,25 +34,28 @@ the system design, the tests and the deployment of the application.
 
 ## Functional Requirements
 
-* Daten müssen von den Sensoren gescannt werden.
-* Daten müssen von den Sensoren geloggt werden.
+* Zufällige Daten müssen von den Sensoren erstellt werden.
 * Daten müssen via UDP von den Sensoren gesendet werden.
 * Daten müssen von den Warenhäusern auf dem UDP Socket empfangen werden.
 * Daten müssen von den Warenhäusern geloggt werden.
   * Geloggte Daten müssen Sensor-ID und Zeitstempel beinhalten.
   * Die Anzahl der empfangenen Daten muss geloggt werden.
 * Übertragene Daten müssen nachverfolgbar sein.
+* Geloggte Daten müssen über eine HTTP-Schnittstelle abrufbar sein.
+* Die HTTP-Schnittstelle muss den HTTP-GET Befehl verarbeiten können.
+* Die HTTP-Antwort muss im JSON-Format gesendet werden.
 
 ## Non-Functional Requirements
 
-* Hier noch was überlegen
+* Die einzelnen Komponenten des Servers sollten unabhängig voneinander laufen können.
+* Die Webseite sollte von Mozilla Firefox aufrufbar sein.
 
 ## Realisierung
 
-Die erstellten Sensoren simulieren das Einscannen von Produkten durch verschiedene Arten von Scannern. Jeder Sensor stellt einen eigenständigen Prozess dar und ist mit folgenden Daten definiert:
+Die erstellten Sensoren simulieren das Einscannen von Produkten durch zufällig generierte Datenobjekte. Jeder Sensor stellt einen eigenständigen Prozess dar und ist mit folgenden Daten definiert:
 * `sensor_id`: Einzigartige Identifizierung des Sensors.
 * `sensor_type`: Art des Scan-Verfahrens des Sensors.
-* `message`: Übertragener Datenstring.
+* `message`: Übertragenes Datenobjekt.
 * `ip`: IP-Adresse des Sensors.
 * `port`: Port-Nummer des Sensors.
 
@@ -61,7 +63,7 @@ Die Daten der Sensoren werden mittels UDP an die Warenhäuser übertragen.
 Die Warenhäuser nehmen die Datenpakete an und speichern diese in LOG-Dateien.
 Die LOG-Dateien werden pro Tag gespeichert und für spätere Verfolgung gelagert.
 
-## Hilfreiche Links
+## HTTP-Endpoints
 
 Folgende Links sind auf den Warenhaus-Servern via TCP (Port: 8000) erreichbar:
 * `/allsensordata`: Anzeigen aller erhaltenen Sensordaten.
