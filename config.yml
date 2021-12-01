@@ -3,5 +3,4 @@ warehouse:
 
 sensorWarehouse:
   delay: 500 # time between packets in milliseconds
-  numOfPackets: 5 # 0 means infinite
-  #udpPort: 4444 # should match warehouse udpPort
+  numOfPackets: 2 # 0 means infinite
