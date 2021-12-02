@@ -15,3 +15,9 @@ fmt:
 
 test:
 	go test ./... -race -cover | grep -v "\[no test files\]"
+
+grpc-gen:
+	protoc --proto_path=grpc/proto/warehouse grpc/proto/warehouse/*.proto --go-grpc_out=grpc/pb/warehouse
+
+grpc-clean:
+	rm grpc/pb/exercises/*.pb.*
