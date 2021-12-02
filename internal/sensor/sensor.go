@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -60,8 +59,12 @@ func (s *Sensor) Start() {
 	if err != nil {
 		s.logger.Fatal("Failed to create ID for sensor")
 	}
-	warehousePort := strconv.Itoa(s.config.SensorWarehouse.UDPPort)
-	warehouseAdr := "warehouse" + ":" + warehousePort
+	warehouses := []string{
+		"warehouse_1:4444",
+		"warehouse_2:4445",
+	}
+	n = rand.Int() % len(warehouses)
+	warehouseAdr := warehouses[n]
 	conn, err := net.Dial("udp", warehouseAdr)
 	if err != nil {
 		s.logger.Error("Failed to dial the warehouse")

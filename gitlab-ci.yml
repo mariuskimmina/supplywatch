@@ -1,0 +1,14 @@
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+    - echo "This job will run first."
+
+test:
+  stage: test
+  script:
+    - echo "This job will run after build has finished."
+
