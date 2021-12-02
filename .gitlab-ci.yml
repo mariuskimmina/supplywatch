@@ -2,13 +2,27 @@ stages:
   - build
   - test
 
+image: tmaier/docker-compose:latest
+
+services:
+  - docker:dind
+
+before_script:
+  - docker info
+  - docker-compose --version
+
 build:
   stage: build
   script:
-    - echo "This job will run first."
+    - docker-compose build
 
-test:
+
+sensor-udp-test:
+  stage: test
+  script:
+    - docker ps
+
+http-test:
   stage: test
   script:
     - echo "This job will run after build has finished."
-
