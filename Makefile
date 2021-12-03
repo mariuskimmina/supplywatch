@@ -17,7 +17,7 @@ test:
 	go test ./... -race -cover | grep -v "\[no test files\]"
 
 grpc-gen:
-	protoc --proto_path=grpc/proto/warehouse grpc/proto/warehouse/*.proto --go-grpc_out=grpc/pb/warehouse
+	protoc --proto_path=grpc/proto/warehouse proto/warehouse/*.proto --go-grpc_out=internal/warehouse/grpc
 
 grpc-clean:
-	rm grpc/pb/exercises/*.pb.*
+	rm grpc/pb/warehouse/*.pb.*

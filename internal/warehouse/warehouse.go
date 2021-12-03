@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
+	"google.golang.org/grpc"
 )
 
 type warehouse struct {
@@ -29,7 +30,7 @@ type Logger interface {
 }
 
 // Create a new warehouse object
-// TODO: config.Config should also be replaced by a generic interface 
+// TODO: config.Config should also be replaced by a generic interface
 func NewWarehouse(logger Logger, config *config.Config) *warehouse {
 	return &warehouse{
 		logger: logger,
@@ -72,12 +73,35 @@ func (w *warehouse) Start() {
         w.tcpListen(tcpConn)
         wg.Done()
     }()
+
+    tcpConnGrpc, err := setupTCPConnGRPC()
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to setup TCP Listener")
+	}
+    defer tcpConnGrpc.Close()
+    grpcServer := grpc.NewServer()
+    if err := grpcServer.Serve(tcpConnGrpc); err != nil {
+        w.logger.Fatal("Failed to setup GRPC Listener")
+    }
     wg.Wait()
 }
 
 func setupTCPConn() (net.Listener, error) {
     var tcpConn net.Listener
 	tcpPort := os.Getenv("SW_TCPPORT")
+    listenIP := os.Getenv("SW_LISTEN_IP")
+	tcpListenIP := listenIP + ":" + tcpPort
+	tcpConn, err := net.Listen("tcp", tcpListenIP)
+	if err != nil {
+		return tcpConn, err
+	}
+    return tcpConn, nil
+}
+
+func setupTCPConnGRPC() (net.Listener, error) {
+    var tcpConn net.Listener
+	tcpPort := os.Getenv("SW_GRPCPORT")
     listenIP := os.Getenv("SW_LISTEN_IP")
 	tcpListenIP := listenIP + ":" + tcpPort
 	tcpConn, err := net.Listen("tcp", tcpListenIP)
