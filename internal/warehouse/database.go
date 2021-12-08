@@ -34,16 +34,31 @@ func setupProducts(db *gorm.DB) error {
 		"eggs",
 		"baking powder",
 		"cheese",
-		"lemons",
 		"cinnamon",
 		"oil",
 		"carrots",
 		"raisins",
 		"walnuts",
 	}
-    for _, product := range products {
-        newProduct := &Product{Name: product, ID: uuid.New(), Quantity: 0}
-        db.FirstOrCreate(&Products, &newProduct)
+    ids := []string{
+        "24476e37-558d-4068-8a76-fd0af990465f",
+        "470de33a-c08f-4867-b316-cecce280a37a",
+        "344f8e1d-bb13-4a85-86af-3a201193ef8b",
+        "4ad03013-21f8-4d19-a4d7-eccdff210b16",
+        "27a40683-392c-496f-8022-9ee4ff119aaa",
+        "2ac00095-2a7d-416c-a250-8c776e1476a7",
+        "bacd7beb-061f-444c-82bf-18454d0cf0ca",
+        "d9eb4c17-1a87-44a4-98f3-dcb6923b485f",
+        "39cc2513-66be-462d-99d6-969951ac1f93",
+        "eff79513-5425-4b9c-8ff5-b597f7a7f67e",
+    }
+    for index, _ := range products {
+        id, err := uuid.Parse(ids[index])
+        if err != nil {
+            return err
+        }
+        newProduct := &Product{Name: products[index], ID: id, Quantity: 0}
+        db.Create(&newProduct)
         Products = append(Products, newProduct)
     }
     return nil

@@ -66,8 +66,9 @@ func (w *warehouse) handleWarehouseRequest(request *HTTPRequest, c net.Conn, db 
 		c.Write([]byte(err.Error()))
         w.logger.Fatal("Failed to get all bytes")
     }
-    result := db.Find(&Products)
-    response.SetBody([]byte(fmt.Sprintf("%v", result)))
+    var products []Product
+    db.Find(&products)
+    response.SetBody([]byte(fmt.Sprintf("%v", products)))
 	byteResponse, _ := ResponseToBytes(response)
 	c.Write(byteResponse)
 }
