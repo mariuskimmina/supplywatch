@@ -45,10 +45,18 @@ func GetorCreateProduct(name string) (*Product, error) {
     return product, nil
 }
 
+func GetAllProductsAsBytes() ([]byte, error) {
+	JsonBytes, err := json.MarshalIndent(&Products, "", "  ")
+    if err != nil {
+        return nil, err
+    }
+    return JsonBytes, nil
+}
+
 func NewProduct(name string) (*Product, error) {
     id := uuid.New()
     return &Product{
-        ID: id, 
+        ID: id,
         Name: name,
         Count: 1,
         lastReceived: time.Now().Format("01-02-2006"),
@@ -105,7 +113,5 @@ func LoadProductsState() error {
     }
     json.Unmarshal(jsonProducts, &Products)
     return nil
-    
-
 }
 

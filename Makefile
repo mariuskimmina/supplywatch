@@ -1,5 +1,5 @@
 build-warehouse:
-	docker build -f Docker/warehouse/Dockerfile -t supplywatch_warehouse --build-arg project=./cmd/warehouse/ .
+	docker build -f build/warehouse/Dockerfile -t supplywatch_warehouse --build-arg project=./cmd/warehouse/ .
 
 run-warehouse:
 	docker run -p "4444:4444/udp" --name supplywatch_warehouse --rm  supplywatch_warehouse:latest
@@ -17,7 +17,7 @@ test:
 	go test ./... -race -cover | grep -v "\[no test files\]"
 
 grpc-gen:
-	protoc --proto_path=grpc/proto/warehouse proto/warehouse/*.proto --go-grpc_out=internal/warehouse/grpc
+	protoc -I proto/warehouse/ proto/warehouse/*.proto --go_out=internal/warehouse/grpc --go-grpc_out=internal/warehouse/grpc --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative
 
 grpc-clean:
 	rm grpc/pb/warehouse/*.pb.*

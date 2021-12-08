@@ -44,10 +44,29 @@ func (w *warehouse) handleConnection(c net.Conn) {
 		w.handleGetOneSensorData(&request, c)
 	} else if request.path == "/sensorhistory" {
 		w.handleGetSensorHistory(&request, c)
+	} else if request.path == "/" {
+		w.handleWarehouseRequest(&request, c)
 	} else {
 		w.handleRessourceNotFound(&request, c)
 	}
 	c.Close()
+}
+
+func (w *warehouse) handleWarehouseRequest(request *HTTPRequest, c net.Conn) {
+	response, err := NewHTTPResponse()
+	if err != nil {
+		c.Write([]byte(err.Error()))
+	}
+	response.SetHeader("Content-Type", "application/json")
+	response.SetHeader("Server", "Supplywatch")
+    products, err := GetAllProductsAsBytes()
+    if err != nil {
+		c.Write([]byte(err.Error()))
+        w.logger.Fatal("Failed to get all bytes")
+    }
+    response.SetBody(products)
+	byteResponse, _ := ResponseToBytes(response)
+	c.Write(byteResponse)
 }
 
 func (w *warehouse) handleRessourceNotFound(request *HTTPRequest, c net.Conn) {

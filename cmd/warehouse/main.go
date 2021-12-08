@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/mariuskimmina/supplywatch/internal/warehouse"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
-	log "github.com/mariuskimmina/supplywatch/pkg/log"
+	"github.com/mariuskimmina/supplywatch/pkg/log"
 )
 
 func main() {

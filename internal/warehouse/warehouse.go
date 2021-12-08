@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	pb "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
 	"google.golang.org/grpc"
 )
@@ -81,9 +82,14 @@ func (w *warehouse) Start() {
 	}
     defer tcpConnGrpc.Close()
     grpcServer := grpc.NewServer()
-    if err := grpcServer.Serve(tcpConnGrpc); err != nil {
-        w.logger.Fatal("Failed to setup GRPC Listener")
-    }
+    pb.RegisterProductServiceServer(grpcServer, &ProductGrpcServer{})
+    go func() {
+        if err := grpcServer.Serve(tcpConnGrpc); err != nil {
+            w.logger.Fatal("Failed to setup GRPC Listener")
+        }
+        wg.Done()
+    }()
+    Connect()
     wg.Wait()
 }
 

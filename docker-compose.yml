@@ -11,10 +11,14 @@ services:
     ports:
       - "4444:4444/udp"
       - "8000:8000/tcp"
+      - "6666:6666/tcp"
     environment:
       SW_UDPPORT: 4444
       SW_TCPPORT: 8000
+      SW_GRPCPORT: 6666
       SW_LISTEN_IP: "0.0.0.0"
+      SW_OTHER_WAREHOUSE_HOST: warehouse_2
+      SW_OTHER_WAREHOUSE_PORT: 4445
     networks:
       - monorepo_net
     volumes:
@@ -30,10 +34,15 @@ services:
     ports:
       - "4445:4445/udp"
       - "8001:8001/tcp"
+      - "6667:6667/tcp"
     environment:
       SW_UDPPORT: 4445
       SW_TCPPORT: 8001
+      SW_GRPCPORT: 6667
       SW_LISTEN_IP: "0.0.0.0"
+      SW_LISTEN_IP: "0.0.0.0"
+      SW_OTHER_WAREHOUSE: warehouse_1
+      SW_OTHER_WAREHOUSE_PORT: 4444
     networks:
       - monorepo_net
     volumes:
