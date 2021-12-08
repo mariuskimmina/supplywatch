@@ -3,13 +3,12 @@ package warehouse
 import (
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCounterIncrement(t *testing.T) {
 	t.Parallel()
-	id := uuid.New()
+	id := "test"
 	smc := NewSensorMessageCounter(id)
 	require.Equal(t, 1, smc.Counter)
 	smc.increment()

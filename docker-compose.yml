@@ -1,5 +1,52 @@
 version: '3'
 services:
+  warehouse_database_1:
+    container_name: warehouse_database_1
+    image: postgres:12.3-alpine
+    env_file:
+      - configurations/postgresql.env
+    command:
+      - -c
+      - max_connections=1024
+    networks:
+      - warehouse_net
+    volumes:
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+    ports:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supplywatch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  warehouse_database_2:
+    container_name: warehouse_database_2
+    image: postgres:12.3-alpine
+    env_file:
+      - configurations/postgresql.env
+    command:
+      - -c
+      - max_connections=1024
+    networks:
+      - warehouse_net
+    volumes:
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+    depends_on:
+      warehouse_database_1:
+        condition: service_healthy
+    ports:
+      - "61832:5432/tcp"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supplywatch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   warehouse_1:
     container_name: warehouse_1
     hostname: warehouse_1
@@ -19,10 +66,14 @@ services:
       SW_LISTEN_IP: "0.0.0.0"
       SW_OTHER_WAREHOUSE_HOST: warehouse_2
       SW_OTHER_WAREHOUSE_PORT: 4445
+      SW_DATABASE: warehouse_database_1
     networks:
-      - monorepo_net
+      - warehouse_net
     volumes:
       - /var/supplywatch/log:/var/supplywatch/log
+    depends_on:
+      warehouse_database_2:
+        condition: service_healthy
   warehouse_2:
     container_name: warehouse_2
     hostname: warehouse_2
@@ -40,11 +91,11 @@ services:
       SW_TCPPORT: 8001
       SW_GRPCPORT: 6667
       SW_LISTEN_IP: "0.0.0.0"
-      SW_LISTEN_IP: "0.0.0.0"
       SW_OTHER_WAREHOUSE: warehouse_1
       SW_OTHER_WAREHOUSE_PORT: 4444
+      SW_DATABASE: warehouse_database_2
     networks:
-      - monorepo_net
+      - warehouse_net
     volumes:
       - /var/supplywatch/log:/var/supplywatch/log
     depends_on:
@@ -62,7 +113,7 @@ services:
     environment:
       - APP_NAME=sensor
     networks:
-      - monorepo_net
+      - warehouse_net
   sensor_2:
     container_name: sensor_2
     hostname: sensor_2
@@ -76,7 +127,7 @@ services:
     environment:
       - APP_NAME=sensor
     networks:
-      - monorepo_net
+      - warehouse_net
   sensor_3:
     container_name: sensor_3
     hostname: sensor_3
@@ -90,8 +141,11 @@ services:
     environment:
       - APP_NAME=sensor
     networks:
-      - monorepo_net
+      - warehouse_net
 
 networks:
-  monorepo_net:
+  warehouse_net:
     driver: bridge
+
+volumes:
+  postgres_data:

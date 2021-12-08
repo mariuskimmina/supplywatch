@@ -9,12 +9,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Product struct {
+    gorm.Model
     ID       uuid.UUID
     Name     string
-    Count           int
+    Quantity           int
     lastReceived    string
     lastDispatched  string
 }
@@ -22,13 +24,14 @@ type Product struct {
 var Products []*Product
 
 
-func GetorCreateProduct(name string) (*Product, error) {
+func IncrementorCreateProduct(name string, db *gorm.DB) (*Product, error) {
     var product *Product
     productExists := false
 
     for _, product := range Products {
         if product.Name == name {
             product.Increment()
+            db.Model(&product).Where("name = ?", product.Name).Update("quantity", product.Quantity)
             productExists = true
             break
         }
@@ -58,18 +61,18 @@ func NewProduct(name string) (*Product, error) {
     return &Product{
         ID: id,
         Name: name,
-        Count: 1,
+        Quantity: 1,
         lastReceived: time.Now().Format("01-02-2006"),
     }, nil
 }
 
 func (p *Product) Increment() {
-    p.Count += 1
+    p.Quantity += 1
     p.lastReceived = time.Now().Format("01-02-2006")
 }
 
 func (p *Product) Decrement() {
-    p.Count -= 1
+    p.Quantity -= 1
     p.lastDispatched = time.Now().Format("01-02-2006")
 }
 

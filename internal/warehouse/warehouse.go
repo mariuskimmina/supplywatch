@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	pb "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
 	"google.golang.org/grpc"
+	"gorm.io/gorm"
 )
 
 type warehouse struct {
@@ -47,10 +47,37 @@ var (
 	todayTimeStamp = time.Now().Format("01-02-2006")
 )
 
+var db *gorm.DB
+
+
 // Start starts the warehouse server
 // The warehouse listens on a UPD Port to reiceive data from sensors
 // and it also listens on a TCP Port to handle HTTP requests
 func (w *warehouse) Start() {
+    db, err := initDB()
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to connect to Database")
+	} else {
+        w.logger.Info("Successfully connected to Database")
+    }
+    sqlDB, err := db.DB()
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to connect to Database")
+    }
+    defer sqlDB.Close()
+
+    db.AutoMigrate(&Product{})
+
+    // create all products with quanitity zero
+    err = setupProducts(db)
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to setup Product Database")
+    }
+
+
     var wg sync.WaitGroup
     wg.Add(2)
     udpConn, err := setupUDPConn()
@@ -60,7 +87,7 @@ func (w *warehouse) Start() {
 	}
 	defer udpConn.Close()
     go func() {
-        w.udpListen(udpConn)
+        w.udpListen(udpConn, db)
         wg.Done()
     }()
 
@@ -71,7 +98,7 @@ func (w *warehouse) Start() {
 	}
 	defer tcpConn.Close()
     go func() {
-        w.tcpListen(tcpConn)
+        w.tcpListen(tcpConn, db)
         wg.Done()
     }()
 
@@ -137,7 +164,7 @@ func setupUDPConn() (*net.UDPConn, error) {
 
 // SensorMesage represents the data we hope to receive from a sensor
 type SensorMesage struct {
-	SensorID   uuid.UUID `json:"sensor_id"`
+	SensorID   string `json:"sensor_id"`
 	SensorType string    `json:"sensor_type"`
 	Message    string    `json:"message"`
 }

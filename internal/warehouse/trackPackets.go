@@ -1,17 +1,15 @@
 package warehouse
 
-import "github.com/google/uuid"
-
 // SensorMessageCounter keep track of the number of packages we receive from each Sensor
 // this way we can track how many udp packets arrive and compare it to the number
 // of send udp packets on the Sensor
 type SensorMessageCounter struct {
-	SensorID uuid.UUID
+	SensorID string
 	Counter  int
 }
 
 // NewSensorMessageCounter creates a new SensorMessageCounter
-func NewSensorMessageCounter(id uuid.UUID) *SensorMessageCounter {
+func NewSensorMessageCounter(id string) *SensorMessageCounter {
 	return &SensorMessageCounter{
 		SensorID: id,
 		Counter:  1,

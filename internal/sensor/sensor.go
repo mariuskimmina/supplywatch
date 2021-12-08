@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net"
+	"os"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
 	"github.com/mariuskimmina/supplywatch/pkg/log"
 )
@@ -19,7 +19,7 @@ type Sensor struct {
 }
 
 type Message struct {
-	SensorID    uuid.UUID `json:"sensor_id"`
+	SensorID    string `json:"sensor_id"`
 	SensorType  string    `json:"sensor_type"`
 	MessageBody string    `json:"message"`
 }
@@ -55,7 +55,7 @@ func (s *Sensor) Start() {
 	SeedRandom()
 	n := rand.Int() % len(SensorType)
 	sensorType := SensorType[n]
-	sensorID, err := uuid.NewUUID()
+	sensorID, err := os.Hostname()
 	if err != nil {
 		s.logger.Fatal("Failed to create ID for sensor")
 	}
