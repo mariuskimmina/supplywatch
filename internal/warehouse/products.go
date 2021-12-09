@@ -9,12 +9,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Product struct {
+    gorm.Model
     ID       uuid.UUID
     Name     string
-    Count           int
+    Quantity           int
     lastReceived    string
     lastDispatched  string
 }
@@ -22,46 +24,71 @@ type Product struct {
 var Products []*Product
 
 
-func GetorCreateProduct(name string) (*Product, error) {
-    var product *Product
+func (w *warehouse) IncrementorCreateProduct(name string) (error) {
+    w.logger.Infof("Incrementing quantity of %s", name)
     productExists := false
 
     for _, product := range Products {
         if product.Name == name {
             product.Increment()
+            w.logger.Infof("Updating database quantity of %s to %d", name, product.Quantity)
+            w.DB.Model(&Product{}).Where("name = ?", product.Name).Update("quantity", product.Quantity)
             productExists = true
             break
         }
     }
 
     if !productExists {
-        product, err := NewProduct(name)
-        if err != nil {
-            return product, err
+        w.logger.Fatalf("Could not find a product with name: %s", name)
+    }
+    return nil
+}
+
+func (w *warehouse) DecrementProduct(name string) (error) {
+    w.logger.Infof("Decrementing quantity of %s", name)
+    productExists := false
+
+    for _, product := range Products {
+        if product.Name == name {
+            product.Decrement()
+            w.logger.Infof("Updating database quantity of %s to %d", name, product.Quantity)
+            w.DB.Model(&Product{}).Where("name = ?", product.Name).Update("quantity", product.Quantity)
+            productExists = true
+            break
         }
-        Products = append(Products, product)
     }
 
-    return product, nil
+    if !productExists {
+        w.logger.Fatalf("Could not find a product with name: %s", name)
+    }
+    return nil
+}
+
+func GetAllProductsAsBytes() ([]byte, error) {
+	JsonBytes, err := json.MarshalIndent(&Products, "", "  ")
+    if err != nil {
+        return nil, err
+    }
+    return JsonBytes, nil
 }
 
 func NewProduct(name string) (*Product, error) {
     id := uuid.New()
     return &Product{
-        ID: id, 
+        ID: id,
         Name: name,
-        Count: 1,
+        Quantity: 1,
         lastReceived: time.Now().Format("01-02-2006"),
     }, nil
 }
 
 func (p *Product) Increment() {
-    p.Count += 1
+    p.Quantity += 1
     p.lastReceived = time.Now().Format("01-02-2006")
 }
 
 func (p *Product) Decrement() {
-    p.Count -= 1
+    p.Quantity -= 1
     p.lastDispatched = time.Now().Format("01-02-2006")
 }
 
@@ -105,7 +132,5 @@ func LoadProductsState() error {
     }
     json.Unmarshal(jsonProducts, &Products)
     return nil
-    
-
 }
 

@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net"
+	"os"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
 	"github.com/mariuskimmina/supplywatch/pkg/log"
 )
@@ -19,9 +19,10 @@ type Sensor struct {
 }
 
 type Message struct {
-	SensorID    uuid.UUID `json:"sensor_id"`
+	SensorID    string `json:"sensor_id"`
 	SensorType  string    `json:"sensor_type"`
 	MessageBody string    `json:"message"`
+	Incoming bool    `json:"incoming"`
 }
 
 func NewSensor(logger *log.Logger, config *config.Config) *Sensor {
@@ -38,7 +39,6 @@ var (
 		"eggs",
 		"baking powder",
 		"cheese",
-		"lemons",
 		"cinnamon",
 		"oil",
 		"carrots",
@@ -49,13 +49,17 @@ var (
 		"BarcodeReader",
 		"RFID-Reader",
 	}
+    Incoming = []bool{
+        true,
+        false,
+    }
 )
 
 func (s *Sensor) Start() {
 	SeedRandom()
 	n := rand.Int() % len(SensorType)
 	sensorType := SensorType[n]
-	sensorID, err := uuid.NewUUID()
+	sensorID, err := os.Hostname()
 	if err != nil {
 		s.logger.Fatal("Failed to create ID for sensor")
 	}
@@ -74,17 +78,20 @@ func (s *Sensor) Start() {
 	for {
 		n = rand.Int() % len(products)
 		product := products[n]
+		n = rand.Int() % len(Incoming)
+		incoming := Incoming[n]
 		message := Message{
 			SensorID:    sensorID,
 			SensorType:  sensorType,
 			MessageBody: product,
+            Incoming:   incoming,
 		}
 		jsonMessage, err := json.Marshal(message)
 
 		if err != nil {
 			s.logger.Error("Failed to convert message to json")
 		}
-		s.logger.Infof("Sending %s", product)
+        s.logger.Infof("Sending %s, Incoming: %v", product, incoming)
 		conn.Write([]byte(jsonMessage))
 
 		// If NumOfPackets is not 0 we stop sending once the NumOfPackets has been reached

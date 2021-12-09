@@ -2,25 +2,28 @@ package warehouse
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
-func (w *warehouse) tcpListen(tcpConn net.Listener) {
+func (w *warehouse) tcpListen(tcpConn net.Listener, db *gorm.DB) {
 	for {
 		c, err := tcpConn.Accept()
 		if err != nil {
 			w.logger.Error(err.Error())
 			return
 		}
-		go w.handleConnection(c)
+		go w.handleConnection(c, db)
 	}
 	//}
 }
 
-func (w *warehouse) handleConnection(c net.Conn) {
+func (w *warehouse) handleConnection(c net.Conn, db *gorm.DB) {
 	netData, err := bufio.NewReader(c).ReadString('\n')
 	if err != nil {
 		fmt.Println(err)
@@ -44,10 +47,37 @@ func (w *warehouse) handleConnection(c net.Conn) {
 		w.handleGetOneSensorData(&request, c)
 	} else if request.path == "/sensorhistory" {
 		w.handleGetSensorHistory(&request, c)
+	} else if request.path == "/" {
+		w.handleWarehouseRequest(&request, c, db)
 	} else {
 		w.handleRessourceNotFound(&request, c)
 	}
 	c.Close()
+}
+
+func (w *warehouse) handleWarehouseRequest(request *HTTPRequest, c net.Conn, db *gorm.DB) {
+	response, err := NewHTTPResponse()
+	if err != nil {
+		c.Write([]byte(err.Error()))
+        return
+	}
+	response.SetHeader("Content-Type", "application/json")
+	response.SetHeader("Server", "Supplywatch")
+    //products, err := GetAllProductsAsBytes()
+    if err != nil {
+		c.Write([]byte(err.Error()))
+        w.logger.Fatal("Failed to get all bytes")
+    }
+    var products []Product
+    db.Find(&products)
+    response.SetBody([]byte(fmt.Sprintf("%v", products)))
+    jsonProducts, err := json.MarshalIndent(products, " ", "")
+	if err != nil {
+		c.Write([]byte(err.Error()))
+        return
+	}
+	//byteResponse, _ := ResponseToBytes(jsonProducts)
+	c.Write(jsonProducts)
 }
 
 func (w *warehouse) handleRessourceNotFound(request *HTTPRequest, c net.Conn) {

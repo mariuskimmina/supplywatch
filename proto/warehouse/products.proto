@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/mariuskimmina/supplywatch;pb";
+
+service ProductService {
+    rpc GetAllProducts(GetAllProductsRequest) returns (GetAllProductsResponse) { }
+}
+
+message Product {
+    string id = 1;
+    string name = 2;
+}
+
+message GetAllProductsResponse {
+    repeated Product products = 1;
+}
+
+message GetAllProductsRequest { }
+

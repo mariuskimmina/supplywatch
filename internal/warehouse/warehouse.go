@@ -7,13 +7,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
+	pb "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
+	"google.golang.org/grpc"
+	"gorm.io/gorm"
 )
 
 type warehouse struct {
 	logger Logger
 	config *config.Config
+    DB  *gorm.DB
 }
 
 // Logger is a generic interface that can be implemented by any logging engine
@@ -29,7 +32,7 @@ type Logger interface {
 }
 
 // Create a new warehouse object
-// TODO: config.Config should also be replaced by a generic interface 
+// TODO: config.Config should also be replaced by a generic interface
 func NewWarehouse(logger Logger, config *config.Config) *warehouse {
 	return &warehouse{
 		logger: logger,
@@ -49,6 +52,22 @@ var (
 // The warehouse listens on a UPD Port to reiceive data from sensors
 // and it also listens on a TCP Port to handle HTTP requests
 func (w *warehouse) Start() {
+    w.initDB()
+    sqlDB, err := w.DB.DB()
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to connect to Database")
+    }
+    defer sqlDB.Close()
+
+    // create all products with quanitity zero
+    err = w.setupProducts()
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to setup Product Database")
+    }
+
+
     var wg sync.WaitGroup
     wg.Add(2)
     udpConn, err := setupUDPConn()
@@ -69,15 +88,43 @@ func (w *warehouse) Start() {
 	}
 	defer tcpConn.Close()
     go func() {
-        w.tcpListen(tcpConn)
+        w.tcpListen(tcpConn, w.DB)
         wg.Done()
     }()
+
+    tcpConnGrpc, err := setupTCPConnGRPC()
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to setup TCP Listener")
+	}
+    defer tcpConnGrpc.Close()
+    grpcServer := grpc.NewServer()
+    pb.RegisterProductServiceServer(grpcServer, &ProductGrpcServer{})
+    go func() {
+        if err := grpcServer.Serve(tcpConnGrpc); err != nil {
+            w.logger.Fatal("Failed to setup GRPC Listener")
+        }
+        wg.Done()
+    }()
+    Connect()
     wg.Wait()
 }
 
 func setupTCPConn() (net.Listener, error) {
     var tcpConn net.Listener
 	tcpPort := os.Getenv("SW_TCPPORT")
+    listenIP := os.Getenv("SW_LISTEN_IP")
+	tcpListenIP := listenIP + ":" + tcpPort
+	tcpConn, err := net.Listen("tcp", tcpListenIP)
+	if err != nil {
+		return tcpConn, err
+	}
+    return tcpConn, nil
+}
+
+func setupTCPConnGRPC() (net.Listener, error) {
+    var tcpConn net.Listener
+	tcpPort := os.Getenv("SW_GRPCPORT")
     listenIP := os.Getenv("SW_LISTEN_IP")
 	tcpListenIP := listenIP + ":" + tcpPort
 	tcpConn, err := net.Listen("tcp", tcpListenIP)
@@ -106,10 +153,11 @@ func setupUDPConn() (*net.UDPConn, error) {
 }
 
 // SensorMesage represents the data we hope to receive from a sensor
-type SensorMesage struct {
-	SensorID   uuid.UUID `json:"sensor_id"`
+type SensorMessage struct {
+	SensorID   string `json:"sensor_id"`
 	SensorType string    `json:"sensor_type"`
 	Message    string    `json:"message"`
+	Incoming    bool    `json:"incoming"`
 }
 
 

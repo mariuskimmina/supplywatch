@@ -13,15 +13,14 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-
-	"github.com/google/uuid"
 )
 
 // LogEntry represents a new entry in the log file
 type LogEntry struct {
-	SensorID   uuid.UUID `json:"sensor_id"`
+	SensorID   string `json:"sensor_id"`
 	SensorType string    `json:"sensor_type"`
 	Message    string    `json:"message"`
+	Incoming   bool    `json:"incoming"`
 	IP         net.IP    `json:"ip"`
 	Port       int       `json:"port"`
 }
@@ -131,7 +130,7 @@ func GetOneSensorLogs(path string, sensorID string) (logs []byte, err error) {
 		logs, _ = ioutil.ReadAll(jsonLogFile)
 		err = json.Unmarshal(logs, &logfile)
 		for _, log := range logfile.Logs {
-			if log.SensorID.String() == sensorID {
+			if log.SensorID == sensorID {
 				allLogs = append(allLogs, log)
 			}
 		}
