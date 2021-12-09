@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"net"
 	"os"
-
-	"gorm.io/gorm"
 )
 
 // recvDataFromSensor handles incoming UPD Packets
-func (w *warehouse) udpListen(listen *net.UDPConn, db *gorm.DB) {
+func (w *warehouse) udpListen(listen *net.UDPConn) {
     err := LoadProductsState()
     if err != nil {
         w.logger.Fatal("Failed load products")
@@ -36,21 +34,26 @@ func (w *warehouse) udpListen(listen *net.UDPConn, db *gorm.DB) {
 			return
 		}
 		sensorCleanBytes := bytes.Trim(p, "\x00")
-		var sensorMessage SensorMesage
+		var sensorMessage SensorMessage
 		err = json.Unmarshal(sensorCleanBytes, &sensorMessage)
 		if err != nil {
 			w.logger.Error("Error unmarshaling sensor data: ", err)
 			return
 		}
-		w.logger.Infof("Received %s", sensorMessage.Message)
+        w.logger.Infof("Received %s, Incoming: %v", sensorMessage.Message, sensorMessage.Incoming)
 		logentry := &LogEntry{
 			SensorType: sensorMessage.SensorType,
 			SensorID:   sensorMessage.SensorID,
 			Message:    sensorMessage.Message,
+			Incoming:    sensorMessage.Incoming,
 			IP:         remoteaddr.IP,
 			Port:       remoteaddr.Port,
 		}
-        IncrementorCreateProduct(sensorMessage.Message, db)
+        if sensorMessage.Incoming {
+            w.IncrementorCreateProduct(sensorMessage.Message)
+        } else {
+            w.DecrementProduct(sensorMessage.Message)
+        }
 
 		// to keep track of how many messages we have received form each sensor
 		// check if we know any sensor yet, if not create a new one

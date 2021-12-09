@@ -2,6 +2,7 @@ package warehouse
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -58,6 +59,7 @@ func (w *warehouse) handleWarehouseRequest(request *HTTPRequest, c net.Conn, db 
 	response, err := NewHTTPResponse()
 	if err != nil {
 		c.Write([]byte(err.Error()))
+        return
 	}
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
@@ -69,8 +71,13 @@ func (w *warehouse) handleWarehouseRequest(request *HTTPRequest, c net.Conn, db 
     var products []Product
     db.Find(&products)
     response.SetBody([]byte(fmt.Sprintf("%v", products)))
-	byteResponse, _ := ResponseToBytes(response)
-	c.Write(byteResponse)
+    jsonProducts, err := json.MarshalIndent(products, " ", "")
+	if err != nil {
+		c.Write([]byte(err.Error()))
+        return
+	}
+	//byteResponse, _ := ResponseToBytes(jsonProducts)
+	c.Write(jsonProducts)
 }
 
 func (w *warehouse) handleRessourceNotFound(request *HTTPRequest, c net.Conn) {

@@ -20,6 +20,7 @@ type LogEntry struct {
 	SensorID   string `json:"sensor_id"`
 	SensorType string    `json:"sensor_type"`
 	Message    string    `json:"message"`
+	Incoming   bool    `json:"incoming"`
 	IP         net.IP    `json:"ip"`
 	Port       int       `json:"port"`
 }

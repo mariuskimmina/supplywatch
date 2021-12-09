@@ -24,28 +24,44 @@ type Product struct {
 var Products []*Product
 
 
-func IncrementorCreateProduct(name string, db *gorm.DB) (*Product, error) {
-    var product *Product
+func (w *warehouse) IncrementorCreateProduct(name string) (error) {
+    w.logger.Infof("Incrementing quantity of %s", name)
     productExists := false
 
     for _, product := range Products {
         if product.Name == name {
             product.Increment()
-            db.Model(&product).Where("name = ?", product.Name).Update("quantity", product.Quantity)
+            w.logger.Infof("Updating database quantity of %s to %d", name, product.Quantity)
+            w.DB.Model(&Product{}).Where("name = ?", product.Name).Update("quantity", product.Quantity)
             productExists = true
             break
         }
     }
 
     if !productExists {
-        product, err := NewProduct(name)
-        if err != nil {
-            return product, err
+        w.logger.Fatalf("Could not find a product with name: %s", name)
+    }
+    return nil
+}
+
+func (w *warehouse) DecrementProduct(name string) (error) {
+    w.logger.Infof("Decrementing quantity of %s", name)
+    productExists := false
+
+    for _, product := range Products {
+        if product.Name == name {
+            product.Decrement()
+            w.logger.Infof("Updating database quantity of %s to %d", name, product.Quantity)
+            w.DB.Model(&Product{}).Where("name = ?", product.Name).Update("quantity", product.Quantity)
+            productExists = true
+            break
         }
-        Products = append(Products, product)
     }
 
-    return product, nil
+    if !productExists {
+        w.logger.Fatalf("Could not find a product with name: %s", name)
+    }
+    return nil
 }
 
 func GetAllProductsAsBytes() ([]byte, error) {

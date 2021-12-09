@@ -21,13 +21,21 @@ const (
     dbPort = 5432
 )
 
-func initDB()(*gorm.DB, error){
+func (w *warehouse) initDB()(){
     dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s port=%d", dbHost, dbUser, dbName, dbPassword, dbPort)
     db, err := gorm.Open(postgres.Open(dbURI), &gorm.Config{})
-    return db, err
+	if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to connect to Database")
+	} else {
+        w.logger.Info("Successfully connected to Database")
+    }
+
+    db.AutoMigrate(&Product{})
+    w.DB = db
 }
 
-func setupProducts(db *gorm.DB) error {
+func (w *warehouse) setupProducts() error {
     products := []string{
 		"butter",
 		"sugar",
@@ -58,8 +66,9 @@ func setupProducts(db *gorm.DB) error {
             return err
         }
         newProduct := &Product{Name: products[index], ID: id, Quantity: 0}
-        db.Create(&newProduct)
+        w.DB.Create(&newProduct)
         Products = append(Products, newProduct)
+        fmt.Println(Products[index].Quantity)
     }
     return nil
 }

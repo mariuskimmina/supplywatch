@@ -16,6 +16,7 @@ import (
 type warehouse struct {
 	logger Logger
 	config *config.Config
+    DB  *gorm.DB
 }
 
 // Logger is a generic interface that can be implemented by any logging engine
@@ -47,31 +48,20 @@ var (
 	todayTimeStamp = time.Now().Format("01-02-2006")
 )
 
-var db *gorm.DB
-
-
 // Start starts the warehouse server
 // The warehouse listens on a UPD Port to reiceive data from sensors
 // and it also listens on a TCP Port to handle HTTP requests
 func (w *warehouse) Start() {
-    db, err := initDB()
-	if err != nil {
-        w.logger.Error(err)
-        w.logger.Fatal("Failed to connect to Database")
-	} else {
-        w.logger.Info("Successfully connected to Database")
-    }
-    sqlDB, err := db.DB()
+    w.initDB()
+    sqlDB, err := w.DB.DB()
 	if err != nil {
         w.logger.Error(err)
         w.logger.Fatal("Failed to connect to Database")
     }
     defer sqlDB.Close()
 
-    db.AutoMigrate(&Product{})
-
     // create all products with quanitity zero
-    err = setupProducts(db)
+    err = w.setupProducts()
 	if err != nil {
         w.logger.Error(err)
         w.logger.Fatal("Failed to setup Product Database")
@@ -87,7 +77,7 @@ func (w *warehouse) Start() {
 	}
 	defer udpConn.Close()
     go func() {
-        w.udpListen(udpConn, db)
+        w.udpListen(udpConn)
         wg.Done()
     }()
 
@@ -98,7 +88,7 @@ func (w *warehouse) Start() {
 	}
 	defer tcpConn.Close()
     go func() {
-        w.tcpListen(tcpConn, db)
+        w.tcpListen(tcpConn, w.DB)
         wg.Done()
     }()
 
@@ -163,10 +153,11 @@ func setupUDPConn() (*net.UDPConn, error) {
 }
 
 // SensorMesage represents the data we hope to receive from a sensor
-type SensorMesage struct {
+type SensorMessage struct {
 	SensorID   string `json:"sensor_id"`
 	SensorType string    `json:"sensor_type"`
 	Message    string    `json:"message"`
+	Incoming    bool    `json:"incoming"`
 }
 
 
