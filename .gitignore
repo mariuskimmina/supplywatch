@@ -19,3 +19,6 @@ go.work
 
 # psst
 *.env
+
+_receiv.txt
+_send.txt
