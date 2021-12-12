@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 
@@ -66,9 +67,9 @@ func (w *warehouse) setupProducts() error {
             return err
         }
         newProduct := &Product{Name: products[index], ID: id, Quantity: 0}
-        w.DB.Create(&newProduct)
+        w.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&newProduct)
+        //w.DB.Create(&newProduct)
         Products = append(Products, newProduct)
-        fmt.Println(Products[index].Quantity)
     }
     return nil
 }

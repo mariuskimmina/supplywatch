@@ -6,6 +6,7 @@ option go_package = "github.com/mariuskimmina/supplywatch;pb";
 
 service ProductService {
     rpc GetAllProducts(GetAllProductsRequest) returns (GetAllProductsResponse) { }
+    rpc ReceivProducts(ReceivProductsRequest) returns (ReceivProductsResponse) { }
 }
 
 message Product {
@@ -19,3 +20,11 @@ message GetAllProductsResponse {
 
 message GetAllProductsRequest { }
 
+message ReceivProductsRequest {
+    Product product = 1;
+    int32 amount = 2;
+}
+
+message ReceivProductsResponse {
+    bool success = 1;
+}

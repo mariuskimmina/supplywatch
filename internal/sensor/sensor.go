@@ -77,9 +77,8 @@ func (s *Sensor) Start() {
 	var packetCounter = 0
 	for {
 		n = rand.Int() % len(products)
+        incoming := IncomingOrOutgoing()
 		product := products[n]
-		n = rand.Int() % len(Incoming)
-		incoming := Incoming[n]
 		message := Message{
 			SensorID:    sensorID,
 			SensorType:  sensorType,
@@ -115,4 +114,10 @@ func SeedRandom() {
 		panic("cannot seed math/rand package with cryptographically secure random number generator")
 	}
 	rand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
+}
+
+// IncomingOrOutgoing creates a "random" boolean that is highly favoured to be true
+// this way we get a lot more incoming products than outgoing products which leads to less negative numbers
+func IncomingOrOutgoing() bool {
+    return rand.Float32() > 0.2
 }

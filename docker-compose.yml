@@ -15,12 +15,14 @@ services:
         source: postgres_data
         target: /var/lib/postgresql/data
     ports:
-      - "5432"
+      - "61833:5432/tcp"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U supplywatch"]
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: none
 
   warehouse_database_2:
     container_name: warehouse_database_2
@@ -46,6 +48,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: none
 
   warehouse_1:
     container_name: warehouse_1
@@ -65,7 +69,7 @@ services:
       SW_GRPCPORT: 6666
       SW_LISTEN_IP: "0.0.0.0"
       SW_OTHER_WAREHOUSE_HOST: warehouse_2
-      SW_OTHER_WAREHOUSE_PORT: 4445
+      SW_OTHER_WAREHOUSE_PORT: 6667
       SW_DATABASE: warehouse_database_1
     networks:
       - warehouse_net
@@ -91,8 +95,8 @@ services:
       SW_TCPPORT: 8001
       SW_GRPCPORT: 6667
       SW_LISTEN_IP: "0.0.0.0"
-      SW_OTHER_WAREHOUSE: warehouse_1
-      SW_OTHER_WAREHOUSE_PORT: 4444
+      SW_OTHER_WAREHOUSE_HOST: warehouse_1
+      SW_OTHER_WAREHOUSE_PORT: 6666
       SW_DATABASE: warehouse_database_2
     networks:
       - warehouse_net

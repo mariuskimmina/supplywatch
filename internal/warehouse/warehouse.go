@@ -17,6 +17,7 @@ type warehouse struct {
 	logger Logger
 	config *config.Config
     DB  *gorm.DB
+    pb.UnimplementedProductServiceServer
 }
 
 // Logger is a generic interface that can be implemented by any logging engine
@@ -69,7 +70,7 @@ func (w *warehouse) Start() {
 
 
     var wg sync.WaitGroup
-    wg.Add(2)
+    wg.Add(4)
     udpConn, err := setupUDPConn()
 	if err != nil {
         w.logger.Error(err)
@@ -99,14 +100,24 @@ func (w *warehouse) Start() {
 	}
     defer tcpConnGrpc.Close()
     grpcServer := grpc.NewServer()
-    pb.RegisterProductServiceServer(grpcServer, &ProductGrpcServer{})
+    pb.RegisterProductServiceServer(grpcServer, w)
     go func() {
+        w.logger.Info("GRPC Server Starts")
         if err := grpcServer.Serve(tcpConnGrpc); err != nil {
             w.logger.Fatal("Failed to setup GRPC Listener")
         }
         wg.Done()
+        w.logger.Info("GRPC Server Ends")
     }()
-    Connect()
+    // wait a bit before we start the client
+    time.Sleep(8 *time.Second)
+    // GRPC Client starts here
+    go func() {
+        w.logger.Info("GRPC Client Starts")
+        w.grpcClient()
+        wg.Done()
+        w.logger.Info("GRPC Client Ends")
+    }()
     wg.Wait()
 }
 

@@ -3,4 +3,4 @@ warehouse:
 
 sensorWarehouse:
   delay: 500 # time between packets in milliseconds
-  numOfPackets: 10 # 0 means infinite
+  numOfPackets: 1 # 0 means infinite
