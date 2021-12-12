@@ -4,6 +4,10 @@
 
 The easiest way to run the projekt is by using `docker-compose`
 
+First you need to adjust the configurations in `configurations/postgresql.env.dummy`
+You can adjust all values but the only one you really should change is the `POSTGRES_PASSWORD`.
+Once you are done editing save the file as `configurations/postgresql.env`
+
 ```
 docker-compose up -d --build
 ```
@@ -81,12 +85,12 @@ Folgende Links sind auf den Warenhaus-Servern via TCP (Port: 8000) erreichbar:
 
 ### Functional tests
 
-Functional tests are descirbed in the `test` directory.  
+Functional tests are descirbed in the `test` directory.
 
-![UDP Test](tests/sensor-udp-test.md)  
+![UDP Test](tests/sensor-udp-test.md)
 ![HTTP Test](tests/http-tests.md)
 
 ### Unit tests
 
-Unit tests can be executed with `make test`  
+Unit tests can be executed with `make test`
 Current test coverage (29.11.2021): ~10%
