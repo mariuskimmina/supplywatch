@@ -17,8 +17,8 @@ var (
 )
 
 const (
-    shippingReceivLog = "/var/supplywatch/log/shipping_receiv_log"
-    shippingSendLog = "/var/supplywatch/log/shipping_send_log"
+    shippingReceivLog = "/var/shipping_receiv_log"
+    shippingSendLog = "/var/shipping_send_log"
 )
 
 func (w *warehouse) GetAllProducts(ctx context.Context, req *pb.GetAllProductsRequest) (*pb.GetAllProductsResponse, error) {

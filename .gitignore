@@ -20,5 +20,5 @@ go.work
 # psst
 *.env
 
-_receiv.txt
-_send.txt
+*_receiv.txt
+*_send.txt

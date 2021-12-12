@@ -53,10 +53,10 @@ func (w *warehouse) grpcClient() {
     ctx := context.Background()
     //defer cancel()
 
-    req := &pb.GetAllProductsRequest{}
+    //req := &pb.GetAllProductsRequest{}
 
-    products, err := c.GetAllProducts(ctx, req)
-    w.logger.Info(products)
+    //products, err := c.GetAllProducts(ctx, req)
+    //w.logger.Info(products)
     for {
         w.logger.Info("Sending a product")
         //choose a random product to ship to the other warehouse
@@ -80,8 +80,8 @@ func (w *warehouse) grpcClient() {
                     Product: sendingProduct,
                     Amount: 1,
                 }
-                allOutgoingRequests = append(allRequests, sendProdcuts)
-                allJsonReq, err := json.MarshalIndent(allRequests, "", "  ")
+                allOutgoingRequests = append(allOutgoingRequests, sendProdcuts)
+                allJsonReq, err := json.MarshalIndent(allOutgoingRequests, "", "  ")
                 if err != nil {
                     w.logger.Fatal("Failed to marhal Request")
                 }
