@@ -2,11 +2,11 @@
 
 ## Getting Started
 
-The easiest way to run the projekt is by using `docker-compose`
-
 First you need to adjust the configurations in `configurations/postgresql.env.dummy`
 You can adjust all values but the only one you really should change is the `POSTGRES_PASSWORD`.
 Once you are done editing save the file as `configurations/postgresql.env`
+
+Afterwards you can start the project by simply running:
 
 ```
 docker-compose up -d --build
