@@ -23,8 +23,10 @@ the system design, the tests and the deployment of the application.
 
 ## Project Structure
 
+* `bin/`: Scripts to automate test
 * `build/`: defines the infrastructure
   * `<service-name>/`: define a Dockerfile for the concrete service.
+* `configurations/`: config files
 * `cmd/`: entrypoints
   * `<service-name>/`: primary entrypoint for this service - short main functions.
 * `internal/`: defines the _core domain_.
