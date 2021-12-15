@@ -53,10 +53,6 @@ func (w *warehouse) grpcClient() {
     ctx := context.Background()
     //defer cancel()
 
-    //req := &pb.GetAllProductsRequest{}
-
-    //products, err := c.GetAllProducts(ctx, req)
-    //w.logger.Info(products)
     for {
         w.logger.Info("Sending a product")
         //choose a random product to ship to the other warehouse
@@ -98,6 +94,20 @@ func (w *warehouse) grpcClient() {
                 break
             }
         }
+        req := &pb.GetAllProductsRequest{}
+        allProducts, err := c.GetAllProducts(ctx, req)
+        if err != nil {
+            w.logger.Error(err)
+            w.logger.Fatal("Failed to get all Products")
+        }
+        allProductsJson, err := json.MarshalIndent(allProducts.Products, "", "  ")
+        if err != nil {
+            w.logger.Fatal("Failed to marhal Request")
+        }
+        err = ioutil.WriteFile(allProductsReceivLog, allProductsJson, 0644)
+        if err != nil {
+            w.logger.Fatal("Failed to write Log")
+        }
 		time.Sleep(5 * time.Second)
     }
 }
@@ -110,3 +120,5 @@ func SeedRandom() {
 	}
 	rand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
 }
+
+

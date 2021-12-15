@@ -19,13 +19,36 @@ var (
 const (
     shippingReceivLog = "/var/shipping_receiv_log"
     shippingSendLog = "/var/shipping_send_log"
+
+    allProductsReceivLog = "/var/all_products_receiv_log"
+    allProductsSendLog = "/var/all_products_send_log"
 )
 
 func (w *warehouse) GetAllProducts(ctx context.Context, req *pb.GetAllProductsRequest) (*pb.GetAllProductsResponse, error) {
     w.logger.Info("Received GRPC Request, GetAllProducts")
-    var products []*pb.Product
+    var allProducts []Product
+    w.DB.Find(&allProducts)
+
+    sendProducts := []*pb.Product{}
+    for _, product := range allProducts {
+        sendProduct := pb.Product{
+            Name: product.Name,
+            Id: product.ID.String(),
+        }
+        sendProducts = append(sendProducts, &sendProduct)
+    }
+
+    allProductsJson, err := json.MarshalIndent(sendProducts, "", "  ")
+    if err != nil {
+        return nil, err
+    }
+    err = ioutil.WriteFile(allProductsSendLog, allProductsJson, 0644)
+    if err != nil {
+        return nil, err
+    }
+
     return &pb.GetAllProductsResponse{
-        Products: products,
+        Products: sendProducts,
     }, nil
 }
 
