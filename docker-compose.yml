@@ -21,8 +21,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    logging:
-      driver: none
 
   warehouse_database_2:
     container_name: warehouse_database_2
@@ -48,8 +46,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    logging:
-      driver: none
 
   warehouse_1:
     container_name: warehouse_1

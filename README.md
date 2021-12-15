@@ -36,7 +36,8 @@ the system design, the tests and the deployment of the application.
 
 ## Flow-Diagram
 
-![Workflow Diagramm](media/images/Workflow_1.png)
+![Workflow Diagramm](media/images/Workflow_2.png)
+Workflow v.2
 
 ## Functional Requirements
 
@@ -72,11 +73,15 @@ Die LOG-Dateien werden pro Tag gespeichert und für spätere Verfolgung gelagert
 ## HTTP-Endpoints
 
 Folgende Links sind auf den Warenhaus-Servern via TCP (Port: 8000) erreichbar:
+* `/`: Anzeigen der Waren des Warenhauses.
+  * `:8000`: Warenhaus 1
+  * `:8001`: Warenhaus 2
 * `/allsensordata`: Anzeigen aller erhaltenen Sensordaten.
 * `/sensordata?sensor_id=<sensor_id>`: Anzeigen der gescannten Daten von bestimmtem Sensor.
   * `<sensor_id>` muss hierbei ersetzt werden!
 * `/sensorhistory?date=<mm-dd-yyyy>`: Anzeigen aller erhaltenen Sensordaten (bestimmter Tag).
   * `<mm-dd-yyyy>` muss hierbei ersetzt werden!
+
 
 ## Testumgebung
 
