@@ -12,6 +12,14 @@ Afterwards you can start the project by simply running:
 docker-compose up -d --build
 ```
 
+## Tags
+
+Das Repo enthaelt Tags fuer die einzelnen Aufgaben, so dass der Stand fuer jede Abgabe aufgerufen werden kann:
+
+* UDP-Sockets
+* TCP-Sockets
+* RCP
+
 ## Assignment
 
 in the context of this course we are designing a distributed system for "Supply Chain Monitoring".
@@ -71,11 +79,12 @@ Die Warenhäuser nehmen die Datenpakete an und speichern diese in LOG-Dateien.
 Die LOG-Dateien werden pro Tag gespeichert und für spätere Verfolgung gelagert.
 
 ## HTTP-Endpoints
+Die HTTP Server der beiden Warenhaeuser laufen, falls keine aenderungen der configuration vorgenommen wurden auf den ports:
+* `:8000`: Warenhaus 1
+* `:8001`: Warenhaus 2
 
-Folgende Links sind auf den Warenhaus-Servern via TCP (Port: 8000) erreichbar:
+Folgende Links sind auf den Warenhaus-Servern erreichbar:
 * `/`: Anzeigen der Waren des Warenhauses.
-  * `:8000`: Warenhaus 1
-  * `:8001`: Warenhaus 2
 * `/allsensordata`: Anzeigen aller erhaltenen Sensordaten.
 * `/sensordata?sensor_id=<sensor_id>`: Anzeigen der gescannten Daten von bestimmtem Sensor.
   * `<sensor_id>` muss hierbei ersetzt werden!
