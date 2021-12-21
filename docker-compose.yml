@@ -1,5 +1,17 @@
 version: '3'
 services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    hostname: 'rabbitmq'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - warehouse_net
+    logging:
+      driver: none
+
   warehouse_database_1:
     container_name: warehouse_database_1
     image: postgres:12.3-alpine
@@ -78,6 +90,7 @@ services:
     depends_on:
       warehouse_database_2:
         condition: service_healthy
+
   warehouse_2:
     container_name: warehouse_2
     hostname: warehouse_2

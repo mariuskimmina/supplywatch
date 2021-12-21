@@ -7,9 +7,12 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/spf13/viper v1.9.0
+	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.19.1
 	google.golang.org/grpc v1.42.0
+	gorm.io/driver/postgres v1.2.3
+	gorm.io/gorm v1.22.4
 )
 
 require (
@@ -46,6 +49,4 @@ require (
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	gorm.io/driver/postgres v1.2.3 // indirect
-	gorm.io/gorm v1.22.4 // indirect
 )

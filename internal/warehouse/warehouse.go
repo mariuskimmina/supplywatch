@@ -93,6 +93,14 @@ func (w *warehouse) Start() {
         wg.Done()
     }()
 
+    // RabbitMQ
+    go func() {
+        w.SetupMessageQueue()
+        wg.Done()
+    }()
+
+
+    // GRPC part
     tcpConnGrpc, err := setupTCPConnGRPC()
 	if err != nil {
         w.logger.Error(err)
