@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"gorm.io/gorm"
+
+    http "github.com/mariuskimmina/supplywatch/internal/warehouse/http"
 )
 
 func (w *warehouse) tcpListen(tcpConn net.Listener, db *gorm.DB) {
@@ -32,31 +34,32 @@ func (w *warehouse) handleConnection(c net.Conn, db *gorm.DB) {
 	requestData := strings.Split(netData, " ")
 	queryString := strings.Split(requestData[1], "?")
 	httpVersion := strings.TrimSuffix(requestData[2], "\n")
-	request := HTTPRequest{
-		method:  requestData[0],
-		path:    queryString[0],
-		version: httpVersion,
-	}
+
+	request, err := http.NewRequest(
+        http.WithMethod(requestData[0]),
+        http.WithPath(queryString[0]),
+        http.WithVersion(httpVersion),
+    )
 	if len(queryString) > 1 {
-		request.query = queryString[1]
+		request.Query = queryString[1]
 	}
-	fmt.Printf("Received Request: %s, %s, %s \n", request.method, request.path, request.version)
-	if request.path == "/allsensordata" {
-		w.handleGetAllSensorData(&request, c)
-	} else if request.path == "/sensordata" {
-		w.handleGetOneSensorData(&request, c)
-	} else if request.path == "/sensorhistory" {
-		w.handleGetSensorHistory(&request, c)
-	} else if request.path == "/" {
-		w.handleWarehouseRequest(&request, c, db)
+	fmt.Printf("Received Request: %s, %s, %s \n", request.Method, request.Path, request.Version)
+	if request.Path == "/allsensordata" {
+		w.handleGetAllSensorData(request, c)
+	} else if request.Path == "/sensordata" {
+		w.handleGetOneSensorData(request, c)
+	} else if request.Path == "/sensorhistory" {
+		w.handleGetSensorHistory(request, c)
+	} else if request.Path == "/" {
+		w.handleWarehouseRequest(request, c, db)
 	} else {
-		w.handleRessourceNotFound(&request, c)
+		w.handleRessourceNotFound(request, c)
 	}
 	c.Close()
 }
 
-func (w *warehouse) handleWarehouseRequest(request *HTTPRequest, c net.Conn, db *gorm.DB) {
-	response, err := NewHTTPResponse()
+func (w *warehouse) handleWarehouseRequest(request *http.Request, c net.Conn, db *gorm.DB) {
+	response, err := http.NewResponse()
 	if err != nil {
 		c.Write([]byte(err.Error()))
         return
@@ -80,24 +83,25 @@ func (w *warehouse) handleWarehouseRequest(request *HTTPRequest, c net.Conn, db 
 	c.Write(jsonProducts)
 }
 
-func (w *warehouse) handleRessourceNotFound(request *HTTPRequest, c net.Conn) {
-	response, err := NewHTTPResponse()
+func (w *warehouse) handleRessourceNotFound(request *http.Request, c net.Conn) {
+	response, err := http.NewResponse(
+        http.WithStatusCode(404),
+    )
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
-	response.SetStatusCode(404)
 	response.SetReason("Not Found")
 	response.SetHeader("Server", "Supplywatch")
 	response.SetBody([]byte("404 Not Found"))
 	fmt.Println(response)
-	byteResponse, _ := ResponseToBytes(response)
+	byteResponse, _ := http.ResponseToBytes(response)
 	c.Write(byteResponse)
 }
 
 // handleGetAllSensorData handles requests to /allsensordata
 // we read the log file and return all entrys to the user
-func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
-	response, err := NewHTTPResponse()
+func (w *warehouse) handleGetAllSensorData(request *http.Request, c net.Conn) {
+	response, err := http.NewResponse()
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
@@ -111,19 +115,19 @@ func (w *warehouse) handleGetAllSensorData(request *HTTPRequest, c net.Conn) {
 		w.logger.Fatal("Failed to read all logs")
 	}
 	response.SetBody(allLogData)
-	byteResponse, _ := ResponseToBytes(response)
+	byteResponse, _ := http.ResponseToBytes(response)
 	c.Write(byteResponse)
 }
 
-func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
-	response, err := NewHTTPResponse()
+func (w *warehouse) handleGetOneSensorData(request *http.Request, c net.Conn) {
+	response, err := http.NewResponse()
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
 	response.SetHeader("Access-Control-Allow-Origin", "*")
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
-	queryValue := strings.Split(request.query, "=")
+	queryValue := strings.Split(request.Query, "=")
 
 	sensorData, err := GetOneSensorLogs(w.config.Warehouse.LogFileDir, queryValue[1])
 	if err != nil {
@@ -131,24 +135,24 @@ func (w *warehouse) handleGetOneSensorData(request *HTTPRequest, c net.Conn) {
 		w.logger.Fatal("Failed to read all logs")
 	}
 	response.SetBody(sensorData)
-	byteResponse, _ := ResponseToBytes(response)
+	byteResponse, _ := http.ResponseToBytes(response)
 	c.Write(byteResponse)
 }
 
 // handleGetSensorHistory takes a query parameter `date` and returns all
 // all logs from that day
-func (w *warehouse) handleGetSensorHistory(request *HTTPRequest, c net.Conn) {
-	response, err := NewHTTPResponse()
+func (w *warehouse) handleGetSensorHistory(request *http.Request, c net.Conn) {
+	response, err := http.NewResponse()
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
 	response.SetHeader("Access-Control-Allow-Origin", "*")
 	response.SetHeader("Server", "Supplywatch")
-	queryValue := strings.Split(request.query, "=")
+	queryValue := strings.Split(request.Query, "=")
 	if queryValue[0] != "date" {
 		response.SetHeader("Content-Type", "text/plain")
 		response.SetBody([]byte("Unkown query parameter: " + queryValue[0]))
-		byteResponse, _ := ResponseToBytes(response)
+		byteResponse, _ := http.ResponseToBytes(response)
 		c.Write(byteResponse)
 		return
 	}
@@ -161,12 +165,12 @@ func (w *warehouse) handleGetSensorHistory(request *HTTPRequest, c net.Conn) {
 	if err != nil {
 		response.SetHeader("Content-Type", "text/plain")
 		response.SetBody([]byte("No data was found for this date"))
-		byteResponse, _ := ResponseToBytes(response)
+		byteResponse, _ := http.ResponseToBytes(response)
 		c.Write(byteResponse)
 		return
 	}
 	response.SetHeader("Content-Type", "application/json")
 	response.SetBody(sensorData)
-	byteResponse, _ := ResponseToBytes(response)
+	byteResponse, _ := http.ResponseToBytes(response)
 	c.Write(byteResponse)
 }

@@ -1,4 +1,4 @@
-package warehouse
+package http
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 
 func TestNewHTTPResponse(t *testing.T) {
 	t.Parallel()
-	res, err := NewHTTPResponse()
+	res, err := NewResponse()
 	require.NoError(t, err)
 	require.Equal(t, 200, res.statuscode)
 	require.Equal(t, "HTTP/1.1", res.HTTPVersion)
@@ -19,7 +19,7 @@ func TestNewHTTPResponse(t *testing.T) {
 
 func TestSetHeader(t *testing.T) {
 	t.Parallel()
-	res, err := NewHTTPResponse()
+	res, err := NewResponse()
 	require.NoError(t, err)
 	res.SetHeader("Content-Type", "application/json")
 	require.Equal(t, "Content-Type:application/json\r\n\r\n", res.headers)
@@ -29,7 +29,7 @@ func TestSetHeader(t *testing.T) {
 
 func TestSetStatusCode(t *testing.T) {
 	t.Parallel()
-	res, err := NewHTTPResponse()
+	res, err := NewResponse()
 	require.NoError(t, err)
 	res.SetStatusCode(404)
 	require.Equal(t, 404, res.statuscode)
@@ -39,7 +39,7 @@ func TestSetStatusCode(t *testing.T) {
 
 func TestSetBody(t *testing.T) {
 	t.Parallel()
-	res, err := NewHTTPResponse()
+	res, err := NewResponse()
 	require.NoError(t, err)
 	res.SetBody([]byte("TestBody"))
 	require.Equal(t, []byte("TestBody"), res.body)
@@ -47,7 +47,7 @@ func TestSetBody(t *testing.T) {
 
 func TestSetReason(t *testing.T) {
 	t.Parallel()
-	res, err := NewHTTPResponse()
+	res, err := NewResponse()
 	require.NoError(t, err)
 	res.SetReason("Not Found")
 	require.Equal(t, "Not Found\r\n", res.reason)
@@ -55,7 +55,7 @@ func TestSetReason(t *testing.T) {
 
 func TestResponseToBytes(t *testing.T) {
 	t.Parallel()
-	res, err := NewHTTPResponse()
+	res, err := NewResponse()
 	require.NoError(t, err)
 	_, err = ResponseToBytes(res)
 	require.NoError(t, err)
