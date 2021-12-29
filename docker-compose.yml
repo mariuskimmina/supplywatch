@@ -23,9 +23,7 @@ services:
     networks:
       - warehouse_net
     volumes:
-      - type: volume
-        source: postgres_data
-        target: /var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "61833:5432/tcp"
     healthcheck:
@@ -47,12 +45,7 @@ services:
     networks:
       - warehouse_net
     volumes:
-      - type: volume
-        source: postgres_data
-        target: /var/lib/postgresql/data
-    depends_on:
-      warehouse_database_1:
-        condition: service_healthy
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "61832:5432/tcp"
     healthcheck:
@@ -87,9 +80,6 @@ services:
       - warehouse_net
     volumes:
       - /var/supplywatch/log:/var/supplywatch/log
-    depends_on:
-      warehouse_database_2:
-        condition: service_healthy
 
   warehouse_2:
     container_name: warehouse_2
@@ -115,13 +105,9 @@ services:
       - warehouse_net
     volumes:
       - /var/supplywatch/log:/var/supplywatch/log
-    depends_on:
-      - warehouse_1
   sensor_1:
     container_name: sensor_1
     hostname: sensor_1
-    depends_on:
-      - warehouse_2
     build:
       context: .
       dockerfile: ./build/sensor/Dockerfile
@@ -134,8 +120,6 @@ services:
   sensor_2:
     container_name: sensor_2
     hostname: sensor_2
-    depends_on:
-      - warehouse_2
     build:
       context: .
       dockerfile: ./build/sensor/Dockerfile
@@ -148,8 +132,6 @@ services:
   sensor_3:
     container_name: sensor_3
     hostname: sensor_3
-    depends_on:
-      - warehouse_2
     build:
       context: .
       dockerfile: ./build/sensor/Dockerfile

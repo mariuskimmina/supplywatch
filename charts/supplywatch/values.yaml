@@ -1,0 +1,43 @@
+warehouse1:
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 1
+  image: registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-g/warehouse
+  imageTag: ""
+  imagePullPolicy: IfNotPresent
+  annotations: { }
+  podAnnotations: { }
+  resources: { }
+  domains: [ ]
+
+warehouse2:
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 1
+  image: registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-g/warehouse
+  imageTag: ""
+  imagePullPolicy: IfNotPresent
+  annotations: { }
+  podAnnotations: { }
+  resources: { }
+  domains: [ ]
+
+
+database1:
+  enabled: true
+  postgresqlDatabase: supplywatch
+  postgresqlMaxConnections: 1024
+
+database2:
+  enabled: true
+  postgresqlDatabase: supplywatch
+  postgresqlMaxConnections: 1024
+
+ingress:
+  enabled: false
+  annotations: { }
+  tls: [ ]

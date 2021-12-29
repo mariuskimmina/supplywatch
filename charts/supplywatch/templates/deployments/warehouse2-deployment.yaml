@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: warehouse2
+  labels:
+    app: warehouse2
+spec:
+  selector:
+    matchLabels:
+      app: warehouse2
+  template:
+    metadata:
+      labels:
+        app: warehouse2
+    spec:
+      containers:
+        - name: warehouse2
+          image: registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-g/warehouse
+          env:
+            - name: SW_DATABASE
+              value: database2
+            - name: SW_UDPPORT
+              value: "4444"
+            - name: SW_TCPPORT
+              value: "8000"
+            - name: SW_GRPCPORT
+              value: "6666"
+            - name: SW_LISTEN_IP
+              value: "0.0.0.0"
+            - name: SW_OTHER_WAREHOUSE_HOST
+              value: warehouse1
+            - name: SW_OTHER_WAREHOUSE_PORT
+              value: "6666"
+          ports:
+            - containerPort: 8000
+              name: http-port
+            - containerPort: 4444
+              name: sensor-port
+            - containerPort: 6666
+              name: grpc-port
+      imagePullSecrets:
+        - name: myregkeytwo

@@ -18,7 +18,7 @@ func (w *warehouse) udpListen(listen *net.UDPConn) {
 		w.logger.Fatal("Failed to access hostname")
 	}
 	logfileName := w.config.Warehouse.LogFileDir + hostname + "-" + todayTimeStamp
-	logfile := NewLogFile(logfileName)
+	logfile := w.NewLogFile(logfileName)
 	defer logfile.Close()
 	logcount, err := os.Create("/tmp/logcount")
 	defer logcount.Close()
