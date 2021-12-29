@@ -5,7 +5,6 @@ import (
 	crypto_rand "crypto/rand"
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -38,14 +37,19 @@ var (
 )
 
 func (w *warehouse) grpcClient() {
-    w.logger.Infof("GRPC Dialing %s", address)
-    conn, err := grpc.Dial(address, grpc.WithInsecure())
-    w.logger.Info("After Dial")
-    if err != nil {
-        w.logger.Error(err)
-        w.logger.Fatal("Failed to connect to the other warehouse")
+    var conn *grpc.ClientConn
+    var err error
+    for {
+        w.logger.Infof("Try GRPC Dialing %s", address)
+        conn, err = grpc.Dial(address, grpc.WithInsecure())
+        if err != nil {
+            w.logger.Error("Could not connect to the other warehouse, trying again in 5 seconds")
+            time.Sleep(5 *time.Second)
+            continue
+        }
+        w.logger.Info("Connected to the oter warehouse successfully")
+        break
     }
-    w.logger.Info("Connected to the oter warehouse successfully")
     defer conn.Close()
     c := pb.NewProductServiceClient(conn)
 
@@ -85,12 +89,16 @@ func (w *warehouse) grpcClient() {
                 if err != nil {
                     w.logger.Fatal("Failed to write Log")
                 }
-                resp, err := c.ReceivProducts(ctx, sendProdcuts)
-                if err != nil {
-                    w.logger.Error(err)
-                    w.logger.Fatal("Failed to send Products or something")
+                for {
+                    _, err := c.ReceivProducts(ctx, sendProdcuts)
+                    if err != nil {
+                        w.logger.Error("Failed to send Products, trying again in 5 seconds")
+                        time.Sleep(5 * time.Second)
+                        continue
+                    }
+                    w.logger.Info("Send product successfully")
+                    break
                 }
-                fmt.Println(resp)
                 break
             }
         }
