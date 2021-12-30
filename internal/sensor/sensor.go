@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/mariuskimmina/supplywatch/pkg/backoff"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
 	"github.com/mariuskimmina/supplywatch/pkg/log"
 )
@@ -56,6 +57,10 @@ var (
 )
 
 func (s *Sensor) Start() {
+    var err error
+    var attempt int
+    var conn net.Conn
+
 	SeedRandom()
 	n := rand.Int() % len(SensorType)
 	sensorType := SensorType[n]
@@ -64,15 +69,24 @@ func (s *Sensor) Start() {
 		s.logger.Fatal("Failed to create ID for sensor")
 	}
 	warehouses := []string{
-		"warehouse_1:4444",
-		"warehouse_2:4445",
+		"warehouse1:4444",
+		"warehouse2:4444",
 	}
 	n = rand.Int() % len(warehouses)
 	warehouseAdr := warehouses[n]
-	conn, err := net.Dial("udp", warehouseAdr)
-	if err != nil {
-		s.logger.Error("Failed to dial the warehouse")
-	}
+
+
+    for {
+        time.Sleep(backoff.Default.Duration(attempt))
+        conn, err = net.Dial("udp", warehouseAdr)
+        if err != nil {
+            s.logger.Info("Failed to dial the warehouse, going to retry")
+            s.logger.Error(err)
+            attempt++
+            continue
+        }
+        break
+    }
 
 	var packetCounter = 0
 	for {

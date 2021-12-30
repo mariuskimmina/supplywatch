@@ -16,7 +16,7 @@ build-sensor:
 	docker build -f build/sensor/Dockerfile -t registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-g/sensor --build-arg project=./cmd/sensor .
 
 publish-image-sensor:
-	docker push registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-gr/sensor
+	docker push registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-g/sensor
 
 fmt:
 	go fmt ./...

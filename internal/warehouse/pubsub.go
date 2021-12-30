@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mariuskimmina/supplywatch/pkg/backoff"
 	"github.com/streadway/amqp"
 )
 
@@ -12,10 +13,20 @@ func (w *warehouse) SetupMessageQueue() {
     var wg sync.WaitGroup
     wg.Add(2)
 
-    connRabbit, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
-    if err != nil {
-        w.logger.Error(err)
-        w.logger.Fatal("Failed to connect to RabbitMQ")
+    var connRabbit *amqp.Connection
+    var err error
+
+    var attempt int
+    for {
+        time.Sleep(backoff.Default.Duration(attempt))
+        connRabbit, err = amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
+        if err != nil {
+            w.logger.Error(err)
+            w.logger.Error("Failed to connect to RabbitMQ")
+            attempt++
+            continue
+        }
+        break
     }
     w.logger.Info("Successfully Connected to RabbitMQ")
     defer connRabbit.Close()

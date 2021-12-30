@@ -3,11 +3,14 @@ package warehouse
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/mariuskimmina/supplywatch/pkg/backoff"
 )
 
 
@@ -24,16 +27,21 @@ const (
 
 func (w *warehouse) initDB()(){
     dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s port=%d", dbHost, dbUser, dbName, dbPassword, dbPort)
-    db, err := gorm.Open(postgres.Open(dbURI), &gorm.Config{})
-	if err != nil {
-        w.logger.Error(err)
-        w.logger.Fatal("Failed to connect to Database")
-	} else {
+    var attempt int
+    for {
+        time.Sleep(backoff.Default.Duration(attempt))
+        db, err := gorm.Open(postgres.Open(dbURI), &gorm.Config{})
+        if err != nil {
+            w.logger.Error(err)
+            w.logger.Error("Failed to connect to Database, going to retry")
+            attempt++
+            continue
+        }
         w.logger.Info("Successfully connected to Database")
+        db.AutoMigrate(&Product{})
+        w.DB = db
+        break
     }
-
-    db.AutoMigrate(&Product{})
-    w.DB = db
 }
 
 func (w *warehouse) setupProducts() error {
