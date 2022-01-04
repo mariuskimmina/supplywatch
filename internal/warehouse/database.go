@@ -74,7 +74,7 @@ func (w *warehouse) setupProducts() error {
         if err != nil {
             return err
         }
-        newProduct := &Product{Name: products[index], ID: id, Quantity: 0}
+        newProduct := &Product{Name: products[index], ID: id, Quantity: 5}
         w.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&newProduct)
         //w.DB.Create(&newProduct)
         Products = append(Products, newProduct)

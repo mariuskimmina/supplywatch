@@ -53,6 +53,11 @@ var (
 // The warehouse listens on a UPD Port to reiceive data from sensors
 // and it also listens on a TCP Port to handle HTTP requests
 func (w *warehouse) Start() {
+
+    // this channel is for publishing messages once the capacity of an item reaches zero
+    storageChan := make(chan string)
+    sendChan := make(chan string)
+
     w.initDB()
     sqlDB, err := w.DB.DB()
 	if err != nil {
@@ -78,7 +83,7 @@ func (w *warehouse) Start() {
 	}
 	defer udpConn.Close()
     go func() {
-        w.udpListen(udpConn)
+        w.udpListen(udpConn, storageChan)
         wg.Done()
     }()
 
@@ -95,7 +100,7 @@ func (w *warehouse) Start() {
 
     // RabbitMQ
     go func() {
-        w.SetupMessageQueue()
+        w.SetupMessageQueue(storageChan, sendChan)
         wg.Done()
     }()
 
@@ -122,7 +127,7 @@ func (w *warehouse) Start() {
     // GRPC Client starts here
     go func() {
         w.logger.Info("GRPC Client Starts")
-        w.grpcClient()
+        w.grpcClient(sendChan)
         wg.Done()
         w.logger.Info("GRPC Client Ends")
     }()

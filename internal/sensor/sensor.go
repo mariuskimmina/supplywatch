@@ -133,5 +133,5 @@ func SeedRandom() {
 // IncomingOrOutgoing creates a "random" boolean that is highly favoured to be true
 // this way we get a lot more incoming products than outgoing products which leads to less negative numbers
 func IncomingOrOutgoing() bool {
-    return rand.Float32() > 0.2
+    return rand.Float32() > 0.7
 }

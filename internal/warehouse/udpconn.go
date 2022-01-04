@@ -8,7 +8,7 @@ import (
 )
 
 // recvDataFromSensor handles incoming UPD Packets
-func (w *warehouse) udpListen(listen *net.UDPConn) {
+func (w *warehouse) udpListen(listen *net.UDPConn, storageChan chan string) {
     err := LoadProductsState()
     if err != nil {
         w.logger.Fatal("Failed load products")
@@ -52,7 +52,7 @@ func (w *warehouse) udpListen(listen *net.UDPConn) {
         if sensorMessage.Incoming {
             w.IncrementorCreateProduct(sensorMessage.Message)
         } else {
-            w.DecrementProduct(sensorMessage.Message)
+            w.DecrementProduct(sensorMessage.Message, storageChan)
         }
 
 		// to keep track of how many messages we have received form each sensor

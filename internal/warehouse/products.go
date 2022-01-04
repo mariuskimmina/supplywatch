@@ -3,7 +3,6 @@ package warehouse
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -25,13 +24,14 @@ var Products []*Product
 
 
 func (w *warehouse) IncrementorCreateProduct(name string) (error) {
-    w.logger.Infof("Incrementing quantity of %s", name)
+    //w.logger.Infof("Incrementing quantity of %s", name)
     productExists := false
 
     for _, product := range Products {
         if product.Name == name {
+            oldquantity := product.Quantity
             product.Increment()
-            w.logger.Infof("Updating database quantity of %s to %d", name, product.Quantity)
+            w.logger.Infof("Icrementing database quantity of %s from %d to %d", name, oldquantity, product.Quantity)
             w.DB.Model(&Product{}).Where("name = ?", product.Name).Update("quantity", product.Quantity)
             productExists = true
             break
@@ -44,16 +44,27 @@ func (w *warehouse) IncrementorCreateProduct(name string) (error) {
     return nil
 }
 
-func (w *warehouse) DecrementProduct(name string) (error) {
-    w.logger.Infof("Decrementing quantity of %s", name)
+func (w *warehouse) DecrementProduct(name string, storageChan chan <- string) (error) {
+    //w.logger.Infof("Decrementing quantity of %s", name)
     productExists := false
 
     for _, product := range Products {
         if product.Name == name {
+            oldquantity := product.Quantity
             product.Decrement()
-            w.logger.Infof("Updating database quantity of %s to %d", name, product.Quantity)
+            w.logger.Infof("Decrementing database quantity of %s from %d to %d", name, oldquantity, product.Quantity)
             w.DB.Model(&Product{}).Where("name = ?", product.Name).Update("quantity", product.Quantity)
             productExists = true
+            if product.Quantity == 0 {
+                // if the product quantity is zero, we send a request to the message queue so that another warehouse is hopefully
+                // going to send this product, the message send has to have the format productname:hostname
+                pname := product.Name
+                host, err := os.Hostname()
+                if err != nil {
+                    w.logger.Fatal("Failed to get hostname")
+                }
+                storageChan <- pname + ":" + host
+            }
             break
         }
     }
@@ -94,7 +105,7 @@ func (p *Product) Decrement() {
 
 
 func SaveProductsState() error {
-    fmt.Println("Saving Products")
+    //fmt.Println("Saving Products")
     jsonProducts, err := json.MarshalIndent(Products, "", "  ")
     if err != nil {
         return err
@@ -112,7 +123,7 @@ func SaveProductsState() error {
 }
 
 func LoadProductsState() error {
-    fmt.Println("Loading Products")
+    //fmt.Println("Loading Products")
     hostname, err := os.Hostname()
     if err != nil {
         return err

@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: supplywatch.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: warehouse1
+            port:
+              number: 8000
+      - path: /w2
+        pathType: Prefix
+        backend:
+          service:
+            name: warehouse2
+            port:
+              name: web

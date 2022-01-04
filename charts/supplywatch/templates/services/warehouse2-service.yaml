@@ -7,10 +7,14 @@ spec:
     app: warehouse2
   ports:
   - protocol: TCP
-    name: warehouse2-http
+    name: web
     port: 8000
     targetPort: 8000
   - protocol: TCP
-    name: warehouse2-grpc
+    name: grpc
     port: 6666
     targetPort: 6666
+  - protocol: UDP
+    name: udp
+    port: 4444
+    targetPort: 4444

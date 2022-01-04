@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 
 	pb "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc"
@@ -36,7 +37,7 @@ var (
     allOutgoingRequests []*pb.ReceivProductsRequest
 )
 
-func (w *warehouse) grpcClient() {
+func (w *warehouse) grpcClient(sendChan chan string) {
     var conn *grpc.ClientConn
     var err error
     for {
@@ -58,17 +59,26 @@ func (w *warehouse) grpcClient() {
     //defer cancel()
 
     for {
-        w.logger.Info("Sending a product")
+        w.logger.Info("Ready to send a product - waiting for trigger")
+        sendingProduct := <- sendChan
+        w.logger.Infof("Received a message [ %s ] shipping product if possible", sendingProduct)
+        s := strings.Split(sendingProduct, ":")
+        product := s[0]
+        warehouse := s[1]
         //choose a random product to ship to the other warehouse
-        SeedRandom()
-        n := rand.Int() % len(allProductNames)
-        productName := allProductNames[n]
+        // SeedRandom()
+        // n := rand.Int() % len(allProductNames)
+        productName := product
 
         // remove the product from this warehouse
         // then send it to the other warehouse via grpc
         for _, product := range Products {
             if product.Name == productName {
                 oldquantity := product.Quantity
+                if oldquantity <= 0 {
+                    w.logger.Infof("Unable to send %s to %s because there are 0 left in stock", productName, warehouse)
+                }
+                w.logger.Infof("Sending %s to %s", productName, warehouse)
                 product.Decrement()
                 w.logger.Infof("Removing %s from this warehouse, quantity drops from %d to %d", productName, oldquantity, product.Quantity)
                 w.DB.Model(&Product{}).Where("name = ?", product.Name).Update("quantity", product.Quantity)
