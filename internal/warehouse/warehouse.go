@@ -32,8 +32,6 @@ type Logger interface {
 	Fatalf(template string, args ...interface{})
 }
 
-// Create a new warehouse object
-// TODO: config.Config should also be replaced by a generic interface
 func NewWarehouse(logger Logger, config *config.WarehouseConfig, db *gorm.DB) *warehouse {
 	return &warehouse{
 		logger: logger,
@@ -58,7 +56,6 @@ func (w *warehouse) Start() {
 	storageChan := make(chan string)
 	sendChan := make(chan string)
 
-    //w.initDB()
     w.DB.AutoMigrate(&Product{})
 	sqlDB, err := w.DB.DB()
 	if err != nil {

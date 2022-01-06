@@ -1,12 +1,19 @@
 package warehouse
 
 import (
+	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/mariuskimmina/supplywatch/pkg/backoff"
 	"github.com/streadway/amqp"
+)
+
+const (
+    warehouse1Queue = "warehouse1Queue"
+    warehouse2Queue = "warehouse2Queue"
+    warehouse3Queue = "warehouse3Queue"
 )
 
 // Each warehouse is a subscriber and a publisher
@@ -39,8 +46,36 @@ func (w *warehouse) SetupMessageQueue(storageChan, sendChan chan string) {
 		w.logger.Fatal("Failed to setup a channel to RabbitMQ")
 	}
 	defer channel.Close()
+    host, err := os.Hostname()
+    if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("failed to get hostname")
+    }
+
+    // Shenanigans
+    // Each warehouse creates a queue for itself, based on its hostname
+    // otherQueues contains the names of all queues but the one of the current warehouse
+    // we will publish to otherQueues and subscribe to our own
+    var queueName string
+    var otherQueues []string
+    if strings.Contains(host, "warehouse1") {
+        queueName = warehouse1Queue
+    } else {
+        otherQueues = append(otherQueues, warehouse1Queue)
+    }
+    if strings.Contains(host, "warehouse2") {
+        queueName = warehouse2Queue
+    } else {
+        otherQueues = append(otherQueues, warehouse2Queue)
+    }
+    // if strings.Contains(host, "warehouse3") {
+    // queueName = warehouse3Queue
+    // } else {
+        // otherQueues = append(otherQueues, warehouse3Queue)
+    // }
+
 	_, err = channel.QueueDeclare(
-		"RequestProducts",
+		queueName,
 		false,
 		false,
 		false,
@@ -54,13 +89,13 @@ func (w *warehouse) SetupMessageQueue(storageChan, sendChan chan string) {
 
 	// Subscribe
 	go func() {
-		w.publishMessages(channel, storageChan)
+		w.publishMessages(channel, storageChan, otherQueues)
 		wg.Done()
 	}()
 
 	// Publish
 	go func() {
-		w.subscribeMessages(channel, sendChan)
+		w.subscribeMessages(channel, sendChan, queueName)
 		wg.Done()
 	}()
 
@@ -70,7 +105,7 @@ func (w *warehouse) SetupMessageQueue(storageChan, sendChan chan string) {
 // publishMessages waits for a message on the storageChan
 // when a product quantity drops to zero a message will be send to the message Queue
 // ideally another warehouse receives this message and sends some of that product
-func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string) {
+func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string, otherQueues []string) {
 	for {
 		w.logger.Info("Waiting for a product to drop to zero")
 
@@ -81,42 +116,46 @@ func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string) {
 		}
 
 		w.logger.Info("--------------------Sending to Queue!-------------------")
-		err := c.Publish(
-			"",
-			"RequestProducts",
-			false,
-			false,
-			amqp.Publishing{
-				ContentType: "text/plain",
-				Body:        []byte(zeroProduct),
-			},
-		)
-		if err != nil {
-			w.logger.Error(err)
-			w.logger.Fatal("Failed publish a Testmessage")
-		}
+        for _, queueName := range otherQueues {
+            err := c.Publish(
+                "",
+                queueName,
+                false,
+                false,
+                amqp.Publishing{
+                    ContentType: "text/plain",
+                    Body:        []byte(zeroProduct),
+                },
+            )
+            if err != nil {
+                w.logger.Error(err)
+                w.logger.Fatal("Failed publish a Testmessage")
+            }
+        }
 	}
 }
 
 //subscribeMessages subscribes to the RequestProducts queue and whenever a request for products comes in
 //it trys to initalize the transfer of this product
-func (w *warehouse) subscribeMessages(c *amqp.Channel, sendChan chan string) {
+func (w *warehouse) subscribeMessages(c *amqp.Channel, sendChan chan string, queueName string) {
 	var wg sync.WaitGroup
 	wg.Add(1)
-	w.logger.Info("Subscribe to RequestProducts queue!")
-	msgs, err := c.Consume(
-		"RequestProducts",
-		"",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		w.logger.Error(err)
-		w.logger.Fatal("Failed to subscribe to a Testmessage")
-	}
+    var msgs <-chan amqp.Delivery
+    var err error
+    msgs, err = c.Consume(
+        queueName,
+        "",
+        true,
+        false,
+        false,
+        false,
+        nil,
+    )
+    if err != nil {
+        w.logger.Error(err)
+        w.logger.Fatal("Failed to subscribe to a Testmessage")
+    }
+    w.logger.Infof("Subscribed to %s queue!", queueName)
 	//forever := make(chan bool)
 
 	//listen to incoming messages
