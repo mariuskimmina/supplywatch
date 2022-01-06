@@ -17,8 +17,6 @@ spec:
         - name: warehouse1
           image: registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-g/warehouse
           env:
-            - name: SW_DATABASE
-              value: database1
             - name: SW_UDPPORT
               value: "4444"
             - name: SW_TCPPORT

@@ -17,51 +17,50 @@ type Response struct {
 type ResponseOption func(*Response) error
 
 func WithHTTPVersion(version string) func(*Response) error {
-    return func(res *Response) error {
-        res.HTTPVersion = version
-        return nil
-    }
+	return func(res *Response) error {
+		res.HTTPVersion = version
+		return nil
+	}
 }
 
 func WithStatusCode(code int) func(*Response) error {
-    return func(res *Response) error {
-        res.statuscode = code
-        return nil
-    }
+	return func(res *Response) error {
+		res.statuscode = code
+		return nil
+	}
 }
 
 func WithReason(reason string) func(*Response) error {
-    return func(res *Response) error {
-        res.reason = reason
-        return nil
-    }
+	return func(res *Response) error {
+		res.reason = reason
+		return nil
+	}
 }
 
 func WithHeaders(headers string) func(*Response) error {
-    return func(res *Response) error {
-        res.headers = headers
-        return nil
-    }
+	return func(res *Response) error {
+		res.headers = headers
+		return nil
+	}
 }
 
 func WithBody(body []byte) func(*Response) error {
-    return func(res *Response) error {
-        res.body = body
-        return nil
-    }
+	return func(res *Response) error {
+		res.body = body
+		return nil
+	}
 }
 
 const (
-    HTTPResponseDefaultStatusCode int = 200
-    HTTPResponseDefaultHTTPVersion string = "HTTP/1.1"
-    HTTPResponseDefaultReason string = "OK\r\n"
-    HTTPResponseDefaultHeaders string = "\r\n"
+	HTTPResponseDefaultStatusCode  int    = 200
+	HTTPResponseDefaultHTTPVersion string = "HTTP/1.1"
+	HTTPResponseDefaultReason      string = "OK\r\n"
+	HTTPResponseDefaultHeaders     string = "\r\n"
 )
 
 var (
-    HTTPResponseDefaultBody []byte = []byte{}
+	HTTPResponseDefaultBody []byte = []byte{}
 )
-
 
 func NewResponse(opts ...ResponseOption) (res *Response, err error) {
 	response := &Response{
@@ -72,11 +71,11 @@ func NewResponse(opts ...ResponseOption) (res *Response, err error) {
 		body:        HTTPResponseDefaultBody,
 	}
 
-    for _, opt := range opts {
-        if err := opt(response); err != nil {
-            return &Response{}, fmt.Errorf("option failed %w", err)
-        }
-    }
+	for _, opt := range opts {
+		if err := opt(response); err != nil {
+			return &Response{}, fmt.Errorf("option failed %w", err)
+		}
+	}
 
 	return response, nil
 }

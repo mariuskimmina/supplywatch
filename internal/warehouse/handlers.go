@@ -10,7 +10,7 @@ import (
 
 	"gorm.io/gorm"
 
-    http "github.com/mariuskimmina/supplywatch/internal/warehouse/http"
+	http "github.com/mariuskimmina/supplywatch/internal/warehouse/http"
 )
 
 func (w *warehouse) tcpListen(tcpConn net.Listener, db *gorm.DB) {
@@ -36,10 +36,10 @@ func (w *warehouse) handleConnection(c net.Conn, db *gorm.DB) {
 	httpVersion := strings.TrimSuffix(requestData[2], "\n")
 
 	request, err := http.NewRequest(
-        http.WithMethod(requestData[0]),
-        http.WithPath(queryString[0]),
-        http.WithVersion(httpVersion),
-    )
+		http.WithMethod(requestData[0]),
+		http.WithPath(queryString[0]),
+		http.WithVersion(httpVersion),
+	)
 	if len(queryString) > 1 {
 		request.Query = queryString[1]
 	}
@@ -62,22 +62,22 @@ func (w *warehouse) handleWarehouseRequest(request *http.Request, c net.Conn, db
 	response, err := http.NewResponse()
 	if err != nil {
 		c.Write([]byte(err.Error()))
-        return
+		return
 	}
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
-    //products, err := GetAllProductsAsBytes()
-    if err != nil {
-		c.Write([]byte(err.Error()))
-        w.logger.Fatal("Failed to get all bytes")
-    }
-    var products []Product
-    db.Find(&products)
-    response.SetBody([]byte(fmt.Sprintf("%v", products)))
-    jsonProducts, err := json.MarshalIndent(products, " ", "")
+	//products, err := GetAllProductsAsBytes()
 	if err != nil {
 		c.Write([]byte(err.Error()))
-        return
+		w.logger.Fatal("Failed to get all bytes")
+	}
+	var products []Product
+	db.Find(&products)
+	response.SetBody([]byte(fmt.Sprintf("%v", products)))
+	jsonProducts, err := json.MarshalIndent(products, " ", "")
+	if err != nil {
+		c.Write([]byte(err.Error()))
+		return
 	}
 	//byteResponse, _ := ResponseToBytes(jsonProducts)
 	c.Write(jsonProducts)
@@ -85,8 +85,8 @@ func (w *warehouse) handleWarehouseRequest(request *http.Request, c net.Conn, db
 
 func (w *warehouse) handleRessourceNotFound(request *http.Request, c net.Conn) {
 	response, err := http.NewResponse(
-        http.WithStatusCode(404),
-    )
+		http.WithStatusCode(404),
+	)
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
@@ -109,7 +109,7 @@ func (w *warehouse) handleGetAllSensorData(request *http.Request, c net.Conn) {
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
 
-	allLogData, err := GetAllSensorLogs(w.config.Warehouse.LogFileDir)
+	allLogData, err := GetAllSensorLogs(w.config.LogFileDir)
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to read all logs")
@@ -129,7 +129,7 @@ func (w *warehouse) handleGetOneSensorData(request *http.Request, c net.Conn) {
 	response.SetHeader("Server", "Supplywatch")
 	queryValue := strings.Split(request.Query, "=")
 
-	sensorData, err := GetOneSensorLogs(w.config.Warehouse.LogFileDir, queryValue[1])
+	sensorData, err := GetOneSensorLogs(w.config.LogFileDir, queryValue[1])
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to read all logs")
@@ -160,7 +160,7 @@ func (w *warehouse) handleGetSensorHistory(request *http.Request, c net.Conn) {
 	if err != nil {
 		w.logger.Fatal("Failed to access hostname")
 	}
-	logfileName := w.config.Warehouse.LogFileDir + hostname + "-" + queryValue[1]
+	logfileName := w.config.LogFileDir + hostname + "-" + queryValue[1]
 	sensorData, err := ReadLogsFromDate(logfileName)
 	if err != nil {
 		response.SetHeader("Content-Type", "text/plain")

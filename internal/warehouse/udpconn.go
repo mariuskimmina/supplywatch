@@ -9,15 +9,15 @@ import (
 
 // recvDataFromSensor handles incoming UPD Packets
 func (w *warehouse) udpListen(listen *net.UDPConn, storageChan chan string) {
-    err := LoadProductsState()
-    if err != nil {
-        w.logger.Fatal("Failed load products")
-    }
+	err := LoadProductsState()
+	if err != nil {
+		w.logger.Fatal("Failed load products")
+	}
 	hostname, err := os.Hostname()
 	if err != nil {
 		w.logger.Fatal("Failed to access hostname")
 	}
-	logfileName := w.config.Warehouse.LogFileDir + hostname + "-" + todayTimeStamp
+	logfileName := w.config.LogFileDir + hostname + "-" + todayTimeStamp
 	logfile := w.NewLogFile(logfileName)
 	defer logfile.Close()
 	logcount, err := os.Create("/tmp/logcount")
@@ -40,20 +40,20 @@ func (w *warehouse) udpListen(listen *net.UDPConn, storageChan chan string) {
 			w.logger.Error("Error unmarshaling sensor data: ", err)
 			return
 		}
-        w.logger.Infof("Received %s, Incoming: %v", sensorMessage.Message, sensorMessage.Incoming)
+		w.logger.Infof("Received %s, Incoming: %v", sensorMessage.Message, sensorMessage.Incoming)
 		logentry := &LogEntry{
 			SensorType: sensorMessage.SensorType,
 			SensorID:   sensorMessage.SensorID,
 			Message:    sensorMessage.Message,
-			Incoming:    sensorMessage.Incoming,
+			Incoming:   sensorMessage.Incoming,
 			IP:         remoteaddr.IP,
 			Port:       remoteaddr.Port,
 		}
-        if sensorMessage.Incoming {
-            w.IncrementorCreateProduct(sensorMessage.Message)
-        } else {
-            w.DecrementProduct(sensorMessage.Message, storageChan)
-        }
+		if sensorMessage.Incoming {
+			w.IncrementorCreateProduct(sensorMessage.Message)
+		} else {
+			w.DecrementProduct(sensorMessage.Message, storageChan)
+		}
 
 		// to keep track of how many messages we have received form each sensor
 		// check if we know any sensor yet, if not create a new one
@@ -104,6 +104,6 @@ func (w *warehouse) udpListen(listen *net.UDPConn, storageChan chan string) {
 		// /tmp/logcount file with the new counter - this way the file always contains only 1 line for
 		// each Sensor with updated values
 		logcount.WriteAt(jsonLogCount, 0)
-        SaveProductsState()
+		SaveProductsState()
 	}
 }

@@ -1,30 +1,41 @@
 package config
 
 import (
-	"github.com/kelseyhightower/envconfig"
 	"github.com/spf13/viper"
 )
 
-type Config struct {
-	Warehouse struct {
-		ListenIP   string `yaml:"listenIP" envconfig:"SW_LISTENIP"`
-		UDPPort    int    `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
-		TCPPort    int    `yaml:"tcpPort" envconfig:"SW_TCP_PORT"`
-		LogFileDir string `yaml:"logFileBase" envconfig:"SW_LOG_FILE_DIR"`
-	} `yaml:"warehouse"`
-	SensorWarehouse struct {
-		UDPPort      int `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
-		Delay        int `yaml:"delay" envconfig:"SW_DELAY"`
-		NumOfPackets int `yaml:"numOfPackets" envconfig:"SW_NUMOFPACKETS"`
-	} `yaml:"sensorWarehouse"`
+// type Config struct {
+// Warehouse struct {
+// ListenIP   string `yaml:"listenIP" envconfig:"SW_LISTENIP"`
+// UDPPort    int    `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
+// TCPPort    int    `yaml:"tcpPort" envconfig:"SW_TCP_PORT"`
+// LogFileDir string `yaml:"logFileBase" envconfig:"SW_LOG_FILE_DIR"`
+// } `yaml:"warehouse"`
+// SensorWarehouse struct {
+// UDPPort      int `yaml:"udpPort" envconfig:"SW_UDP_PORT"`
+// Delay        int `yaml:"delay" envconfig:"SW_DELAY"`
+// NumOfPackets int `yaml:"numOfPackets" envconfig:"SW_NUMOFPACKETS"`
+// } `yaml:"sensorWarehouse"`
+// }
+
+type WarehouseConfig struct {
+	ListenIP   string `mapstructure:"SW_LISTEN_IP"`
+	UDPPort    string `mapstructure:"SW_UDP_PORT"`
+	TCPPort    string `mapstructure:"SW_TCP_PORT"`
+	GRPCPort   string `mapstructure:"SW_GRPC_PORT"`
+	DBUser     string `mapstructure:"SW_DATABASE_USER"`
+	DBDatabase string `mapstructure:"SW_DATABASE_DB"`
+	DBPassword string `mapstructure:"SW_DATABASE_PASSWORD"`
+	DBPort     int    `mapstructure:"SW_DATABASE_PORT"`
+	LogFileDir string `mapstructure:"SW_LOG_FILE_DIR"`
 }
 
 // LoadConfig first gets all values from the config.yml file
 // if the environment variables are set, they will overrider the config
-func LoadConfig(path string) (config Config, err error) {
+func LoadWarehouseConfig(path string) (config WarehouseConfig, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("config.yml")
-	viper.SetConfigType("yaml")
+	viper.SetConfigName("warehouse")
+	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
 
@@ -34,6 +45,6 @@ func LoadConfig(path string) (config Config, err error) {
 	}
 
 	err = viper.Unmarshal(&config)
-	err = envconfig.Process("", &config)
+	//err = envconfig.Process("", &config)
 	return
 }

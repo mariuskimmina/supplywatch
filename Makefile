@@ -8,6 +8,10 @@ run-warehouse:
 	docker run -p "4444:4444/udp" --name supplywatch_warehouse --rm  supplywatch_warehouse:latest
 
 # docker build -f build/sensor/Dockerfile -t supplywatch_sensor --build-arg project=./cmd/sensor/ .
+#
+warehouse:
+	docker build -f build/warehouse/Dockerfile -t registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-g/warehouse --build-arg project=./cmd/warehouse .
+	docker push registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-g/warehouse
 
 run-sensor:
 	docker run --name supplywatch_sensor --rm  supplywatch_sensor_warehouse:latest

@@ -18,11 +18,11 @@ import (
 // LogEntry represents a new entry in the log file
 type LogEntry struct {
 	SensorID   string `json:"sensor_id"`
-	SensorType string    `json:"sensor_type"`
-	Message    string    `json:"message"`
-	Incoming   bool    `json:"incoming"`
-	IP         net.IP    `json:"ip"`
-	Port       int       `json:"port"`
+	SensorType string `json:"sensor_type"`
+	Message    string `json:"message"`
+	Incoming   bool   `json:"incoming"`
+	IP         net.IP `json:"ip"`
+	Port       int    `json:"port"`
 }
 
 // LogFile is a wrapper around os.File which represents our log file
@@ -40,15 +40,15 @@ func (l *LogFile) addLog(log LogEntry) {
 // thus new data will be appended to an existing log file
 func (w *warehouse) NewLogFile(path string) *LogFile {
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-        err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
+		err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
 		if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to create LogFile at os.MkdirAll")
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to create LogFile at os.MkdirAll")
 		}
 		file, err := os.Create(path)
 		if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to create LogFile at os.Create")
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to create LogFile at os.Create")
 		}
 		logFile := &LogFile{
 			File: file,
@@ -56,36 +56,36 @@ func (w *warehouse) NewLogFile(path string) *LogFile {
 
 		jsonStruct, err := json.MarshalIndent(&logFile, "", "  ")
 		if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to create LogFile at MarshalIndent")
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to create LogFile at MarshalIndent")
 		}
 		logFile.WriteString(string(jsonStruct))
 		return logFile
 	} else {
 		file, err := os.OpenFile(path, os.O_WRONLY, 0644)
 		if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to create LogFile at os.OpenFile")
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to create LogFile at os.OpenFile")
 		}
 		logFile := &LogFile{
 			File: file,
 		}
 		filecontent, err := ioutil.ReadFile(path)
 		if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to create LogFile at ioutil.ReadFile")
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to create LogFile at ioutil.ReadFile")
 		}
 		err = json.Unmarshal(filecontent, &logFile)
 		if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to create LogFile at Unmarshal")
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to create LogFile at Unmarshal")
 		}
 
 		// this should not be done
 		jsonStruct, err := json.MarshalIndent(&logFile, "", "  ")
 		if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to create LogFile at MarshalIndent (2)")
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to create LogFile at MarshalIndent (2)")
 		}
 		logFile.WriteString(string(jsonStruct))
 

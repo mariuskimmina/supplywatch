@@ -21,9 +21,9 @@ type Sensor struct {
 
 type Message struct {
 	SensorID    string `json:"sensor_id"`
-	SensorType  string    `json:"sensor_type"`
-	MessageBody string    `json:"message"`
-	Incoming bool    `json:"incoming"`
+	SensorType  string `json:"sensor_type"`
+	MessageBody string `json:"message"`
+	Incoming    bool   `json:"incoming"`
 }
 
 func NewSensor(logger *log.Logger, config *config.Config) *Sensor {
@@ -50,16 +50,16 @@ var (
 		"BarcodeReader",
 		"RFID-Reader",
 	}
-    Incoming = []bool{
-        true,
-        false,
-    }
+	Incoming = []bool{
+		true,
+		false,
+	}
 )
 
 func (s *Sensor) Start() {
-    var err error
-    var attempt int
-    var conn net.Conn
+	var err error
+	var attempt int
+	var conn net.Conn
 
 	SeedRandom()
 	n := rand.Int() % len(SensorType)
@@ -75,36 +75,35 @@ func (s *Sensor) Start() {
 	n = rand.Int() % len(warehouses)
 	warehouseAdr := warehouses[n]
 
-
-    for {
-        time.Sleep(backoff.Default.Duration(attempt))
-        conn, err = net.Dial("udp", warehouseAdr)
-        if err != nil {
-            s.logger.Info("Failed to dial the warehouse, going to retry")
-            s.logger.Error(err)
-            attempt++
-            continue
-        }
-        break
-    }
+	for {
+		time.Sleep(backoff.Default.Duration(attempt))
+		conn, err = net.Dial("udp", warehouseAdr)
+		if err != nil {
+			s.logger.Info("Failed to dial the warehouse, going to retry")
+			s.logger.Error(err)
+			attempt++
+			continue
+		}
+		break
+	}
 
 	var packetCounter = 0
 	for {
 		n = rand.Int() % len(products)
-        incoming := IncomingOrOutgoing()
+		incoming := IncomingOrOutgoing()
 		product := products[n]
 		message := Message{
 			SensorID:    sensorID,
 			SensorType:  sensorType,
 			MessageBody: product,
-            Incoming:   incoming,
+			Incoming:    incoming,
 		}
 		jsonMessage, err := json.Marshal(message)
 
 		if err != nil {
 			s.logger.Error("Failed to convert message to json")
 		}
-        s.logger.Infof("Sending %s, Incoming: %v", product, incoming)
+		s.logger.Infof("Sending %s, Incoming: %v", product, incoming)
 		conn.Write([]byte(jsonMessage))
 
 		// If NumOfPackets is not 0 we stop sending once the NumOfPackets has been reached
@@ -133,5 +132,5 @@ func SeedRandom() {
 // IncomingOrOutgoing creates a "random" boolean that is highly favoured to be true
 // this way we get a lot more incoming products than outgoing products which leads to less negative numbers
 func IncomingOrOutgoing() bool {
-    return rand.Float32() > 0.7
+	return rand.Float32() > 0.7
 }
