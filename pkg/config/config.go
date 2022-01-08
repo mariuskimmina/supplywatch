@@ -30,6 +30,11 @@ type WarehouseConfig struct {
 	LogFileDir string `mapstructure:"SW_LOG_FILE_DIR"`
 }
 
+type SensorConfig struct {
+    Delay int
+    NumberOfPackets int
+}
+
 // LoadConfig first gets all values from the config.yml file
 // if the environment variables are set, they will overrider the config
 func LoadWarehouseConfig(path string) (config WarehouseConfig, err error) {
@@ -45,6 +50,21 @@ func LoadWarehouseConfig(path string) (config WarehouseConfig, err error) {
 	}
 
 	err = viper.Unmarshal(&config)
-	//err = envconfig.Process("", &config)
+	return
+}
+
+func LoadSensorConfig(path string) (config SensorConfig, err error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigName("sensor")
+	viper.SetConfigType("env")
+
+	viper.AutomaticEnv()
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		return
+	}
+
+	err = viper.Unmarshal(&config)
 	return
 }

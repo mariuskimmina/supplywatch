@@ -8,9 +8,10 @@ import (
 
 func main() {
 	logger := log.NewLogger()
-	config, err := config.LoadConfig(".")
+	config, err := config.LoadSensorConfig("./configurations")
 	if err != nil {
-		logger.Fatalf("Failed to load warehouse configuration: %v", err)
+		logger.Error(err)
+		logger.Fatal("Failed to load warehouse configuration")
 	}
 	sensor := sensor.NewSensor(logger, &config)
 

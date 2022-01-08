@@ -16,7 +16,7 @@ import (
 
 type Sensor struct {
 	logger *log.Logger
-	config *config.Config
+	config *config.SensorConfig
 }
 
 type Message struct {
@@ -26,7 +26,7 @@ type Message struct {
 	Incoming    bool   `json:"incoming"`
 }
 
-func NewSensor(logger *log.Logger, config *config.Config) *Sensor {
+func NewSensor(logger *log.Logger, config *config.SensorConfig) *Sensor {
 	return &Sensor{
 		logger: logger,
 		config: config,
@@ -107,14 +107,14 @@ func (s *Sensor) Start() {
 		conn.Write([]byte(jsonMessage))
 
 		// If NumOfPackets is not 0 we stop sending once the NumOfPackets has been reached
-		if s.config.SensorWarehouse.NumOfPackets != 0 {
+		if s.config.NumberOfPackets != 0 {
 			packetCounter += 1
-			if packetCounter == s.config.SensorWarehouse.NumOfPackets {
+			if packetCounter == s.config.NumberOfPackets {
 				break
 			}
 		}
 
-		time.Sleep(time.Duration(s.config.SensorWarehouse.Delay) * time.Millisecond)
+		time.Sleep(time.Duration(s.config.Delay) * time.Millisecond)
 	}
 }
 
@@ -132,5 +132,5 @@ func SeedRandom() {
 // IncomingOrOutgoing creates a "random" boolean that is highly favoured to be true
 // this way we get a lot more incoming products than outgoing products which leads to less negative numbers
 func IncomingOrOutgoing() bool {
-	return rand.Float32() > 0.7
+	return rand.Float32() > 0.5
 }

@@ -22,7 +22,6 @@ WORKDIR /dist
 
 # Copy the build artifacts from the previous stage
 COPY --from=builder /build/service .
-COPY --from=builder /build/config.yml .
 COPY --from=builder /build/configurations/ ./configurations/
 
 # Run the executable

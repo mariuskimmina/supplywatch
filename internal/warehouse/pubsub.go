@@ -52,7 +52,6 @@ func (w *warehouse) SetupMessageQueue(storageChan, sendChan chan string) {
         w.logger.Fatal("failed to get hostname")
     }
 
-    // Shenanigans
     // Each warehouse creates a queue for itself, based on its hostname
     // otherQueues contains the names of all queues but the one of the current warehouse
     // we will publish to otherQueues and subscribe to our own
