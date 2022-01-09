@@ -71,6 +71,20 @@ func (w *warehouse) HandleProduct(product *domain.ReceivedProduct, storageChan c
     return nil
 }
 
+func (w *warehouse) AllProducts() (domain.Products, error) {
+    var products []*domain.Product
+	w.DB.Find(&products)
+    return products, nil
+}
+
+func (w *warehouse) SensorLogByID() (error) {
+    return nil
+}
+
+func (w *warehouse) ProductByID() error {
+    return nil
+}
+
 func (w *warehouse) IncrementorCreateProduct(name string) error {
 	//w.logger.Infof("Incrementing quantity of %s", name)
 	productExists := false

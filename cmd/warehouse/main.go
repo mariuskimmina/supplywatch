@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/mariuskimmina/supplywatch/internal/tcp"
 	"github.com/mariuskimmina/supplywatch/internal/warehouse"
 	"github.com/mariuskimmina/supplywatch/pkg/backoff"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
@@ -20,6 +22,8 @@ var (
 )
 
 func main() {
+	var wg sync.WaitGroup
+	wg.Add(2)
 	host, err := os.Hostname()
 	logger := log.NewLogger()
 	logger.Infof("Warehouse starting, hostname: %s", host)
@@ -47,7 +51,18 @@ func main() {
 	logger.Infof(dbURI)
 	db := dbConnect(dbURI)
 	warehouse := warehouse.NewWarehouse(logger, &config, db)
-	warehouse.Start()
+    go func() {
+        logger.Info("Starting Warehouse")
+        warehouse.Start()
+        wg.Done()
+    }()
+    tcpServer, err := tcp.NewTCPServer(warehouse)
+    go func() {
+        logger.Info("Starting TCP Server")
+        tcpServer.Listen()
+        wg.Done()
+    }()
+    wg.Wait()
 }
 
 func dbConnect(dbURI string) *gorm.DB {

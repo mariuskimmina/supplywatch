@@ -10,6 +10,7 @@ import (
 	"github.com/mariuskimmina/supplywatch/internal/domain"
 	pb "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc"
 	"github.com/mariuskimmina/supplywatch/internal/warehouse/udp"
+	//"github.com/mariuskimmina/supplywatch/internal/tcp"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
@@ -59,7 +60,8 @@ func (w *warehouse) Start() {
 	sendChan := make(chan string)
     receivProdcutChan := make(chan *domain.ReceivedProduct)
 
-    w.DB.AutoMigrate(&Product{})
+    w.DB.AutoMigrate(&domain.Product{})
+    //w.DB.AutoMigrate(&Product{})
 	sqlDB, err := w.DB.DB()
 	if err != nil {
 		w.logger.Error(err)
@@ -95,29 +97,6 @@ func (w *warehouse) Start() {
             w.HandleProduct(newProduct, storageChan)
         }
     }()
-
-
-	//udpConn, err := setupUDPConn()
-	//if err != nil {
-		//w.logger.Error(err)
-		//w.logger.Fatal("Failed to setup UPD Listener")
-	//}
-	//defer udpConn.Close()
-	//go func() {
-		//w.udpListen(udpConn, storageChan)
-		//wg.Done()
-	//}()
-
-	tcpConn, err := setupTCPConn()
-	if err != nil {
-		w.logger.Error(err)
-		w.logger.Fatal("Failed to setup TCP Listener")
-	}
-	defer tcpConn.Close()
-	go func() {
-		w.tcpListen(tcpConn, w.DB)
-		wg.Done()
-	}()
 
 	// RabbitMQ
 	go func() {
