@@ -7,7 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mariuskimmina/supplywatch/internal/domain"
 	pb "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc"
+	"github.com/mariuskimmina/supplywatch/internal/warehouse/udp"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
@@ -55,6 +57,7 @@ func (w *warehouse) Start() {
 	// this channel is for publishing messages once the capacity of an item reaches zero
 	storageChan := make(chan string)
 	sendChan := make(chan string)
+    receivProdcutChan := make(chan *domain.ReceivedProduct)
 
     w.DB.AutoMigrate(&Product{})
 	sqlDB, err := w.DB.DB()
@@ -73,16 +76,37 @@ func (w *warehouse) Start() {
 
 	var wg sync.WaitGroup
 	wg.Add(4)
-	udpConn, err := setupUDPConn()
+
+    udpServer, err := udp.NewUDPServer()
 	if err != nil {
 		w.logger.Error(err)
-		w.logger.Fatal("Failed to setup UPD Listener")
+		w.logger.Fatal("Failed to create UPD Server")
 	}
-	defer udpConn.Close()
-	go func() {
-		w.udpListen(udpConn, storageChan)
+    go func() {
+        w.logger.Info("Starting UDP Server")
+        udpServer.Listen(receivProdcutChan)
 		wg.Done()
-	}()
+    }()
+
+    go func() {
+        for {
+            newProduct := <- receivProdcutChan
+            w.logger.Infof("Received new product from udp server: %s", newProduct.ProductName)
+            w.HandleProduct(newProduct, storageChan)
+        }
+    }()
+
+
+	//udpConn, err := setupUDPConn()
+	//if err != nil {
+		//w.logger.Error(err)
+		//w.logger.Fatal("Failed to setup UPD Listener")
+	//}
+	//defer udpConn.Close()
+	//go func() {
+		//w.udpListen(udpConn, storageChan)
+		//wg.Done()
+	//}()
 
 	tcpConn, err := setupTCPConn()
 	if err != nil {
@@ -129,6 +153,7 @@ func (w *warehouse) Start() {
 	}()
 	wg.Wait()
 }
+
 
 func setupTCPConn() (net.Listener, error) {
 	var tcpConn net.Listener

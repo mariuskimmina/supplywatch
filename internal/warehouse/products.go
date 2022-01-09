@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm/clause"
+	"github.com/mariuskimmina/supplywatch/internal/domain"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Product struct {
@@ -59,6 +60,15 @@ func (w *warehouse) setupProducts() error {
 		Products = append(Products, newProduct)
 	}
 	return nil
+}
+
+func (w *warehouse) HandleProduct(product *domain.ReceivedProduct, storageChan chan<- string) error {
+    if product.Incoming {
+        w.IncrementorCreateProduct(product.ProductName)
+    } else {
+        w.DecrementProduct(product.ProductName, storageChan)
+    }
+    return nil
 }
 
 func (w *warehouse) IncrementorCreateProduct(name string) error {
@@ -181,3 +191,4 @@ func LoadProductsState() error {
 	json.Unmarshal(jsonProducts, &Products)
 	return nil
 }
+
