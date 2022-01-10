@@ -77,7 +77,7 @@ func (s udpServer) Listen(c chan *domain.ReceivedProduct) error {
 		if err != nil {
             return fmt.Errorf("Error marshaling log data: %v", err)
 		}
-        f.WriteString(string(logjson) + "\n")
+        f.WriteString(string(logjson) + ",\n")
         fmt.Println("Sending Product to channel!")
         c <- &domain.ReceivedProduct{
             ProductName: sensorMessage.Message,

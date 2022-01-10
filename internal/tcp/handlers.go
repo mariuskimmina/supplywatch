@@ -15,6 +15,7 @@ func (s *tcpServer) handleWarehouseRequest(request *http.Request, c net.Conn) {
 		c.Write([]byte(err.Error()))
 		return
 	}
+	response.SetHeader("Access-Control-Allow-Origin", "*")
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
 	//products, err := GetAllProductsAsBytes()
@@ -28,7 +29,7 @@ func (s *tcpServer) handleWarehouseRequest(request *http.Request, c net.Conn) {
 	}
 	//db.Find(&products)
 	response.SetBody([]byte(fmt.Sprintf("%v", products)))
-	jsonProducts, err := json.MarshalIndent(products, " ", "")
+	jsonProducts, err := json.Marshal(products)
 	if err != nil {
 		c.Write([]byte(err.Error()))
 		return
@@ -68,7 +69,13 @@ func (s *tcpServer) handleGetAllSensorData(request *http.Request, c net.Conn) {
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
-    logDataList := string("[\n" + string(allLogData) + "]\n")
+
+    // json does not allow a , after the last entry in a list, thus we remove it here
+    if len(allLogData) > 0 {
+        allLogData = allLogData[:len(allLogData)-2]
+    }
+
+    logDataList := string("[\n" + string(allLogData) + "\n]")
 	response.SetBody([]byte(logDataList))
 	byteResponse, _ := http.ResponseToBytes(response)
 	c.Write(byteResponse)

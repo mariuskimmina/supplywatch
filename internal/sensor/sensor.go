@@ -132,7 +132,7 @@ func (s *Sensor) Start() {
 		if err != nil {
             s.logger.Fatalf("Error marshaling log data: %v", err)
 		}
-        f.WriteString(string(logjson) + "\n")
+        f.WriteString(string(logjson) + ",\n")
 
 		// If NumOfPackets is not 0 we stop sending once the NumOfPackets has been reached
 		if s.config.NumberOfPackets != 0 {
