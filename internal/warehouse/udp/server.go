@@ -43,7 +43,7 @@ func NewUDPServer() (*udpServer, error) {
 }
 
 
-func (s udpServer) Listen(c chan *domain.ReceivedProduct) error {
+func (s udpServer) Listen(c chan *domain.InOutProduct) error {
     fmt.Println("Hello From UDP Server")
     err := os.MkdirAll(logFileDir, 0644)
     if err != nil {
@@ -78,11 +78,11 @@ func (s udpServer) Listen(c chan *domain.ReceivedProduct) error {
             return fmt.Errorf("Error marshaling log data: %v", err)
 		}
         f.WriteString(string(logjson) + ",\n")
-        fmt.Println("Sending Product to channel!")
-        c <- &domain.ReceivedProduct{
+        c <- &domain.InOutProduct{
             ProductName: sensorMessage.Message,
             Incoming: sensorMessage.Incoming,
             Amount: 1,
+            Reason: "Sensor",
         }
 	}
 }

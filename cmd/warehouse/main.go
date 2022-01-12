@@ -62,6 +62,14 @@ func main() {
         tcpServer.Listen()
         wg.Done()
     }()
+
+    //grpcServer := grpc.NewServer(warehouse)
+	//pb.RegisterProductServiceServer(grpcServer, warehouse)
+    //go func() {
+        //logger.Info("Starting GRPC Server")
+        //tcpServer.Listen()
+        //wg.Done()
+    //}()
     wg.Wait()
 }
 

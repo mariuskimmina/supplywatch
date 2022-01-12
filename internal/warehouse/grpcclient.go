@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	pb "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc"
+	"github.com/mariuskimmina/supplywatch/internal/pb"
 	"google.golang.org/grpc"
 )
 

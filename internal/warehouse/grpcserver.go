@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	pb "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc"
+	"github.com/mariuskimmina/supplywatch/internal/pb"
 )
 
 //type ProductGrpcServer struct {

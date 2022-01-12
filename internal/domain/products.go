@@ -1,14 +1,19 @@
 package domain
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+
+	"github.com/mariuskimmina/supplywatch/internal/pb"
 )
 
-type ReceivedProduct struct {
+type InOutProduct struct {
     ProductName string
     Incoming    bool
     Amount      int
+    Reason      string
 }
 
 type Product struct {
@@ -29,8 +34,15 @@ type SensorLog struct {
 	Incoming   bool   `json:"incoming"`
 }
 
+type ShippingLog struct {
+	ShippingProductID   string `json:"shipping_product_id"`
+	ShippingProductName string `json:"shipping_product_name"`
+}
+
 type Warehouse interface {
     AllProducts() (Products, error)
     ProductByID() error
     AllSensorLogs() ([]byte, error)
+    GetAllProducts(ctx context.Context, req *pb.GetAllProductsRequest) (response *pb.GetAllProductsResponse, err error)
+    ReceivProducts(ctx context.Context, req *pb.ReceivProductsRequest) (*pb.ReceivProductsResponse, error)
 }

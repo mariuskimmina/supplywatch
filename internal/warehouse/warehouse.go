@@ -8,9 +8,13 @@ import (
 	"time"
 
 	"github.com/mariuskimmina/supplywatch/internal/domain"
-	pb "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc"
+	"github.com/mariuskimmina/supplywatch/internal/pb"
+	gclient "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc/client"
+	gserver "github.com/mariuskimmina/supplywatch/internal/warehouse/grpc/server"
 	"github.com/mariuskimmina/supplywatch/internal/warehouse/udp"
+
 	//"github.com/mariuskimmina/supplywatch/internal/tcp"
+	"github.com/mariuskimmina/supplywatch/pkg/backoff"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
@@ -58,7 +62,7 @@ func (w *warehouse) Start() {
 	// this channel is for publishing messages once the capacity of an item reaches zero
 	storageChan := make(chan string)
 	sendChan := make(chan string)
-    receivProdcutChan := make(chan *domain.ReceivedProduct)
+    inOutProductChan := make(chan *domain.InOutProduct)
 
     w.DB.AutoMigrate(&domain.Product{})
     //w.DB.AutoMigrate(&Product{})
@@ -86,14 +90,20 @@ func (w *warehouse) Start() {
 	}
     go func() {
         w.logger.Info("Starting UDP Server")
-        udpServer.Listen(receivProdcutChan)
+        udpServer.Listen(inOutProductChan)
 		wg.Done()
     }()
 
     go func() {
         for {
-            newProduct := <- receivProdcutChan
-            w.logger.Infof("Received new product from udp server: %s", newProduct.ProductName)
+            newProduct := <- inOutProductChan
+            var inOut string
+            if newProduct.Incoming {
+                inOut = "coming in from"
+            } else {
+                inOut = "leaving because"
+            }
+            w.logger.Infof("Product %s is %s %s ", newProduct.ProductName, inOut, newProduct.Reason)
             w.HandleProduct(newProduct, storageChan)
         }
     }()
@@ -104,29 +114,67 @@ func (w *warehouse) Start() {
 		wg.Done()
 	}()
 
-	// GRPC part
-	tcpConnGrpc, err := setupTCPConnGRPC()
+	// GRPC Server part
+    gserver, err := gserver.New(inOutProductChan)
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to setup TCP Listener")
 	}
-	defer tcpConnGrpc.Close()
 	grpcServer := grpc.NewServer()
-	pb.RegisterProductServiceServer(grpcServer, w)
+	pb.RegisterProductServiceServer(grpcServer, gserver)
 	go func() {
 		w.logger.Info("GRPC Server Starts")
-		if err := grpcServer.Serve(tcpConnGrpc); err != nil {
+		if err := grpcServer.Serve(gserver.Conn); err != nil {
 			w.logger.Fatal("Failed to setup GRPC Listener")
 		}
 		wg.Done()
 		w.logger.Info("GRPC Server Ends")
 	}()
+	//tcpConnGrpc, err := setupTCPConnGRPC()
+	//if err != nil {
+		//w.logger.Error(err)
+		//w.logger.Fatal("Failed to setup TCP Listener")
+	//}
+	//defer tcpConnGrpc.Close()
+
+	//grpcServer := grpc.NewServer()
+	//pb.RegisterProductServiceServer(grpcServer, w)
+	//go func() {
+		//w.logger.Info("GRPC Server Starts")
+		//if err := grpcServer.Serve(tcpConnGrpc); err != nil {
+			//w.logger.Fatal("Failed to setup GRPC Listener")
+		//}
+		//wg.Done()
+		//w.logger.Info("GRPC Server Ends")
+	//}()
+
 	// wait a bit before we start the client
 	time.Sleep(8 * time.Second)
 	// GRPC Client starts here
+
+	var conn *grpc.ClientConn
+	var attempt int
+	//var err error
+	for {
+		time.Sleep(backoff.Default.Duration(attempt))
+		conn, err = grpc.Dial(address, grpc.WithInsecure())
+		if err != nil {
+			attempt++
+            w.logger.Infof("Failed to Connect via GRPC, trying again in %d seconds\n", backoff.Default.Duration(attempt))
+			continue
+		}
+		break
+	}
+	defer conn.Close()
+    gc, err := gclient.New(conn)
+	if err != nil {
+		w.logger.Error(err)
+		w.logger.Fatal("Failed to setup GRPC Client")
+	}
 	go func() {
 		w.logger.Info("GRPC Client Starts")
-		w.grpcClient(sendChan)
+		//w.grpcClient(sendChan)
+        gc.Start(sendChan, inOutProductChan)
 		wg.Done()
 		w.logger.Info("GRPC Client Ends")
 	}()

@@ -62,7 +62,7 @@ func (w *warehouse) setupProducts() error {
 	return nil
 }
 
-func (w *warehouse) HandleProduct(product *domain.ReceivedProduct, storageChan chan<- string) error {
+func (w *warehouse) HandleProduct(product *domain.InOutProduct, storageChan chan<- string) error {
     if product.Incoming {
         w.IncrementorCreateProduct(product.ProductName)
     } else {
@@ -119,13 +119,14 @@ func (w *warehouse) DecrementProduct(name string, storageChan chan<- string) err
 			productExists = true
 			if product.Quantity == 0 {
 				// if the product quantity is zero, we send a request to the message queue so that another warehouse is hopefully
-				// going to send this product, the message send has to have the format productname:hostname
+                // going to send this product, the message send has to have the format productname:productid:hostname
 				pname := product.Name
+                pid := product.ID.String()
 				host, err := os.Hostname()
 				if err != nil {
 					w.logger.Fatal("Failed to get hostname")
 				}
-				storageChan <- pname + ":" + host
+                storageChan <- pname + ":" + pid + ":" + host
 			}
 			break
 		}
