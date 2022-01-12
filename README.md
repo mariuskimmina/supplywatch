@@ -12,6 +12,15 @@ Afterwards you can start the project by simply running:
 docker-compose up -d --build
 ```
 
+## Kubernetes deployment
+
+To make the deployment of the system as easy as possible, a helm chart has been provided
+Assuming that helm is installed on your system and has been setup to communicate with your cluster you can simply run:
+
+```
+helm install supplywatch-service
+```
+
 ## Tags
 
 Das Repo enthaelt Tags fuer die einzelnen Aufgaben, so dass der Stand fuer jede Abgabe aufgerufen werden kann:
@@ -19,6 +28,7 @@ Das Repo enthaelt Tags fuer die einzelnen Aufgaben, so dass der Stand fuer jede 
 * UDP-Sockets
 * TCP-Sockets
 * RCP
+* Message-Queue
 
 ## Assignment
 
@@ -35,17 +45,24 @@ the system design, the tests and the deployment of the application.
 * `build/`: defines the infrastructure
   * `<service-name>/`: define a Dockerfile for the concrete service.
 * `configurations/`: config files
+* `charts/`: Helm Chart for kubernetes deployment
 * `cmd/`: entrypoints
   * `<service-name>/`: primary entrypoint for this service - short main functions.
+* `configurations/`: config files
 * `internal/`: defines the _core domain_.
   * `<service-name>/`: concrete implementation of the service - source code.
+  * `pb`: generated code from protobuf definitions
+* `media/`: images
 * `pkg/`: code that is used by multiple services.
+* `proto/`: protobuf files for gRPC
 * `tests/`: describtions of test cases.
+
 
 ## Flow-Diagram
 
 ![Workflow Diagramm](media/images/Workflow_2.png)
 Workflow v.2
+
 
 ## Functional Requirements
 
