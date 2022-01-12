@@ -22,7 +22,7 @@ func (s *tcpServer) handleWarehouseRequest(request *http.Request, c net.Conn) {
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
-    products, err := s.wh.AllProducts()
+	products, err := s.wh.AllProducts()
 	if err != nil {
 		c.Write([]byte(err.Error()))
 		return
@@ -64,18 +64,17 @@ func (s *tcpServer) handleGetAllSensorData(request *http.Request, c net.Conn) {
 	response.SetHeader("Content-Type", "application/json")
 	response.SetHeader("Server", "Supplywatch")
 
-
 	allLogData, err := s.wh.AllSensorLogs()
 	if err != nil {
 		c.Write([]byte(err.Error()))
 	}
 
-    // json does not allow a , after the last entry in a list, thus we remove it here
-    if len(allLogData) > 0 {
-        allLogData = allLogData[:len(allLogData)-2]
-    }
+	// json does not allow a , after the last entry in a list, thus we remove it here
+	if len(allLogData) > 0 {
+		allLogData = allLogData[:len(allLogData)-2]
+	}
 
-    logDataList := string("[\n" + string(allLogData) + "\n]")
+	logDataList := string("[\n" + string(allLogData) + "\n]")
 	response.SetBody([]byte(logDataList))
 	byteResponse, _ := http.ResponseToBytes(response)
 	c.Write(byteResponse)
@@ -93,8 +92,8 @@ func (s *tcpServer) handleGetOneSensorData(request *http.Request, c net.Conn) {
 
 	//sensorData, err := GetOneSensorLogs(w.config.LogFileDir, queryValue[1])
 	//if err != nil {
-        // TODO: better handling
-        //return
+	// TODO: better handling
+	//return
 	//}
 	//response.SetBody(sensorData)
 	byteResponse, _ := http.ResponseToBytes(response)
@@ -120,7 +119,7 @@ func (s *tcpServer) handleGetSensorHistory(request *http.Request, c net.Conn) {
 	}
 	//hostname, err := os.Hostname()
 	//if err != nil {
-		//w.logger.Fatal("Failed to access hostname")
+	//w.logger.Fatal("Failed to access hostname")
 	//}
 	//logfileName := w.config.LogFileDir + hostname + "-" + queryValue[1]
 	//sensorData, err := ReadLogsFromDate(logfileName)

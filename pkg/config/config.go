@@ -31,8 +31,8 @@ type WarehouseConfig struct {
 }
 
 type SensorConfig struct {
-    Delay int
-    NumberOfPackets int
+	Delay           int
+	NumberOfPackets int
 }
 
 // LoadConfig first gets all values from the config.yml file

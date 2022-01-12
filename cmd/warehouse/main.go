@@ -37,11 +37,11 @@ func main() {
 	// we do this so that we do not have to have a seperate configuration file for each warehouse instance
 	if strings.Contains(host, "warehouse1") {
 		dbHost = "database1"
-        logger.Infof("Trying to Connect to: %s", dbHost)
+		logger.Infof("Trying to Connect to: %s", dbHost)
 	}
 	if strings.Contains(host, "warehouse2") {
 		dbHost = "database2"
-        logger.Infof("Trying to Connect to: %s", dbHost)
+		logger.Infof("Trying to Connect to: %s", dbHost)
 	}
 	if dbHost == "" {
 		logger.Fatal("Failed to determine database hostname")
@@ -51,26 +51,26 @@ func main() {
 	logger.Infof(dbURI)
 	db := dbConnect(dbURI)
 	warehouse := warehouse.NewWarehouse(logger, &config, db)
-    go func() {
-        logger.Info("Starting Warehouse")
-        warehouse.Start()
-        wg.Done()
-    }()
-    tcpServer, err := tcp.NewTCPServer(warehouse)
-    go func() {
-        logger.Info("Starting TCP Server")
-        tcpServer.Listen()
-        wg.Done()
-    }()
+	go func() {
+		logger.Info("Starting Warehouse")
+		warehouse.Start()
+		wg.Done()
+	}()
+	tcpServer, err := tcp.NewTCPServer(warehouse)
+	go func() {
+		logger.Info("Starting TCP Server")
+		tcpServer.Listen()
+		wg.Done()
+	}()
 
-    //grpcServer := grpc.NewServer(warehouse)
+	//grpcServer := grpc.NewServer(warehouse)
 	//pb.RegisterProductServiceServer(grpcServer, warehouse)
-    //go func() {
-        //logger.Info("Starting GRPC Server")
-        //tcpServer.Listen()
-        //wg.Done()
-    //}()
-    wg.Wait()
+	//go func() {
+	//logger.Info("Starting GRPC Server")
+	//tcpServer.Listen()
+	//wg.Done()
+	//}()
+	wg.Wait()
 }
 
 func dbConnect(dbURI string) *gorm.DB {

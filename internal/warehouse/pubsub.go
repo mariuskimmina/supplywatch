@@ -11,9 +11,9 @@ import (
 )
 
 const (
-    warehouse1Queue = "warehouse1Queue"
-    warehouse2Queue = "warehouse2Queue"
-    warehouse3Queue = "warehouse3Queue"
+	warehouse1Queue = "warehouse1Queue"
+	warehouse2Queue = "warehouse2Queue"
+	warehouse3Queue = "warehouse3Queue"
 )
 
 // Each warehouse is a subscriber and a publisher
@@ -46,32 +46,32 @@ func (w *warehouse) SetupMessageQueue(storageChan, sendChan chan string) {
 		w.logger.Fatal("Failed to setup a channel to RabbitMQ")
 	}
 	defer channel.Close()
-    host, err := os.Hostname()
-    if err != nil {
-        w.logger.Error(err)
-        w.logger.Fatal("failed to get hostname")
-    }
+	host, err := os.Hostname()
+	if err != nil {
+		w.logger.Error(err)
+		w.logger.Fatal("failed to get hostname")
+	}
 
-    // Each warehouse creates a queue for itself, based on its hostname
-    // otherQueues contains the names of all queues but the one of the current warehouse
-    // we will publish to otherQueues and subscribe to our own
-    var queueName string
-    var otherQueues []string
-    if strings.Contains(host, "warehouse1") {
-        queueName = warehouse1Queue
-    } else {
-        otherQueues = append(otherQueues, warehouse1Queue)
-    }
-    if strings.Contains(host, "warehouse2") {
-        queueName = warehouse2Queue
-    } else {
-        otherQueues = append(otherQueues, warehouse2Queue)
-    }
-    // if strings.Contains(host, "warehouse3") {
-    // queueName = warehouse3Queue
-    // } else {
-        // otherQueues = append(otherQueues, warehouse3Queue)
-    // }
+	// Each warehouse creates a queue for itself, based on its hostname
+	// otherQueues contains the names of all queues but the one of the current warehouse
+	// we will publish to otherQueues and subscribe to our own
+	var queueName string
+	var otherQueues []string
+	if strings.Contains(host, "warehouse1") {
+		queueName = warehouse1Queue
+	} else {
+		otherQueues = append(otherQueues, warehouse1Queue)
+	}
+	if strings.Contains(host, "warehouse2") {
+		queueName = warehouse2Queue
+	} else {
+		otherQueues = append(otherQueues, warehouse2Queue)
+	}
+	// if strings.Contains(host, "warehouse3") {
+	// queueName = warehouse3Queue
+	// } else {
+	// otherQueues = append(otherQueues, warehouse3Queue)
+	// }
 
 	_, err = channel.QueueDeclare(
 		queueName,
@@ -115,22 +115,22 @@ func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string, ot
 		}
 
 		w.logger.Info("--------------------Sending to Queue!-------------------")
-        for _, queueName := range otherQueues {
-            err := c.Publish(
-                "",
-                queueName,
-                false,
-                false,
-                amqp.Publishing{
-                    ContentType: "text/plain",
-                    Body:        []byte(zeroProduct),
-                },
-            )
-            if err != nil {
-                w.logger.Error(err)
-                w.logger.Fatal("Failed publish a Testmessage")
-            }
-        }
+		for _, queueName := range otherQueues {
+			err := c.Publish(
+				"",
+				queueName,
+				false,
+				false,
+				amqp.Publishing{
+					ContentType: "text/plain",
+					Body:        []byte(zeroProduct),
+				},
+			)
+			if err != nil {
+				w.logger.Error(err)
+				w.logger.Fatal("Failed publish a Testmessage")
+			}
+		}
 	}
 }
 
@@ -139,22 +139,22 @@ func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string, ot
 func (w *warehouse) subscribeMessages(c *amqp.Channel, sendChan chan string, queueName string) {
 	var wg sync.WaitGroup
 	wg.Add(1)
-    var msgs <-chan amqp.Delivery
-    var err error
-    msgs, err = c.Consume(
-        queueName,
-        "",
-        true,
-        false,
-        false,
-        false,
-        nil,
-    )
-    if err != nil {
-        w.logger.Error(err)
-        w.logger.Fatal("Failed to subscribe to a Testmessage")
-    }
-    w.logger.Infof("Subscribed to %s queue!", queueName)
+	var msgs <-chan amqp.Delivery
+	var err error
+	msgs, err = c.Consume(
+		queueName,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		w.logger.Error(err)
+		w.logger.Fatal("Failed to subscribe to a Testmessage")
+	}
+	w.logger.Infof("Subscribed to %s queue!", queueName)
 	//forever := make(chan bool)
 
 	//listen to incoming messages

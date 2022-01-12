@@ -73,7 +73,6 @@ var (
 	}
 )
 
-
 // Start starts the warehouse server
 // The warehouse listens on a UPD Port to reiceive data from sensors
 // and it also listens on a TCP Port to handle HTTP requests
@@ -81,10 +80,10 @@ func (w *warehouse) Start() {
 	// this channel is for publishing messages once the capacity of an item reaches zero
 	storageChan := make(chan string)
 	sendChan := make(chan string)
-    inOutProductChan := make(chan *domain.InOutProduct)
+	inOutProductChan := make(chan *domain.InOutProduct)
 
-    w.DB.AutoMigrate(&domain.Product{})
-    //w.DB.AutoMigrate(&Product{})
+	w.DB.AutoMigrate(&domain.Product{})
+	//w.DB.AutoMigrate(&Product{})
 	sqlDB, err := w.DB.DB()
 	if err != nil {
 		w.logger.Error(err)
@@ -102,30 +101,30 @@ func (w *warehouse) Start() {
 	var wg sync.WaitGroup
 	wg.Add(4)
 
-    udpServer, err := udp.NewUDPServer()
+	udpServer, err := udp.NewUDPServer()
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to create UPD Server")
 	}
-    go func() {
-        w.logger.Info("Starting UDP Server")
-        udpServer.Listen(inOutProductChan)
+	go func() {
+		w.logger.Info("Starting UDP Server")
+		udpServer.Listen(inOutProductChan)
 		wg.Done()
-    }()
+	}()
 
-    go func() {
-        for {
-            newProduct := <- inOutProductChan
-            var inOut string
-            if newProduct.Incoming {
-                inOut = "coming in from"
-            } else {
-                inOut = "leaving because"
-            }
-            w.logger.Infof("Product %s is %s %s ", newProduct.ProductName, inOut, newProduct.Reason)
-            w.HandleProduct(newProduct, storageChan)
-        }
-    }()
+	go func() {
+		for {
+			newProduct := <-inOutProductChan
+			var inOut string
+			if newProduct.Incoming {
+				inOut = "coming in from"
+			} else {
+				inOut = "leaving because"
+			}
+			w.logger.Infof("Product %s is %s %s ", newProduct.ProductName, inOut, newProduct.Reason)
+			w.HandleProduct(newProduct, storageChan)
+		}
+	}()
 
 	// RabbitMQ
 	go func() {
@@ -134,7 +133,7 @@ func (w *warehouse) Start() {
 	}()
 
 	// GRPC Server part
-    gserver, err := gserver.New(inOutProductChan)
+	gserver, err := gserver.New(inOutProductChan)
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to setup TCP Listener")
@@ -159,13 +158,13 @@ func (w *warehouse) Start() {
 		conn, err = grpc.Dial(address, grpc.WithInsecure())
 		if err != nil {
 			attempt++
-            w.logger.Infof("Failed to Connect via GRPC, trying again in %d seconds\n", backoff.Default.Duration(attempt))
+			w.logger.Infof("Failed to Connect via GRPC, trying again in %d seconds\n", backoff.Default.Duration(attempt))
 			continue
 		}
 		break
 	}
 	defer conn.Close()
-    gc, err := gclient.New(conn)
+	gc, err := gclient.New(conn)
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to setup GRPC Client")
@@ -173,13 +172,12 @@ func (w *warehouse) Start() {
 	go func() {
 		w.logger.Info("GRPC Client Starts")
 		//w.grpcClient(sendChan)
-        gc.Start(sendChan, inOutProductChan)
+		gc.Start(sendChan, inOutProductChan)
 		wg.Done()
 		w.logger.Info("GRPC Client Ends")
 	}()
 	wg.Wait()
 }
-
 
 func setupTCPConn() (net.Listener, error) {
 	var tcpConn net.Listener

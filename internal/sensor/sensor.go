@@ -35,8 +35,8 @@ func NewSensor(logger *log.Logger, config *config.SensorConfig) *Sensor {
 }
 
 const (
-    logFileDir = "/var/supplywatch/udpserver/"
-    logFile = "sensorlog"
+	logFileDir = "/var/supplywatch/udpserver/"
+	logFile    = "sensorlog"
 )
 
 var (
@@ -67,15 +67,15 @@ func (s *Sensor) Start() {
 	var attempt int
 	var conn net.Conn
 
-    err = os.MkdirAll(logFileDir, 0644)
-    if err != nil {
-        s.logger.Fatalf("Error creating log file directory: %v", err)
-    }
-    f, err := os.OpenFile(logFileDir + logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-    if err != nil {
-        s.logger.Fatalf("Error opening log file: %v", err)
-    }
-    defer f.Close()
+	err = os.MkdirAll(logFileDir, 0644)
+	if err != nil {
+		s.logger.Fatalf("Error creating log file directory: %v", err)
+	}
+	f, err := os.OpenFile(logFileDir+logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		s.logger.Fatalf("Error opening log file: %v", err)
+	}
+	defer f.Close()
 
 	SeedRandom()
 	n := rand.Int() % len(SensorType)
@@ -128,11 +128,11 @@ func (s *Sensor) Start() {
 			Message:    message.MessageBody,
 			Incoming:   message.Incoming,
 		}
-        logjson, err := json.Marshal(logentry)
+		logjson, err := json.Marshal(logentry)
 		if err != nil {
-            s.logger.Fatalf("Error marshaling log data: %v", err)
+			s.logger.Fatalf("Error marshaling log data: %v", err)
 		}
-        f.WriteString(string(logjson) + ",\n")
+		f.WriteString(string(logjson) + ",\n")
 
 		// If NumOfPackets is not 0 we stop sending once the NumOfPackets has been reached
 		if s.config.NumberOfPackets != 0 {

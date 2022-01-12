@@ -10,10 +10,10 @@ import (
 )
 
 type InOutProduct struct {
-    ProductName string
-    Incoming    bool
-    Amount      int
-    Reason      string
+	ProductName string
+	Incoming    bool
+	Amount      int
+	Reason      string
 }
 
 type Product struct {
@@ -40,9 +40,9 @@ type ShippingLog struct {
 }
 
 type Warehouse interface {
-    AllProducts() (Products, error)
-    ProductByID() error
-    AllSensorLogs() ([]byte, error)
-    GetAllProducts(ctx context.Context, req *pb.GetAllProductsRequest) (response *pb.GetAllProductsResponse, err error)
-    ReceivProducts(ctx context.Context, req *pb.ReceivProductsRequest) (*pb.ReceivProductsResponse, error)
+	AllProducts() (Products, error)
+	ProductByID() error
+	AllSensorLogs() ([]byte, error)
+	GetAllProducts(ctx context.Context, req *pb.GetAllProductsRequest) (response *pb.GetAllProductsResponse, err error)
+	ReceivProducts(ctx context.Context, req *pb.ReceivProductsRequest) (*pb.ReceivProductsResponse, error)
 }

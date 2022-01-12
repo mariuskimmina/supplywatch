@@ -12,8 +12,8 @@ import (
 )
 
 type tcpServer struct {
-    conn net.Listener
-    wh domain.Warehouse
+	conn net.Listener
+	wh   domain.Warehouse
 }
 
 func NewTCPServer(wh domain.Warehouse) (*tcpServer, error) {
@@ -26,13 +26,13 @@ func NewTCPServer(wh domain.Warehouse) (*tcpServer, error) {
 		return nil, err
 	}
 	return &tcpServer{
-        conn: tcpConn,
-        wh: wh,
-    }, nil
+		conn: tcpConn,
+		wh:   wh,
+	}, nil
 }
 
 func (s *tcpServer) Listen() error {
-    fmt.Println("Hello from TCP Server")
+	fmt.Println("Hello from TCP Server")
 	for {
 		c, err := s.conn.Accept()
 		if err != nil {

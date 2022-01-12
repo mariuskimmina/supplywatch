@@ -94,18 +94,16 @@ func (w *warehouse) NewLogFile(path string) *LogFile {
 }
 
 const (
-    sensorLogFile = "/var/supplywatch/udpserver/sensorlog"
+	sensorLogFile = "/var/supplywatch/udpserver/sensorlog"
 )
 
 func (w *warehouse) AllSensorLogs() (logs []byte, err error) {
-    sensorLog, err := os.ReadFile(sensorLogFile)
-    if err != nil {
-        return nil, err
-    }
-    return sensorLog, nil
+	sensorLog, err := os.ReadFile(sensorLogFile)
+	if err != nil {
+		return nil, err
+	}
+	return sensorLog, nil
 }
-
-
 
 // GetAllSensorLogs goes over all log files in the LogFileDir defined in config.yml
 // and puts them together

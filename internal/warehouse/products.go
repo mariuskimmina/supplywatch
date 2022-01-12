@@ -63,26 +63,26 @@ func (w *warehouse) setupProducts() error {
 }
 
 func (w *warehouse) HandleProduct(product *domain.InOutProduct, storageChan chan<- string) error {
-    if product.Incoming {
-        w.IncrementorCreateProduct(product.ProductName)
-    } else {
-        w.DecrementProduct(product.ProductName, storageChan)
-    }
-    return nil
+	if product.Incoming {
+		w.IncrementorCreateProduct(product.ProductName)
+	} else {
+		w.DecrementProduct(product.ProductName, storageChan)
+	}
+	return nil
 }
 
 func (w *warehouse) AllProducts() (domain.Products, error) {
-    var products []*domain.Product
+	var products []*domain.Product
 	w.DB.Find(&products)
-    return products, nil
+	return products, nil
 }
 
-func (w *warehouse) SensorLogByID() (error) {
-    return nil
+func (w *warehouse) SensorLogByID() error {
+	return nil
 }
 
 func (w *warehouse) ProductByID() error {
-    return nil
+	return nil
 }
 
 func (w *warehouse) IncrementorCreateProduct(name string) error {
@@ -119,14 +119,14 @@ func (w *warehouse) DecrementProduct(name string, storageChan chan<- string) err
 			productExists = true
 			if product.Quantity == 0 {
 				// if the product quantity is zero, we send a request to the message queue so that another warehouse is hopefully
-                // going to send this product, the message send has to have the format productname:productid:hostname
+				// going to send this product, the message send has to have the format productname:productid:hostname
 				pname := product.Name
-                pid := product.ID.String()
+				pid := product.ID.String()
 				host, err := os.Hostname()
 				if err != nil {
 					w.logger.Fatal("Failed to get hostname")
 				}
-                storageChan <- pname + ":" + pid + ":" + host
+				storageChan <- pname + ":" + pid + ":" + host
 			}
 			break
 		}
@@ -206,4 +206,3 @@ func LoadProductsState() error {
 	json.Unmarshal(jsonProducts, &Products)
 	return nil
 }
-
