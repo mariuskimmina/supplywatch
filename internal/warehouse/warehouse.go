@@ -55,6 +55,25 @@ var (
 	todayTimeStamp = time.Now().Format("01-02-2006")
 )
 
+var (
+	hostname        = os.Getenv("SW_OTHER_WAREHOUSE_HOST")
+	port            = os.Getenv("SW_OTHER_WAREHOUSE_PORT")
+	address         = hostname + ":" + port
+	allProductNames = []string{
+		"butter",
+		"sugar",
+		"eggs",
+		"baking powder",
+		"cheese",
+		"cinnamon",
+		"oil",
+		"carrots",
+		"raisins",
+		"walnuts",
+	}
+)
+
+
 // Start starts the warehouse server
 // The warehouse listens on a UPD Port to reiceive data from sensors
 // and it also listens on a TCP Port to handle HTTP requests
@@ -130,28 +149,8 @@ func (w *warehouse) Start() {
 		wg.Done()
 		w.logger.Info("GRPC Server Ends")
 	}()
-	//tcpConnGrpc, err := setupTCPConnGRPC()
-	//if err != nil {
-		//w.logger.Error(err)
-		//w.logger.Fatal("Failed to setup TCP Listener")
-	//}
-	//defer tcpConnGrpc.Close()
 
-	//grpcServer := grpc.NewServer()
-	//pb.RegisterProductServiceServer(grpcServer, w)
-	//go func() {
-		//w.logger.Info("GRPC Server Starts")
-		//if err := grpcServer.Serve(tcpConnGrpc); err != nil {
-			//w.logger.Fatal("Failed to setup GRPC Listener")
-		//}
-		//wg.Done()
-		//w.logger.Info("GRPC Server Ends")
-	//}()
-
-	// wait a bit before we start the client
-	time.Sleep(8 * time.Second)
 	// GRPC Client starts here
-
 	var conn *grpc.ClientConn
 	var attempt int
 	//var err error
