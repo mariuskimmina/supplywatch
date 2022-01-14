@@ -59,6 +59,7 @@ var (
 	hostname        = os.Getenv("SW_OTHER_WAREHOUSE_HOST")
 	port            = os.Getenv("SW_OTHER_WAREHOUSE_PORT")
 	address         = hostname + ":" + port
+    warehouses      = os.Getenv("SW_WAREHOUSES") //list of all warehouses (hostnames)
 	allProductNames = []string{
 		"butter",
 		"sugar",
@@ -72,6 +73,11 @@ var (
 		"walnuts",
 	}
 )
+
+func remove(s []string, i int) []string {
+    s[i] = s[len(s)-1]
+    return s[:len(s)-1]
+}
 
 // Start starts the warehouse server
 // The warehouse listens on a UPD Port to reiceive data from sensors
