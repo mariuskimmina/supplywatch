@@ -88,7 +88,7 @@ func (w *warehouse) Start() {
 	sendChan := make(chan string)
 	inOutProductChan := make(chan *domain.InOutProduct)
 
-	w.DB.AutoMigrate(&domain.Product{})
+	w.DB.AutoMigrate(Product{})
 	//w.DB.AutoMigrate(&Product{})
 	sqlDB, err := w.DB.DB()
 	if err != nil {
@@ -96,17 +96,20 @@ func (w *warehouse) Start() {
 		w.logger.Fatal("Failed to connect to Database")
 	}
 	defer sqlDB.Close()
+    w.logger.Info("Successfully Connected to Database")
 
-	// create all products with quanitity zero
+	// create all products with quanitity five
 	err = w.setupProducts()
 	if err != nil {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to setup Product Database")
 	}
+    w.logger.Info("Successfully setup Products on Database")
 
 	var wg sync.WaitGroup
 	wg.Add(4)
 
+    w.logger.Info("Setting up UDP Server")
 	udpServer, err := udp.NewUDPServer()
 	if err != nil {
 		w.logger.Error(err)

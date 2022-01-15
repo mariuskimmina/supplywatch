@@ -14,6 +14,10 @@ const (
 	warehouse1Queue = "warehouse1Queue"
 	warehouse2Queue = "warehouse2Queue"
 	warehouse3Queue = "warehouse3Queue"
+
+	warehouse1Data = "warehouse1Data"
+	warehouse2Data = "warehouse2Data"
+	warehouse3Data = "warehouse3Data"
 )
 
 // Each warehouse is a subscriber and a publisher
@@ -21,7 +25,7 @@ const (
 // warehouse to send that stuff to it - each warehouse subscribes to these requests for supply
 func (w *warehouse) SetupMessageQueue(storageChan, sendChan chan string) {
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
 	var connRabbit *amqp.Connection
 	var err error
@@ -31,9 +35,9 @@ func (w *warehouse) SetupMessageQueue(storageChan, sendChan chan string) {
 		time.Sleep(backoff.Default.Duration(attempt))
 		connRabbit, err = amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
 		if err != nil {
-			w.logger.Error(err)
-			w.logger.Error("Failed to connect to RabbitMQ")
+			//w.logger.Error(err)
 			attempt++
+			w.logger.Infof("Failed to connect to RabbitMQ, trying again in %f seconds", backoff.Default.Duration(attempt).Seconds())
 			continue
 		}
 		break
@@ -56,14 +60,17 @@ func (w *warehouse) SetupMessageQueue(storageChan, sendChan chan string) {
 	// otherQueues contains the names of all queues but the one of the current warehouse
 	// we will publish to otherQueues and subscribe to our own
 	var queueName string
+	var queueName2 string
 	var otherQueues []string
 	if strings.Contains(host, "warehouse1") {
 		queueName = warehouse1Queue
+        queueName2 = warehouse1Data
 	} else {
 		otherQueues = append(otherQueues, warehouse1Queue)
 	}
 	if strings.Contains(host, "warehouse2") {
 		queueName = warehouse2Queue
+        queueName2 = warehouse2Data
 	} else {
 		otherQueues = append(otherQueues, warehouse2Queue)
 	}
@@ -86,9 +93,28 @@ func (w *warehouse) SetupMessageQueue(storageChan, sendChan chan string) {
 		w.logger.Fatal("Failed declare a Queue")
 	}
 
+	_, err = channel.QueueDeclare(
+		queueName2,
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		w.logger.Error(err)
+		w.logger.Fatal("Failed declare a Queue")
+	}
+
 	// Subscribe
 	go func() {
 		w.publishMessages(channel, storageChan, otherQueues)
+		wg.Done()
+	}()
+
+    // Here we publish data for the monitor
+	go func() {
+		w.publishDataMonitor(channel, queueName2)
 		wg.Done()
 	}()
 
@@ -134,6 +160,34 @@ func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string, ot
 	}
 }
 
+func (w *warehouse) publishDataMonitor(c *amqp.Channel, queueName string) {
+	for {
+        time.Sleep(30 * time.Second)
+		//w.logger.Info("Waiting for a product to drop to zero")
+
+		//zeroProduct := <-storageChan
+		//if !strings.Contains(zeroProduct, ":") {
+			//w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
+			//continue
+		//}
+
+		w.logger.Info("Sending to Info to Monitor!")
+        err := c.Publish(
+            "",
+            queueName,
+            false,
+            false,
+            amqp.Publishing{
+                ContentType: "text/plain",
+                Body:        []byte("test"),
+            },
+        )
+        if err != nil {
+            w.logger.Error(err)
+            w.logger.Fatal("Failed publish a Testmessage")
+        }
+	}
+}
 //subscribeMessages subscribes to the RequestProducts queue and whenever a request for products comes in
 //it trys to initalize the transfer of this product
 func (w *warehouse) subscribeMessages(c *amqp.Channel, sendChan chan string, queueName string) {

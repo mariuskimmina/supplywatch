@@ -3,8 +3,8 @@ package domain
 import (
 	"context"
 
-	"github.com/google/uuid"
-	"gorm.io/gorm"
+	//"github.com/google/uuid"
+	//"gorm.io/gorm"
 
 	"github.com/mariuskimmina/supplywatch/internal/pb"
 )
@@ -16,13 +16,15 @@ type InOutProduct struct {
 	Reason      string
 }
 
-type Product struct {
-	gorm.Model
-	ID             uuid.UUID
-	Name           string
-	Quantity       int
-	lastReceived   string
-	lastDispatched string
+type Product interface {
+    Increment()
+    Decrement()
+	//gorm.Model
+	//ID             uuid.UUID
+	//Name           string
+	//Quantity       int
+	//lastReceived   string
+	//lastDispatched string
 }
 
 type Products []*Product

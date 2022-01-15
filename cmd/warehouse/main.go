@@ -81,7 +81,7 @@ func dbConnect(dbURI string) *gorm.DB {
 		time.Sleep(backoff.Default.Duration(attempt))
 		db, err = gorm.Open(postgres.Open(dbURI), &gorm.Config{})
 		if err != nil {
-			fmt.Println(err)
+			//fmt.Println(err)
 			fmt.Println("Failed to connect to Database, going to retry")
 			attempt++
 			continue

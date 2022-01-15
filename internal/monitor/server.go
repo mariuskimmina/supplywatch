@@ -3,10 +3,14 @@ package monitor
 import (
 	"fmt"
 	"net/http"
+	"sync"
+
+	"github.com/mariuskimmina/supplywatch/pkg/config"
 )
 
 type monitor struct {
 	logger Logger
+    config config.SupplywatchConfig
 }
 
 // Logger is a generic interface that can be implemented by any logging engine
@@ -22,15 +26,24 @@ type Logger interface {
 }
 
 
-func NewMonitor(logger Logger) *monitor {
+func NewMonitor(logger Logger, config config.SupplywatchConfig) *monitor {
 	return &monitor{
 		logger: logger,
+        config: config,
 	}
 }
 
 func (s *monitor) RunAndServe() {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	// RabbitMQ
+	go func() {
+		s.SetupMessageQueue(s.config.NumOfWarehouses)
+		wg.Done()
+	}()
     http.HandleFunc("/hello", hello)
     http.ListenAndServe(":9000", nil)
+    wg.Wait()
 }
 
 func hello(w http.ResponseWriter, req *http.Request) {

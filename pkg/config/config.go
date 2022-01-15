@@ -35,6 +35,10 @@ type SensorConfig struct {
 	NumberOfPackets int
 }
 
+type SupplywatchConfig struct {
+	NumOfWarehouses   int `mapstructure:"SW_NUMBER_OF_WAREHOUSES"`
+}
+
 // LoadConfig first gets all values from the config.yml file
 // if the environment variables are set, they will overrider the config
 func LoadWarehouseConfig(path string) (config WarehouseConfig, err error) {
@@ -56,6 +60,22 @@ func LoadWarehouseConfig(path string) (config WarehouseConfig, err error) {
 func LoadSensorConfig(path string) (config SensorConfig, err error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName("sensor")
+	viper.SetConfigType("env")
+
+	viper.AutomaticEnv()
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		return
+	}
+
+	err = viper.Unmarshal(&config)
+	return
+}
+
+func LoadSupplywatchConfig(path string) (config SupplywatchConfig, err error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigName("supplywatch")
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()

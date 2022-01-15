@@ -3,8 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/mariuskimmina/supplywatch/pkg/log"
 	"github.com/mariuskimmina/supplywatch/internal/monitor"
+	"github.com/mariuskimmina/supplywatch/pkg/config"
+	"github.com/mariuskimmina/supplywatch/pkg/log"
 )
 
 func main() {
@@ -14,11 +15,11 @@ func main() {
         panic("Failed to get hostname")
     }
 	logger.Infof("Warehouse starting, hostname: %s", host)
-	//config, err := config.LoadWarehouseConfig("./configurations")
-	//if err != nil {
-		//logger.Error(err)
-		//logger.Fatal("Failed to load warehouse configuration")
-	//}
-    monitor := monitor.NewMonitor(logger)
+	config, err := config.LoadSupplywatchConfig("./configurations")
+	if err != nil {
+		logger.Error(err)
+		logger.Fatal("Failed to load warehouse configuration")
+	}
+    monitor := monitor.NewMonitor(logger, config)
     monitor.RunAndServe()
 }

@@ -12,8 +12,8 @@ services:
     logging:
       driver: none
 
-  warehouse_database_1:
-    container_name: warehouse_database_1
+  database1:
+    container_name: database1
     image: postgres:12.3-alpine
     env_file:
       - configurations/postgresql.env
@@ -34,8 +34,8 @@ services:
     logging:
       driver: none
 
-  warehouse_database_2:
-    container_name: warehouse_database_2
+  database2:
+    container_name: database2
     image: postgres:12.3-alpine
     env_file:
       - configurations/postgresql.env
@@ -56,9 +56,22 @@ services:
     logging:
       driver: none
 
-  warehouse_1:
-    container_name: warehouse_1
-    hostname: warehouse_1
+  monitor:
+    container_name: 'monitor'
+    hostname: 'monitor'
+    build:
+      context: .
+      dockerfile: ./build/monitor/Dockerfile
+      args:
+        project: ./cmd/monitor/
+    ports:
+      - 9000:9000
+    networks:
+      - warehouse_net
+
+  warehouse1:
+    container_name: warehouse1
+    hostname: warehouse1
     build:
       context: .
       dockerfile: ./build/warehouse/Dockerfile
@@ -81,9 +94,9 @@ services:
     volumes:
       - /var/supplywatch/log:/var/supplywatch/log
 
-  warehouse_2:
-    container_name: warehouse_2
-    hostname: warehouse_2
+  warehouse2:
+    container_name: warehouse2
+    hostname: warehouse2
     build:
       context: .
       dockerfile: ./build/warehouse/Dockerfile
@@ -105,9 +118,9 @@ services:
       - warehouse_net
     volumes:
       - /var/supplywatch/log:/var/supplywatch/log
-  sensor_1:
-    container_name: sensor_1
-    hostname: sensor_1
+  sensor1:
+    container_name: sensor1
+    hostname: sensor1
     build:
       context: .
       dockerfile: ./build/sensor/Dockerfile
@@ -117,9 +130,9 @@ services:
       - APP_NAME=sensor
     networks:
       - warehouse_net
-  sensor_2:
-    container_name: sensor_2
-    hostname: sensor_2
+  sensor2:
+    container_name: sensor2
+    hostname: sensor2
     build:
       context: .
       dockerfile: ./build/sensor/Dockerfile
@@ -129,9 +142,9 @@ services:
       - APP_NAME=sensor
     networks:
       - warehouse_net
-  sensor_3:
-    container_name: sensor_3
-    hostname: sensor_3
+  sensor3:
+    container_name: sensor3
+    hostname: sensor3
     build:
       context: .
       dockerfile: ./build/sensor/Dockerfile
