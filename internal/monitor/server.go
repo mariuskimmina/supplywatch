@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/mariuskimmina/supplywatch/pkg/config"
 )
@@ -34,6 +35,7 @@ func NewMonitor(logger Logger, config config.SupplywatchConfig) *monitor {
 }
 
 func (s *monitor) RunAndServe() {
+    time.Sleep(30 * time.Second)
 	var wg sync.WaitGroup
 	wg.Add(1)
 	// RabbitMQ

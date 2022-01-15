@@ -11,7 +11,6 @@ import (
 	"github.com/mariuskimmina/supplywatch/internal/domain"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	//"gorm.io/gorm/clause"
 )
 
 type Product struct {
@@ -36,7 +35,7 @@ func (w *warehouse) setupProducts() error {
 		"oil",
 		"carrots",
 		"raisins",
-		"walnuts",
+		//"walnuts",
 	}
 	ids := []string{
 		"24476e37-558d-4068-8a76-fd0af990465f",
@@ -48,10 +47,10 @@ func (w *warehouse) setupProducts() error {
 		"bacd7beb-061f-444c-82bf-18454d0cf0ca",
 		"d9eb4c17-1a87-44a4-98f3-dcb6923b485f",
 		"39cc2513-66be-462d-99d6-969951ac1f93",
-		"eff79513-5425-4b9c-8ff5-b597f7a7f67e",
+		//"eff79513-5425-4b9c-8ff5-b597f7a7f67e",
 	}
 	for index := range products {
-        w.logger.Infof("Setting up Product %d out of %d\n", index, len(products) - 1)
+        w.logger.Infof("Setting up Product %d out of %d \n", index, len(products) - 1)
 		id, err := uuid.Parse(ids[index])
 		if err != nil {
             w.logger.Error("Error Setting up Products")
@@ -64,15 +63,16 @@ func (w *warehouse) setupProducts() error {
             Columns: []clause.Column{{Name: "id"}},
             DoUpdates: clause.AssignmentColumns([]string{"quantity"}),
         }).Create(&newProduct)
-        //result := w.DB.Create(&newProduct)
+        //result := w.DB.FirstOrCreate(&newProduct, Product{ID: id})
         w.logger.Info(result.Error)
+        //result := w.DB.Create(&newProduct)
         //if err != nil {
             //w.logger.Error("Error during database operation")
             //w.logger.Error(err)
         //}
 		//w.DB.Create(&newProduct)
 		Products = append(Products, newProduct)
-        w.logger.Infof("Done Setting up Product %d out of %d\n", index, len(products) - 1)
+        w.logger.Infof("Done Setting up Product %d out of %d \n", index, len(products) - 1)
 
 	}
     w.logger.Info("Done setting up Products")

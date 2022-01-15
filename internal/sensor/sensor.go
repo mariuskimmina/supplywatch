@@ -50,7 +50,7 @@ var (
 		"oil",
 		"carrots",
 		"raisins",
-		"walnuts",
+		//"walnuts",
 	}
 	SensorType = []string{
 		"BarcodeReader",
@@ -63,6 +63,7 @@ var (
 )
 
 func (s *Sensor) Start() {
+    time.Sleep(15 * time.Second)
 	var err error
 	var attempt int
 	var conn net.Conn

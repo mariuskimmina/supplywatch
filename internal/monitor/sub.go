@@ -29,18 +29,14 @@ func (s *monitor) SetupMessageQueue(numOfWarehouses int) {
 		break
 	}
 	s.logger.Info("Successfully Connected to RabbitMQ")
+	defer connRabbit.Close()
 	channel, err := connRabbit.Channel()
     if err != nil {
         s.logger.Error(err)
         s.logger.Error("Failed to setup Channel with RabbitMQ")
     }
 	s.logger.Info("Successfully setup Channel with RabbitMQ")
-	defer connRabbit.Close()
     defer channel.Close()
-    //for {
-        //time.Sleep(10 *time.Second)
-        //s.logger.Info("KEEPING RABBITMQ GOING")
-    //}
 
     var wg sync.WaitGroup
     wg.Add(numOfWarehouses)
@@ -53,7 +49,6 @@ func (s *monitor) SetupMessageQueue(numOfWarehouses int) {
         }()
     }
     wg.Wait()
-
 }
 
 func (s *monitor) subscribeToWarehouseData(c *amqp.Channel, queueName string) {
@@ -81,7 +76,7 @@ func (s *monitor) subscribeToWarehouseData(c *amqp.Channel, queueName string) {
 	//listen to incoming messages
 	go func() {
 		for d := range msgs {
-			s.logger.Info("--------------------Receiving from Queue!-------------------")
+			s.logger.Info("Receiving Status Update from a Warehouse")
 			s.logger.Infof("Received Message: %s from queue", string(d.Body))
 			//incoming messages should have the following format: product:hostname
 			//if !strings.Contains(string(d.Body), ":") {

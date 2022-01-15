@@ -23,7 +23,7 @@ services:
     networks:
       - warehouse_net
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_one:/var/lib/postgresql/data
     ports:
       - "61833:5432/tcp"
     healthcheck:
@@ -45,7 +45,7 @@ services:
     networks:
       - warehouse_net
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_two:/var/lib/postgresql/data
     ports:
       - "61832:5432/tcp"
     healthcheck:
@@ -78,17 +78,12 @@ services:
       args:
         project: ./cmd/warehouse/
     ports:
-      - "4444:4444/udp"
       - "8000:8000/tcp"
-      - "6666:6666/tcp"
+    env_file:
+      - configurations/warehouse.env
     environment:
-      SW_UDPPORT: 4444
-      SW_TCPPORT: 8000
-      SW_GRPCPORT: 6666
-      SW_LISTEN_IP: "0.0.0.0"
-      SW_OTHER_WAREHOUSE_HOST: warehouse_2
-      SW_OTHER_WAREHOUSE_PORT: 6667
-      SW_DATABASE: warehouse_database_1
+      SW_OTHER_WAREHOUSE_HOST: warehouse2
+      SW_OTHER_WAREHOUSE_PORT: 6666
     networks:
       - warehouse_net
     volumes:
@@ -103,17 +98,12 @@ services:
       args:
         project: ./cmd/warehouse/
     ports:
-      - "4445:4445/udp"
-      - "8001:8001/tcp"
-      - "6667:6667/tcp"
+      - "8001:8000/tcp"
+    env_file:
+      - configurations/warehouse.env
     environment:
-      SW_UDPPORT: 4445
-      SW_TCPPORT: 8001
-      SW_GRPCPORT: 6667
-      SW_LISTEN_IP: "0.0.0.0"
-      SW_OTHER_WAREHOUSE_HOST: warehouse_1
+      SW_OTHER_WAREHOUSE_HOST: warehouse1
       SW_OTHER_WAREHOUSE_PORT: 6666
-      SW_DATABASE: warehouse_database_2
     networks:
       - warehouse_net
     volumes:
@@ -130,6 +120,8 @@ services:
       - APP_NAME=sensor
     networks:
       - warehouse_net
+    logging:
+      driver: none
   sensor2:
     container_name: sensor2
     hostname: sensor2
@@ -142,6 +134,8 @@ services:
       - APP_NAME=sensor
     networks:
       - warehouse_net
+    logging:
+      driver: none
   sensor3:
     container_name: sensor3
     hostname: sensor3
@@ -154,10 +148,13 @@ services:
       - APP_NAME=sensor
     networks:
       - warehouse_net
+    logging:
+      driver: none
 
 networks:
   warehouse_net:
     driver: bridge
 
 volumes:
-  postgres_data:
+  postgres_data_one:
+  postgres_data_two:
