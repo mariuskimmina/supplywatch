@@ -1,12 +1,20 @@
 package monitor
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
+	"github.com/mariuskimmina/supplywatch/internal/domain"
 	"github.com/mariuskimmina/supplywatch/pkg/backoff"
 	"github.com/streadway/amqp"
+)
+
+const (
+	logFileDir    = "/var/supplywatch/monitor/"
+	logFilePrefix       = "products-"
 )
 
 func (s *monitor) SetupMessageQueue(numOfWarehouses int) {
@@ -57,6 +65,17 @@ func (s *monitor) subscribeToWarehouseData(c *amqp.Channel, queueName string) {
 	wg.Add(1)
 	var msgs <-chan amqp.Delivery
 	var err error
+
+	err = os.MkdirAll(logFileDir, 0644)
+	if err != nil {
+        fmt.Println("doof")
+	}
+	f, err := os.OpenFile(logFileDir+logFilePrefix+queueName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+        fmt.Println("doof")
+	}
+	defer f.Close()
+
 	msgs, err = c.Consume(
 		queueName,
 		"",
@@ -73,17 +92,31 @@ func (s *monitor) subscribeToWarehouseData(c *amqp.Channel, queueName string) {
 	s.logger.Infof("Subscribed to %s queue!", queueName)
 	//forever := make(chan bool)
 
+    //decoder := json.NewDecoder()
 	//listen to incoming messages
 	go func() {
 		for d := range msgs {
 			s.logger.Info("Receiving Status Update from a Warehouse")
 			s.logger.Infof("Received Message: %s from queue", string(d.Body))
-			//incoming messages should have the following format: product:hostname
-			//if !strings.Contains(string(d.Body), ":") {
-				//s.logger.Error("Received Message from queue with invalid format, this message will be ignored")
-				//continue
-			//}
-			//s.logger.Info("Initalizing transport of products")
+            var allProducts []domain.Producttype
+            err := json.Unmarshal(d.Body, &allProducts)
+            fmt.Println(allProducts)
+            if err != nil {
+                //TODO: move the file writing somewhere else
+                fmt.Println("doof")
+            }
+            allProductsJson, err := json.MarshalIndent(allProducts, " ", "")
+            if err != nil {
+                //TODO: move the file writing somewhere else
+                fmt.Println("doof")
+            }
+            f.Write(allProductsJson)
+            //productsFileName := logFileDir + logFilePrefix + queueName
+            //err = ioutil.WriteFile(productsFileName, jsonProducts, 0644)
+            if err != nil {
+                //TODO: move the file writing somewhere else
+                fmt.Println("doof")
+            }
 			//sendChan <- string(d.Body)
 		}
 		wg.Done()

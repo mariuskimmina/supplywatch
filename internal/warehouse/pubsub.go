@@ -1,6 +1,7 @@
 package warehouse
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 	"sync"
@@ -139,7 +140,6 @@ func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string, ot
 			w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
 			continue
 		}
-
 		w.logger.Info("--------------------Sending to Queue!-------------------")
 		for _, queueName := range otherQueues {
 			err := c.Publish(
@@ -149,7 +149,7 @@ func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string, ot
 				false,
 				amqp.Publishing{
 					ContentType: "text/plain",
-					Body:        []byte(zeroProduct),
+                    Body:        []byte(zeroProduct),
 				},
 			)
 			if err != nil {
@@ -171,15 +171,23 @@ func (w *warehouse) publishDataMonitor(c *amqp.Channel, queueName string) {
 			//continue
 		//}
 
-		w.logger.Info("Sending to Info to Monitor!")
-        err := c.Publish(
+		w.logger.Info("Sending Info to Monitor!")
+        var allProducts []Product
+        w.DB.Find(&allProducts)
+        productBytes, err := json.Marshal(allProducts)
+        if err != nil {
+            w.logger.Error(err)
+            w.logger.Fatal("Failed to marshal info for monitor")
+        }
+        w.logger.Info(allProducts)
+        err = c.Publish(
             "",
             queueName,
             false,
             false,
             amqp.Publishing{
                 ContentType: "text/plain",
-                Body:        []byte("test"),
+                Body:        []byte(productBytes),
             },
         )
         if err != nil {
