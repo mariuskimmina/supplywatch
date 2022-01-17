@@ -37,6 +37,7 @@ type SensorConfig struct {
 
 type SupplywatchConfig struct {
 	NumOfWarehouses   int `mapstructure:"SW_NUMBER_OF_WAREHOUSES"`
+	Warehouses string `mapstructure:"SW_WAREHOUSES"`
 }
 
 // LoadConfig first gets all values from the config.yml file

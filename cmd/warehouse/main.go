@@ -27,10 +27,17 @@ func main() {
 	host, err := os.Hostname()
 	logger := log.NewLogger()
 	logger.Infof("Warehouse starting, hostname: %s", host)
-	config, err := config.LoadWarehouseConfig("./configurations")
+
+	whconfig, err := config.LoadWarehouseConfig("./configurations")
 	if err != nil {
 		logger.Error(err)
 		logger.Fatal("Failed to load warehouse configuration")
+	}
+
+	swConfig, err := config.LoadSupplywatchConfig("./configurations")
+	if err != nil {
+		logger.Error(err)
+		logger.Fatal("Failed to load supplywatch configuration")
 	}
 
 	// to find out which warehouse should connect to which database at runtime we use the last char of the Hostname
@@ -47,10 +54,13 @@ func main() {
 		logger.Fatal("Failed to determine database hostname")
 	}
 
-	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s port=%d", dbHost, config.DBUser, config.DBDatabase, config.DBPassword, config.DBPort)
+	dbURI := fmt.Sprintf(
+        "host=%s user=%s dbname=%s sslmode=disable password=%s port=%d",
+        dbHost, whconfig.DBUser, whconfig.DBDatabase, whconfig.DBPassword, whconfig.DBPort,
+    )
 	logger.Infof(dbURI)
 	db := dbConnect(dbURI)
-	warehouse := warehouse.NewWarehouse(logger, &config, db)
+	warehouse := warehouse.NewWarehouse(logger, &whconfig, &swConfig, db)
 	go func() {
 		logger.Info("Starting Warehouse")
 		warehouse.Start()
@@ -81,7 +91,7 @@ func dbConnect(dbURI string) *gorm.DB {
 		time.Sleep(backoff.Default.Duration(attempt))
 		db, err = gorm.Open(postgres.Open(dbURI), &gorm.Config{})
 		if err != nil {
-			//fmt.Println(err)
+			fmt.Println(err)
 			fmt.Println("Failed to connect to Database, going to retry")
 			attempt++
 			continue

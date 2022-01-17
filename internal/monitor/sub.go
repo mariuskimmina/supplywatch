@@ -76,15 +76,36 @@ func (s *monitor) subscribeToWarehouseData(c *amqp.Channel, queueName string) {
 	}
 	defer f.Close()
 
-	msgs, err = c.Consume(
-		queueName,
-		"",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
+	var attempt int
+	for {
+		time.Sleep(backoff.Default.Duration(attempt))
+        msgs, err = c.Consume(
+            queueName,
+            "",
+            true,
+            false,
+            false,
+            false,
+            nil,
+        )
+		if err != nil {
+            s.logger.Info("Failed to subscribe to queue, trying again")
+			attempt++
+			continue
+		}
+		break
+	}
+    s.logger.Infof("Successfully subscribed to queue %s \n", queueName)
+
+	//msgs, err = c.Consume(
+		//queueName,
+		//"",
+		//true,
+		//false,
+		//false,
+		//false,
+		//nil,
+	//)
 	if err != nil {
 		s.logger.Error(err)
 		s.logger.Fatal("Failed to subscribe to a Testmessage")
@@ -97,10 +118,10 @@ func (s *monitor) subscribeToWarehouseData(c *amqp.Channel, queueName string) {
 	go func() {
 		for d := range msgs {
 			s.logger.Info("Receiving Status Update from a Warehouse")
-			s.logger.Infof("Received Message: %s from queue", string(d.Body))
+			//s.logger.Infof("Received Message: %s from queue", string(d.Body))
             var allProducts []domain.Producttype
             err := json.Unmarshal(d.Body, &allProducts)
-            fmt.Println(allProducts)
+            //fmt.Println(allProducts)
             if err != nil {
                 //TODO: move the file writing somewhere else
                 fmt.Println("doof")
@@ -110,6 +131,8 @@ func (s *monitor) subscribeToWarehouseData(c *amqp.Channel, queueName string) {
                 //TODO: move the file writing somewhere else
                 fmt.Println("doof")
             }
+            f.Truncate(0)
+            f.Seek(0, 0)
             f.Write(allProductsJson)
             //productsFileName := logFileDir + logFilePrefix + queueName
             //err = ioutil.WriteFile(productsFileName, jsonProducts, 0644)

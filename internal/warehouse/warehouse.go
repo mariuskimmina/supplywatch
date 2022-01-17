@@ -23,6 +23,7 @@ import (
 type warehouse struct {
 	logger Logger
 	config *config.WarehouseConfig
+    swConfig *config.SupplywatchConfig
 	DB     *gorm.DB
 	pb.UnimplementedProductServiceServer
 }
@@ -39,10 +40,11 @@ type Logger interface {
 	Fatalf(template string, args ...interface{})
 }
 
-func NewWarehouse(logger Logger, config *config.WarehouseConfig, db *gorm.DB) *warehouse {
+func NewWarehouse(logger Logger, config *config.WarehouseConfig, swConfig *config.SupplywatchConfig, db *gorm.DB) *warehouse {
 	return &warehouse{
 		logger: logger,
 		config: config,
+        swConfig: swConfig,
 		DB:     db,
 	}
 }
@@ -137,7 +139,7 @@ func (w *warehouse) Start() {
 
 	// RabbitMQ
 	go func() {
-		w.SetupMessageQueue(storageChan, sendChan)
+		w.SetupMessageQueue(storageChan, sendChan, w.swConfig.Warehouses)
 		wg.Done()
 	}()
 
