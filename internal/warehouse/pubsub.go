@@ -79,11 +79,12 @@ func (w *warehouse) SetupPublishing(storageChan, sendChan chan string, warehouse
     for i, name := range whNames{
         if strings.Contains(name, host) {
             whNames = append(whNames[:i], whNames[i+1:]...)
-        } else {
-            dataQueuesToSub = append(dataQueuesToSub, name + "DataExchange")
-            productOrderQueuesToSub = append(productOrderQueuesToSub, name + "OrderProductsExchange")
-
         }
+    }
+
+    for _, name := range whNames {
+        productOrderQueuesToSub = append(productOrderQueuesToSub, name + "OrderProductsExchange")
+        dataQueuesToSub = append(dataQueuesToSub, name + "DataExchange")
     }
 
     w.logger.Infof("Other warehouses: %s", warehouseNames)

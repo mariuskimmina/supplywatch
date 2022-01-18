@@ -110,6 +110,7 @@ services:
       - warehouse_net
     volumes:
       - /var/supplywatch/log:/var/supplywatch/log
+
   sensor1:
     container_name: sensor1
     hostname: sensor1

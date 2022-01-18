@@ -50,6 +50,10 @@ func main() {
 		dbHost = "database2"
 		logger.Infof("Trying to Connect to: %s", dbHost)
 	}
+	if strings.Contains(host, "warehouse3") {
+		dbHost = "database3"
+		logger.Infof("Trying to Connect to: %s", dbHost)
+	}
 	if dbHost == "" {
 		logger.Fatal("Failed to determine database hostname")
 	}

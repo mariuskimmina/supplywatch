@@ -77,7 +77,7 @@ func (c *gclient) Start(sendChan chan string, inOutProductChan chan *domain.InOu
 		fmt.Println("gRPC Client ready - waiting for trigger")
 		//w.logger.Info("Ready to send a product - waiting for trigger")
 		sendingProduct := <-sendChan
-		fmt.Printf("Received a message [ %s ] shipping product if possible \n", sendingProduct)
+		fmt.Printf("Received a message [ %s ] shipping product \n", sendingProduct)
 		s := strings.Split(sendingProduct, ":")
 		pname := s[0]
 		pid := s[1]
