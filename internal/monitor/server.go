@@ -9,7 +9,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/mariuskimmina/supplywatch/internal/domain"
 	"github.com/mariuskimmina/supplywatch/pkg/config"
@@ -41,7 +40,7 @@ func NewMonitor(logger Logger, config config.SupplywatchConfig) *monitor {
 }
 
 func (s *monitor) RunAndServe() {
-    time.Sleep(30 * time.Second)
+    //time.Sleep(30 * time.Second)
 	var wg sync.WaitGroup
 	wg.Add(1)
 	// RabbitMQ

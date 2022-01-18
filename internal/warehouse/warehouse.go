@@ -139,9 +139,14 @@ func (w *warehouse) Start() {
 
 	// RabbitMQ
 	go func() {
-		w.SetupMessageQueue(storageChan, sendChan, w.swConfig.Warehouses)
+		w.SetupPublishing(storageChan, sendChan, w.swConfig.Warehouses)
 		wg.Done()
 	}()
+
+	//go func() {
+		//w.SetupConsuming(storageChan, sendChan, w.swConfig.Warehouses)
+		//wg.Done()
+	//}()
 
 	// GRPC Server part
 	gserver, err := gserver.New(inOutProductChan)
