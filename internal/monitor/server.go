@@ -66,7 +66,7 @@ func warehousedata(w http.ResponseWriter, req *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     path := req.URL.Path
     number := path[len(path) - 1:]
-	productsFileName := "/var/supplywatch/monitor/products-warehouse" + number + "Data"
+	productsFileName := "/var/supplywatch/monitor/products-warehouse" + number + "DataExchange"
 	if _, err := os.Stat(productsFileName); errors.Is(err, os.ErrNotExist) {
         fmt.Print(w, err)
 	}

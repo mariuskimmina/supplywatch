@@ -18,8 +18,6 @@ const (
 )
 
 func (s *monitor) SetupMessageQueue(numOfWarehouses int) {
-	//var wg sync.WaitGroup
-	//wg.Add(2)
 	var connRabbit *amqp.Connection
 	var err error
 
@@ -28,7 +26,6 @@ func (s *monitor) SetupMessageQueue(numOfWarehouses int) {
 		time.Sleep(backoff.Default.Duration(attempt))
 		connRabbit, err = amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
 		if err != nil {
-			//s.logger.Error(err)
 			attempt++
 			s.logger.Infof("Failed to connect to RabbitMQ, trying again in %f seconds",
                 backoff.Default.Duration(attempt).Seconds())
@@ -46,34 +43,6 @@ func (s *monitor) SetupMessageQueue(numOfWarehouses int) {
 	s.logger.Info("Successfully setup Channel with RabbitMQ")
     defer channel.Close()
 
-	//host, err := os.Hostname()
-	//if err != nil {
-		//s.logger.Error(err)
-		//s.logger.Fatal("failed to get hostname")
-	//}
-    //dataExchangeName := host + "Test"
-	//err = channel.ExchangeDeclare(
-        //dataExchangeName, // name
-		//"fanout", //type
-		//true, // durable
-		//false, // auto-deleted
-		//false, // internal
-		//false, //no-vait
-		//nil, //arguments
-	//)
-    //q, err := channel.QueueDeclare(
-        //"test",
-        //false,
-        //false,
-        //true,
-        //false,
-        //nil,
-    //)
-    //if err != nil {
-        //s.logger.Info("Failed to setup test queue")
-    //}
-    //s.logger.Info(q.Name)
-
     var wg sync.WaitGroup
     wg.Add(numOfWarehouses)
     s.logger.Info("Number Of Warehouses: ", numOfWarehouses)
@@ -89,6 +58,15 @@ func (s *monitor) SetupMessageQueue(numOfWarehouses int) {
 
 func (s *monitor) SubtoWarehouseData(channel *amqp.Channel, exchangeName string) {
     s.logger.Infof("Subbing to data exchange !! %s !!", exchangeName)
+    err := os.MkdirAll(logFileDir, 0644)
+	if err != nil {
+        fmt.Println("doof")
+	}
+	f, err := os.OpenFile(logFileDir+logFilePrefix+exchangeName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+        fmt.Println("doof")
+	}
+	defer f.Close()
 
     q, err := channel.QueueDeclare(
         "",
@@ -131,75 +109,8 @@ func (s *monitor) SubtoWarehouseData(channel *amqp.Channel, exchangeName string)
     go func() {
         s.logger.Info("Waiting for messages here")
         for d := range msgs {
-            s.logger.Info("WE DID IT !!!!!!!111!!!!")
-            s.logger.Info(d.Timestamp)
-        }
-        wg.Done()
-        s.logger.Info("MONITOR IS DONE LISTENING")
-    }()
-    wg.Wait()
-}
-
-func (s *monitor) subscribeToWarehouseData(c *amqp.Channel, queueName string) {
-    s.logger.Infof("Subscribing to Queue: %s", queueName)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	var msgs <-chan amqp.Delivery
-	var err error
-
-	err = os.MkdirAll(logFileDir, 0644)
-	if err != nil {
-        fmt.Println("doof")
-	}
-	f, err := os.OpenFile(logFileDir+logFilePrefix+queueName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-        fmt.Println("doof")
-	}
-	defer f.Close()
-
-	var attempt int
-	for {
-		time.Sleep(backoff.Default.Duration(attempt))
-        msgs, err = c.Consume(
-            queueName,
-            "",
-            true,
-            false,
-            false,
-            false,
-            nil,
-        )
-		if err != nil {
-            s.logger.Info("Failed to subscribe to queue, trying again")
-			attempt++
-			continue
-		}
-		break
-	}
-    s.logger.Infof("Successfully subscribed to queue %s \n", queueName)
-
-	//msgs, err = c.Consume(
-		//queueName,
-		//"",
-		//true,
-		//false,
-		//false,
-		//false,
-		//nil,
-	//)
-	if err != nil {
-		s.logger.Error(err)
-		s.logger.Fatal("Failed to subscribe to a Testmessage")
-	}
-	s.logger.Infof("Subscribed to %s queue!", queueName)
-	//forever := make(chan bool)
-
-    //decoder := json.NewDecoder()
-	//listen to incoming messages
-	go func() {
-		for d := range msgs {
-			s.logger.Info("Receiving Status Update from a Warehouse")
-			//s.logger.Infof("Received Message: %s from queue", string(d.Body))
+            s.logger.Infof("Received Update from %s", exchangeName)
+            //s.logger.Info(string(d.Body))
             var allProducts []domain.Producttype
             err := json.Unmarshal(d.Body, &allProducts)
             //fmt.Println(allProducts)
@@ -221,10 +132,9 @@ func (s *monitor) subscribeToWarehouseData(c *amqp.Channel, queueName string) {
                 //TODO: move the file writing somewhere else
                 fmt.Println("doof")
             }
-			//sendChan <- string(d.Body)
-		}
-		wg.Done()
-	}()
-
-	wg.Wait()
+        }
+        wg.Done()
+        s.logger.Info("MONITOR IS DONE LISTENING")
+    }()
+    wg.Wait()
 }

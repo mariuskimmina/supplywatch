@@ -57,7 +57,7 @@ func (w *warehouse) setupProducts() error {
 			return err
 		}
 
-		newProduct := &Product{Name: products[index], ID: id, Quantity: 5}
+		newProduct := &Product{Name: products[index], ID: id, Quantity: 3}
         w.logger.Info(newProduct.ID.String())
         result := w.DB.Clauses(clause.OnConflict{
             Columns: []clause.Column{{Name: "id"}},
