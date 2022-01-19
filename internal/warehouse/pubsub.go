@@ -206,7 +206,17 @@ func (w *warehouse) SubtoWarehouseOrder(channel *amqp.Channel, sendChan chan str
 				w.logger.Error("Received Message from queue with invalid format, this message will be ignored")
 				continue
 			}
-			w.logger.Info("Initalizing transport of products")
+            s := strings.Split(string(d.Body), ":")
+            pname := s[0]
+            // check that we have more than 1 stock of that product left before we send it
+            var p Product
+            w.DB.Where("name = ?", pname).First(&p)
+
+            if p.Quantity <= 1 {
+                w.logger.Infof("This Warehouse does not have enough stock of %s to send anything, stock left: %d", p.Name, p.Quantity)
+                continue
+            }
+			w.logger.Infof("This Warehouse does have enough stock of %s left, stock left %d, intializing transport", p.Name, p.Quantity)
             sendChan <- string(d.Body)
         }
         wg.Done()
@@ -216,27 +226,30 @@ func (w *warehouse) SubtoWarehouseOrder(channel *amqp.Channel, sendChan chan str
 }
 
 func (w *warehouse) publishProductRequests(channel *amqp.Channel, storageChan chan string, exchangeName string) {
-    w.logger.Info("Waiting for a product to drop to zero")
+    for {
+        w.logger.Info("Waiting for a product to drop to zero")
 
-    zeroProduct := <-storageChan
-    if !strings.Contains(zeroProduct, ":") {
-        w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
-        //continue
-    }
-    w.logger.Infof("Publishing Request for product to exchange: %s", exchangeName)
-    err := channel.Publish(
-        exchangeName,
-        "",
-        false,
-        false,
-        amqp.Publishing{
-            ContentType: "text/plain",
-            Body:        []byte(zeroProduct),
-        },
-    )
-    if err != nil {
-        w.logger.Error(err)
-        w.logger.Fatal("Failed publish a Testmessage")
+        zeroProduct := <-storageChan
+        if !strings.Contains(zeroProduct, ":") {
+            w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
+            //continue
+        }
+
+        w.logger.Infof("Publishing Request for product to exchange: %s", exchangeName)
+        err := channel.Publish(
+            exchangeName,
+            "",
+            false,
+            false,
+            amqp.Publishing{
+                ContentType: "text/plain",
+                Body:        []byte(zeroProduct),
+            },
+        )
+        if err != nil {
+            w.logger.Error(err)
+            w.logger.Fatal("Failed publish a Testmessage")
+        }
     }
 }
 

@@ -40,8 +40,9 @@ func main() {
 		logger.Fatal("Failed to load supplywatch configuration")
 	}
 
-	// to find out which warehouse should connect to which database at runtime we use the last char of the Hostname
-	// we do this so that we do not have to have a seperate configuration file for each warehouse instance
+    // This part is only needed to have the warehouses work on kubernetes
+    // since kubernetes changes the hostname by appending some giberish uuid
+    // TODO: Find a better solution for multiple warehouses on both compose and kubernetes
 	if strings.Contains(host, "warehouse1") {
 		dbHost = "database1"
 		logger.Infof("Trying to Connect to: %s", dbHost)
@@ -52,6 +53,10 @@ func main() {
 	}
 	if strings.Contains(host, "warehouse3") {
 		dbHost = "database3"
+		logger.Infof("Trying to Connect to: %s", dbHost)
+	}
+	if strings.Contains(host, "warehouse4") {
+		dbHost = "database4"
 		logger.Infof("Trying to Connect to: %s", dbHost)
 	}
 	if dbHost == "" {

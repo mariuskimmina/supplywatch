@@ -111,9 +111,9 @@ services:
     volumes:
       - /var/supplywatch/log:/var/supplywatch/log
 
-  sensor1:
-    container_name: sensor1
-    hostname: sensor1
+  sensor:
+    #container_name: sensor
+    #:whostname: sensor
     build:
       context: .
       dockerfile: ./build/sensor/Dockerfile
@@ -125,34 +125,34 @@ services:
       - warehouse_net
     logging:
       driver: none
-  sensor2:
-    container_name: sensor2
-    hostname: sensor2
-    build:
-      context: .
-      dockerfile: ./build/sensor/Dockerfile
-      args:
-        project: ./cmd/sensor/
-    environment:
-      - APP_NAME=sensor
-    networks:
-      - warehouse_net
-    logging:
-      driver: none
-  sensor3:
-    container_name: sensor3
-    hostname: sensor3
-    build:
-      context: .
-      dockerfile: ./build/sensor/Dockerfile
-      args:
-        project: ./cmd/sensor/
-    environment:
-      - APP_NAME=sensor
-    networks:
-      - warehouse_net
-    logging:
-      driver: none
+        #sensor2:
+        #container_name: sensor2
+        #hostname: sensor2
+        #build:
+        #context: .
+        #dockerfile: ./build/sensor/Dockerfile
+        #args:
+        #project: ./cmd/sensor/
+        #environment:
+        #- APP_NAME=sensor
+        #networks:
+        #- warehouse_net
+        #logging:
+        #driver: none
+        #sensor3:
+        #container_name: sensor3
+        #hostname: sensor3
+        #build:
+        #context: .
+        #dockerfile: ./build/sensor/Dockerfile
+        #args:
+        #project: ./cmd/sensor/
+        #environment:
+        #- APP_NAME=sensor
+        #networks:
+        #- warehouse_net
+        #logging:
+        #driver: none
 
 networks:
   warehouse_net:
