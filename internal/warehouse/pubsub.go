@@ -26,6 +26,8 @@ const (
 const (
 	logFileDir    = "/var/supplywatch/warehouse/"
 	logFilePrefix       = "products-"
+	logFileDataDir    = "/var/supplywatch/warehouse/"
+	logFileData       = "Data"
 )
 
 // Each warehouse is a subscriber and a publisher
@@ -34,9 +36,14 @@ const (
 func (w *warehouse) SetupPublishing(storageChan, sendChan chan string, warehouseNames string) {
 	var wg sync.WaitGroup
 	wg.Add(4)
-
 	var connRabbit *amqp.Connection
 	var err error
+
+	err = os.MkdirAll(logFileDataDir, 0644)
+	if err != nil {
+        w.logger.Error("Error creating log file directory: %v", err)
+	}
+
 
 	var attempt int
 	for {
@@ -263,11 +270,10 @@ func (w *warehouse) publishData(channel *amqp.Channel, exchangeName string) {
 			//w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
 			//continue
 		//}
-
 		w.logger.Info("Sending Info to Data Exchange!")
         var allProducts []Product
         w.DB.Find(&allProducts)
-        productBytes, err := json.Marshal(allProducts)
+        productBytes, err := json.MarshalIndent(allProducts, " ", "")
         if err != nil {
             w.logger.Error(err)
             w.logger.Fatal("Failed to marshal info for monitor")
@@ -287,6 +293,18 @@ func (w *warehouse) publishData(channel *amqp.Channel, exchangeName string) {
             w.logger.Error(err)
             w.logger.Fatal("Failed publish a Testmessage")
         }
+
+        // log all data being send for test cases
+        f, err := os.OpenFile(logFileDataDir+logFileData, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+        if err != nil {
+            w.logger.Error(err)
+            w.logger.Fatal("Failed to write data log")
+        }
+        f.Truncate(0)
+        f.Seek(0, 0)
+        f.Write(productBytes)
+        defer f.Close()
+
 	}
 }
 

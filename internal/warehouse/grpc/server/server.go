@@ -2,6 +2,7 @@ package gserver
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -11,8 +12,8 @@ import (
 )
 
 const (
-	receivLogFileDir = "/var/supplywatch/grpc/client/"
-	receivLogFile    = "sendlog"
+	receivLogFileDir = "/var/supplywatch/grpc/server/"
+	receivLogFile    = "receivLog"
 	receivLog        = receivLogFileDir + receivLogFile
 )
 
@@ -23,11 +24,15 @@ type gserver struct {
 }
 
 func New(inOutProductChan chan *domain.InOutProduct) (*gserver, error) {
+	err := os.MkdirAll(receivLogFileDir, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("Error creating log file directory: %v", err)
+	}
 	var tcpConn net.Listener
 	tcpPort := os.Getenv("SW_GRPCPORT")
 	listenIP := os.Getenv("SW_LISTEN_IP")
 	tcpListenIP := listenIP + ":" + tcpPort
-	tcpConn, err := net.Listen("tcp", tcpListenIP)
+	tcpConn, err = net.Listen("tcp", tcpListenIP)
 	if err != nil {
 		return nil, err
 	}
@@ -67,15 +72,27 @@ func (s *gserver) GetAllProducts(ctx context.Context, req *pb.GetAllProductsRequ
 }
 
 func (s *gserver) ReceivProducts(ctx context.Context, req *pb.ReceivProductsRequest) (*pb.ReceivProductsResponse, error) {
+	f, err := os.OpenFile(receivLogFileDir+receivLogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("Error opening log file: %v", err)
+	}
+    defer f.Close()
 	// first we log the Request
 	// this way we can compare the shippingReceivLog with the shippingSendLog of the other warehouse
 	// if they don't match something went wrong
-	//allRequests = append(allRequests, req)
-	//allJsonReq, err := json.MarshalIndent(allRequests, "", "  ")
-	//if err != nil {
-	//return nil, err
-	//}
-	//err = ioutil.WriteFile(shippingReceivLog, allJsonReq, 0644)
+    logentry := &domain.ShippingLog{
+        ShippingProductID:   req.Product.Id,
+        ShippingProductName: req.Product.Name,
+    }
+	if err != nil {
+        return nil, err
+	}
+    logjson, err := json.Marshal(logentry)
+    if err != nil {
+        return nil, fmt.Errorf("Error marshaling log data: %v", err)
+    }
+    f.WriteString(string(logjson) + ",\n")
+
 	//if err != nil {
 	//return nil, err
 	//}
