@@ -1,4 +1,23 @@
-# Verteilte Systeme in Wintersemester 2021/22
+# Supplywatch
+
+Supplywatch is a distributed system trying to simulate a supplychain.
+It consists of:
+
+* Sensors
+    * Simulates random products (from a predefined list) entering or leaving a warehouse
+* Warehouses
+    * receives data from Sensors
+    * stores the current amount of each product in a database
+* Monitor
+    * a central overview, here you can view the data of each warehouse
+
+Warehouses can also ship products to other warehouses. When a warehouse has nothing left of any given prodct it will send
+a message to all other warehouses (via MessageQueue) requesting said product. If any of the other warehouses has atleast
+two units of that product left it will send one to the requesting warehouse (via gRPC).
+
+## Architecture Diagramm
+
+![Architecture Diagramm](media/images/architecture.png)
 
 ## Getting Started
 
@@ -21,24 +40,6 @@ Assuming that helm is installed on your system and has been setup to communicate
 helm install supplywatch-service
 ```
 
-## Tags
-
-Das Repo enthaelt Tags fuer die einzelnen Aufgaben, so dass der Stand fuer jede Abgabe aufgerufen werden kann:
-
-* UDP-Sockets
-* TCP-Sockets
-* RCP
-* Message-Queue
-
-## Assignment
-
-in the context of this course we are designing a distributed system for "Supply Chain Monitoring".
-Below you can find a diagram of the full project we are buidling. The goal is not to build the most
-realistic supply chain monitoring but rather to focus on the communication of the distributed system,
-the system design, the tests and the deployment of the application.
-
-![Architecture Diagramm](media/images/architecture.png)
-
 ## Project Structure
 
 * `bin/`: Scripts to automate test
@@ -57,62 +58,6 @@ the system design, the tests and the deployment of the application.
 * `proto/`: protobuf files for gRPC
 * `tests/`: describtions of test cases.
 
-
-## Flow-Diagram
-
-![Workflow Diagramm](media/images/Workflow_2.png)
-Workflow v.2
-
-
-## Functional Requirements
-
-* Zufällige Daten müssen von den Sensoren erstellt werden.
-* Daten müssen via UDP von den Sensoren gesendet werden.
-* Daten müssen von den Warenhäusern auf dem UDP Socket empfangen werden.
-* Daten müssen von den Warenhäusern geloggt werden.
-  * Geloggte Daten müssen Sensor-ID und Zeitstempel beinhalten.
-  * Die Anzahl der empfangenen Daten muss geloggt werden.
-* Übertragene Daten müssen nachverfolgbar sein.
-* Geloggte Daten müssen über eine HTTP-Schnittstelle abrufbar sein.
-* Die HTTP-Schnittstelle muss den HTTP-GET Befehl verarbeiten können.
-* Die HTTP-Antwort muss im JSON-Format gesendet werden.
-
-## Non-Functional Requirements
-
-* Die einzelnen Komponenten des Servers sollten unabhängig voneinander laufen können.
-* Die Webseite sollte von Mozilla Firefox aufrufbar sein.
-
-## Realisierung
-
-Die erstellten Sensoren simulieren das Einscannen von Produkten durch zufällig generierte Datenobjekte. Jeder Sensor stellt einen eigenständigen Prozess dar und ist mit folgenden Daten definiert:
-* `sensor_id`: Einzigartige Identifizierung des Sensors.
-* `sensor_type`: Art des Scan-Verfahrens des Sensors.
-* `message`: Übertragenes Datenobjekt.
-* `ip`: IP-Adresse des Sensors.
-* `port`: Port-Nummer des Sensors.
-
-Die Daten der Sensoren werden mittels UDP an die Warenhäuser übertragen.
-Die Warenhäuser nehmen die Datenpakete an und speichern diese in LOG-Dateien.
-Die LOG-Dateien werden pro Tag gespeichert und für spätere Verfolgung gelagert.
-
-## HTTP-Endpoints
-Die HTTP Server der beiden Warenhaeuser laufen, falls keine aenderungen der configuration vorgenommen wurden auf den ports:
-* `:8000`: Warenhaus 1
-* `:8001`: Warenhaus 2
-
-Folgende Links sind auf den Warenhaus-Servern erreichbar:
-* `/`: Anzeigen der Waren des Warenhauses.
-* `/allsensordata`: Anzeigen aller erhaltenen Sensordaten.
-* `/sensordata?sensor_id=<sensor_id>`: Anzeigen der gescannten Daten von bestimmtem Sensor.
-  * `<sensor_id>` muss hierbei ersetzt werden!
-* `/sensorhistory?date=<mm-dd-yyyy>`: Anzeigen aller erhaltenen Sensordaten (bestimmter Tag).
-  * `<mm-dd-yyyy>` muss hierbei ersetzt werden!
-
-
-## Testumgebung
-
-* Allgemein verwenden wir Docker-Compose auf einem Linux-System (Ubuntu 20.04).
-* Für die HTTP-Tests wird Firefox verwendet.
 
 ## Tests
 
