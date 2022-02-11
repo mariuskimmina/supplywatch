@@ -42,34 +42,6 @@ func New(inOutProductChan chan *domain.InOutProduct) (*gserver, error) {
 	}, nil
 }
 
-func (s *gserver) GetAllProducts(ctx context.Context, req *pb.GetAllProductsRequest) (*pb.GetAllProductsResponse, error) {
-	//w.logger.Info("Received GRPC Request, GetAllProducts")
-	//var allProducts []Product
-	//w.DB.Find(&allProducts)
-
-	//sendProducts := []*pb.Product{}
-	//for _, product := range allProducts {
-	//sendProduct := pb.Product{
-	//Name: product.Name,
-	//Id:   product.ID.String(),
-	//}
-	//sendProducts = append(sendProducts, &sendProduct)
-	//}
-	//
-	//allProductsJson, err := json.MarshalIndent(sendProducts, "", "  ")
-	//if err != nil {
-	//return nil, err
-	//}
-	//err = ioutil.WriteFile(receivLog, allProductsJson, 0644)
-	//if err != nil {
-	//return nil, err
-	//}
-	//
-	//return &pb.GetAllProductsResponse{
-	//Products: sendProducts,
-	//}, nil
-	return nil, nil
-}
 
 func (s *gserver) ReceivProducts(ctx context.Context, req *pb.ReceivProductsRequest) (*pb.ReceivProductsResponse, error) {
 	f, err := os.OpenFile(receivLogFileDir+receivLogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -77,6 +49,7 @@ func (s *gserver) ReceivProducts(ctx context.Context, req *pb.ReceivProductsRequ
 		return nil, fmt.Errorf("Error opening log file: %v", err)
 	}
 	defer f.Close()
+
 	// first we log the Request
 	// this way we can compare the shippingReceivLog with the shippingSendLog of the other warehouse
 	// if they don't match something went wrong
@@ -93,14 +66,6 @@ func (s *gserver) ReceivProducts(ctx context.Context, req *pb.ReceivProductsRequ
 	}
 	f.WriteString(string(logjson) + ",\n")
 
-	//if err != nil {
-	//return nil, err
-	//}
-	//w.logger.Info("Received GRPC Request, ReceivProducts")
-	//product := &Product{}
-	//w.DB.First(product, "name = ?", req.Product.Name)
-	//oldQuantity := product.Quantity
-	//w.DB.Model(&Product{}).Where("name = ?", req.Product.Name).Update("quantity", req.Amount+int32(oldQuantity))
 	fmt.Println("Received GRPC Request, ReceivProducts")
 	p := &domain.InOutProduct{
 		ProductName: req.Product.Name,
@@ -114,4 +79,8 @@ func (s *gserver) ReceivProducts(ctx context.Context, req *pb.ReceivProductsRequ
 	return &pb.ReceivProductsResponse{
 		Success: true,
 	}, nil
+}
+
+func (s *gserver) GetAllProducts(ctx context.Context, req *pb.GetAllProductsRequest) (*pb.GetAllProductsResponse, error) {
+	return nil, nil
 }
