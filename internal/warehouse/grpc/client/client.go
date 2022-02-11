@@ -42,20 +42,6 @@ type gclient struct {
 }
 
 func New(conn *grpc.ClientConn) (*gclient, error) {
-	//var conn *grpc.ClientConn
-	//var attempt int
-	//var err error
-	//for {
-	//time.Sleep(backoff.Default.Duration(attempt))
-	//conn, err = grpc.Dial(address, grpc.WithInsecure())
-	//if err != nil {
-	//attempt++
-	//fmt.Printf("Failed to Connect via GRPC, trying again in %d seconds\n", backoff.Default.Duration(attempt))
-	//continue
-	//}
-	//break
-	//}
-	//defer conn.Close()
 	c := pb.NewProductServiceClient(conn)
 	return &gclient{
 		c,
@@ -63,7 +49,6 @@ func New(conn *grpc.ClientConn) (*gclient, error) {
 }
 
 func (c *gclient) Start(sendChan chan string, inOutProductChan chan *domain.InOutProduct) error {
-	fmt.Println("Hello From gRPC Client")
 	err := os.MkdirAll(sendLogFileDir, 0644)
 	if err != nil {
 		return fmt.Errorf("Error creating log file directory: %v", err)
@@ -124,21 +109,5 @@ func (c *gclient) Start(sendChan chan string, inOutProductChan chan *domain.InOu
 			fmt.Println("Send product successfully")
 			break
 		}
-
-		//req := &pb.GetAllProductsRequest{}
-		//allProducts, err := c.GetAllProducts(ctx, req)
-		//if err != nil {
-		//w.logger.Error(err)
-		//w.logger.Fatal("Failed to get all Products")
-		//}
-		//allProductsJson, err := json.MarshalIndent(allProducts.Products, "", "  ")
-		//if err != nil {
-		//w.logger.Fatal("Failed to marhal Request")
-		//}
-		//err = ioutil.WriteFile(allProductsReceivLog, allProductsJson, 0644)
-		//if err != nil {
-		//w.logger.Fatal("Failed to write Log")
-		//}
-		//time.Sleep(5 * time.Second)
 	}
 }
