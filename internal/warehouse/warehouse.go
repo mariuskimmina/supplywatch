@@ -21,10 +21,10 @@ import (
 )
 
 type warehouse struct {
-	logger Logger
-	config *config.WarehouseConfig
-    swConfig *config.SupplywatchConfig
-	DB     *gorm.DB
+	logger   Logger
+	config   *config.WarehouseConfig
+	swConfig *config.SupplywatchConfig
+	DB       *gorm.DB
 	pb.UnimplementedProductServiceServer
 }
 
@@ -42,10 +42,10 @@ type Logger interface {
 
 func NewWarehouse(logger Logger, config *config.WarehouseConfig, swConfig *config.SupplywatchConfig, db *gorm.DB) *warehouse {
 	return &warehouse{
-		logger: logger,
-		config: config,
-        swConfig: swConfig,
-		DB:     db,
+		logger:   logger,
+		config:   config,
+		swConfig: swConfig,
+		DB:       db,
 	}
 }
 
@@ -61,7 +61,7 @@ var (
 	hostname        = os.Getenv("SW_OTHER_WAREHOUSE_HOST")
 	port            = os.Getenv("SW_OTHER_WAREHOUSE_PORT")
 	address         = hostname + ":" + port
-    warehouses      = os.Getenv("SW_WAREHOUSES") //list of all warehouses (hostnames)
+	warehouses      = os.Getenv("SW_WAREHOUSES") //list of all warehouses (hostnames)
 	allProductNames = []string{
 		"butter",
 		"sugar",
@@ -77,8 +77,8 @@ var (
 )
 
 func remove(s []string, i int) []string {
-    s[i] = s[len(s)-1]
-    return s[:len(s)-1]
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
 }
 
 // Start starts the warehouse server
@@ -98,7 +98,7 @@ func (w *warehouse) Start() {
 		w.logger.Fatal("Failed to connect to Database")
 	}
 	defer sqlDB.Close()
-    w.logger.Info("Successfully Connected to Database")
+	w.logger.Info("Successfully Connected to Database")
 
 	// create all products with quanitity five
 	err = w.setupProducts()
@@ -106,12 +106,12 @@ func (w *warehouse) Start() {
 		w.logger.Error(err)
 		w.logger.Fatal("Failed to setup Product Database")
 	}
-    w.logger.Info("Successfully setup Products on Database")
+	w.logger.Info("Successfully setup Products on Database")
 
 	var wg sync.WaitGroup
 	wg.Add(4)
 
-    w.logger.Info("Setting up UDP Server")
+	w.logger.Info("Setting up UDP Server")
 	udpServer, err := udp.NewUDPServer()
 	if err != nil {
 		w.logger.Error(err)
@@ -144,8 +144,8 @@ func (w *warehouse) Start() {
 	}()
 
 	//go func() {
-		//w.SetupConsuming(storageChan, sendChan, w.swConfig.Warehouses)
-		//wg.Done()
+	//w.SetupConsuming(storageChan, sendChan, w.swConfig.Warehouses)
+	//wg.Done()
 	//}()
 
 	// GRPC Server part

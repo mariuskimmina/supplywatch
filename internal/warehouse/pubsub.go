@@ -24,10 +24,10 @@ const (
 )
 
 const (
-	logFileDir    = "/var/supplywatch/warehouse/"
-	logFilePrefix       = "products-"
-	logFileDataDir    = "/var/supplywatch/warehouse/"
-	logFileData       = "Data"
+	logFileDir     = "/var/supplywatch/warehouse/"
+	logFilePrefix  = "products-"
+	logFileDataDir = "/var/supplywatch/warehouse/"
+	logFileData    = "Data"
 )
 
 // Each warehouse is a subscriber and a publisher
@@ -41,9 +41,8 @@ func (w *warehouse) SetupPublishing(storageChan, sendChan chan string, warehouse
 
 	err = os.MkdirAll(logFileDataDir, 0644)
 	if err != nil {
-        w.logger.Error("Error creating log file directory: %v", err)
+		w.logger.Error("Error creating log file directory: %v", err)
 	}
-
 
 	var attempt int
 	for {
@@ -75,55 +74,53 @@ func (w *warehouse) SetupPublishing(storageChan, sendChan chan string, warehouse
 	// otherQueues contains the names of all queues but the one of the current warehouse
 	// we will publish to otherQueues and subscribe to our own
 
-    // get list of all warehouses from config
-    // remove this warehouse from the list
-    // subscribe to the "data" queues of all other warehouses
-    // when a product drops to zero, we publish a message to the product queues of all other warehouses
+	// get list of all warehouses from config
+	// remove this warehouse from the list
+	// subscribe to the "data" queues of all other warehouses
+	// when a product drops to zero, we publish a message to the product queues of all other warehouses
 
-    whNames := strings.Split(warehouseNames, ",")
-    var dataQueuesToSub []string
-    var productOrderQueuesToSub []string
-    for i, name := range whNames{
-        if strings.Contains(name, host) {
-            whNames = append(whNames[:i], whNames[i+1:]...)
-        }
-    }
+	whNames := strings.Split(warehouseNames, ",")
+	var dataQueuesToSub []string
+	var productOrderQueuesToSub []string
+	for i, name := range whNames {
+		if strings.Contains(name, host) {
+			whNames = append(whNames[:i], whNames[i+1:]...)
+		}
+	}
 
-    for _, name := range whNames {
-        productOrderQueuesToSub = append(productOrderQueuesToSub, name + "OrderProductsExchange")
-        dataQueuesToSub = append(dataQueuesToSub, name + "DataExchange")
-    }
+	for _, name := range whNames {
+		productOrderQueuesToSub = append(productOrderQueuesToSub, name+"OrderProductsExchange")
+		dataQueuesToSub = append(dataQueuesToSub, name+"DataExchange")
+	}
 
-    w.logger.Infof("Other warehouses: %s", warehouseNames)
-    w.logger.Infof("Other warehouses: %s", whNames)
-    w.logger.Infof("Other warehouses data Queues: %s", dataQueuesToSub)
+	w.logger.Infof("Other warehouses: %s", warehouseNames)
+	w.logger.Infof("Other warehouses: %s", whNames)
+	w.logger.Infof("Other warehouses data Queues: %s", dataQueuesToSub)
 
-
-    // This exchange is used to publish data to other warehouses and the monitor
-    dataExchangeName := host + "DataExchange"
+	// This exchange is used to publish data to other warehouses and the monitor
+	dataExchangeName := host + "DataExchange"
 	err = channel.ExchangeDeclare(
-        dataExchangeName, // name
-		"fanout", //type
-		true, // durable
-		false, // auto-deleted
-		false, // internal
-		false, //no-vait
-		nil, //arguments
+		dataExchangeName, // name
+		"fanout",         //type
+		true,             // durable
+		false,            // auto-deleted
+		false,            // internal
+		false,            //no-vait
+		nil,              //arguments
 	)
 
-
-    // This exchange is used to order Products from all the other warehouses
-    // Once a product drops to zero we publish a message to this exchange to request
-    // this product from all the other warehosues
-    productExchangeName := host + "OrderProductsExchange"
+	// This exchange is used to order Products from all the other warehouses
+	// Once a product drops to zero we publish a message to this exchange to request
+	// this product from all the other warehosues
+	productExchangeName := host + "OrderProductsExchange"
 	err = channel.ExchangeDeclare(
-        productExchangeName, // name
-		"fanout", //type
-		true, // durable
-		false, // auto-deleted
-		false, // internal
-		false, //no-vait
-		nil, //arguments
+		productExchangeName, // name
+		"fanout",            //type
+		true,                // durable
+		false,               // auto-deleted
+		false,               // internal
+		false,               //no-vait
+		nil,                 //arguments
 	)
 
 	// Subscribe
@@ -132,7 +129,7 @@ func (w *warehouse) SetupPublishing(storageChan, sendChan chan string, warehouse
 		wg.Done()
 	}()
 
-    // Here we publish data for the monitor
+	// Here we publish data for the monitor
 	go func() {
 		w.publishData(channel, dataExchangeName)
 		wg.Done()
@@ -152,252 +149,252 @@ func (w *warehouse) SetupPublishing(storageChan, sendChan chan string, warehouse
 }
 
 func (w *warehouse) SubscribeToAllProductOrders(channel *amqp.Channel, sendChan chan string, exchangeNames []string) {
-    w.logger.Info("Subscribing to the Product Orders of all other warehouses")
+	w.logger.Info("Subscribing to the Product Orders of all other warehouses")
 	var wg sync.WaitGroup
 	wg.Add(len(exchangeNames))
-    for _, name := range exchangeNames {
-        go func(name string) {
-            w.SubtoWarehouseOrder(channel, sendChan, name)
-            wg.Done()
-        }(name)
-    }
-    wg.Wait()
+	for _, name := range exchangeNames {
+		go func(name string) {
+			w.SubtoWarehouseOrder(channel, sendChan, name)
+			wg.Done()
+		}(name)
+	}
+	wg.Wait()
 
 }
 
 func (w *warehouse) SubtoWarehouseOrder(channel *amqp.Channel, sendChan chan string, exchangeName string) {
-    w.logger.Infof("Subbing to data exchange !! %s !!", exchangeName)
-    q, err := channel.QueueDeclare(
-        "",
-        false,
-        false,
-        true,
-        false,
-        nil,
-    )
-    if err != nil {
-        w.logger.Error("Failed to declare queue on exchange")
-    }
+	w.logger.Infof("Subbing to data exchange !! %s !!", exchangeName)
+	q, err := channel.QueueDeclare(
+		"",
+		false,
+		false,
+		true,
+		false,
+		nil,
+	)
+	if err != nil {
+		w.logger.Error("Failed to declare queue on exchange")
+	}
 
-    err = channel.QueueBind(
-        q.Name,
-        "",
-        exchangeName,
-        false,
-        nil,
-    )
-    if err != nil {
-        w.logger.Error("Failed to bind to queue to subscribe")
-    }
+	err = channel.QueueBind(
+		q.Name,
+		"",
+		exchangeName,
+		false,
+		nil,
+	)
+	if err != nil {
+		w.logger.Error("Failed to bind to queue to subscribe")
+	}
 
-    msgs, err := channel.Consume(
-        q.Name,
-        "",
-        true,
-        false,
-        false,
-        false,
-        nil,
-    )
-    if err != nil {
-        w.logger.Error("Failed to register as a consumer here")
-    }
+	msgs, err := channel.Consume(
+		q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		w.logger.Error("Failed to register as a consumer here")
+	}
 
-    var wg sync.WaitGroup
-    wg.Add(1)
-    go func() {
-        w.logger.Info("Waiting for messages here")
-        for d := range msgs {
-            w.logger.Infof("Recevied Order from another warehouse: %s", exchangeName)
-            if !strings.Contains(string(d.Body), ":") {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		w.logger.Info("Waiting for messages here")
+		for d := range msgs {
+			w.logger.Infof("Recevied Order from another warehouse: %s", exchangeName)
+			if !strings.Contains(string(d.Body), ":") {
 				w.logger.Error("Received Message from queue with invalid format, this message will be ignored")
 				continue
 			}
-            s := strings.Split(string(d.Body), ":")
-            pname := s[0]
-            // check that we have more than 1 stock of that product left before we send it
-            var p Product
-            w.DB.Where("name = ?", pname).First(&p)
+			s := strings.Split(string(d.Body), ":")
+			pname := s[0]
+			// check that we have more than 1 stock of that product left before we send it
+			var p Product
+			w.DB.Where("name = ?", pname).First(&p)
 
-            if p.Quantity <= 1 {
-                w.logger.Infof("This Warehouse does not have enough stock of %s to send anything, stock left: %d", p.Name, p.Quantity)
-                continue
-            }
+			if p.Quantity <= 1 {
+				w.logger.Infof("This Warehouse does not have enough stock of %s to send anything, stock left: %d", p.Name, p.Quantity)
+				continue
+			}
 			w.logger.Infof("This Warehouse does have enough stock of %s left, stock left %d, intializing transport", p.Name, p.Quantity)
-            sendChan <- string(d.Body)
-        }
-        wg.Done()
-    }()
-    wg.Wait()
+			sendChan <- string(d.Body)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
 
 }
 
 func (w *warehouse) publishProductRequests(channel *amqp.Channel, storageChan chan string, exchangeName string) {
-    for {
-        w.logger.Info("Waiting for a product to drop to zero")
+	for {
+		w.logger.Info("Waiting for a product to drop to zero")
 
-        zeroProduct := <-storageChan
-        if !strings.Contains(zeroProduct, ":") {
-            w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
-            //continue
-        }
+		zeroProduct := <-storageChan
+		if !strings.Contains(zeroProduct, ":") {
+			w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
+			//continue
+		}
 
-        w.logger.Infof("Publishing Request for product to exchange: %s", exchangeName)
-        err := channel.Publish(
-            exchangeName,
-            "",
-            false,
-            false,
-            amqp.Publishing{
-                ContentType: "text/plain",
-                Body:        []byte(zeroProduct),
-            },
-        )
-        if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed publish a Testmessage")
-        }
-    }
+		w.logger.Infof("Publishing Request for product to exchange: %s", exchangeName)
+		err := channel.Publish(
+			exchangeName,
+			"",
+			false,
+			false,
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(zeroProduct),
+			},
+		)
+		if err != nil {
+			w.logger.Error(err)
+			w.logger.Fatal("Failed publish a Testmessage")
+		}
+	}
 }
 
 func (w *warehouse) publishData(channel *amqp.Channel, exchangeName string) {
 	for {
-        time.Sleep(30 * time.Second)
+		time.Sleep(30 * time.Second)
 		//w.logger.Info("Waiting for a product to drop to zero")
 
 		//zeroProduct := <-storageChan
 		//if !strings.Contains(zeroProduct, ":") {
-			//w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
-			//continue
+		//w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
+		//continue
 		//}
 		w.logger.Info("Sending Info to Data Exchange!")
-        var allProducts []Product
-        w.DB.Find(&allProducts)
-        productBytes, err := json.MarshalIndent(allProducts, " ", "")
-        if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to marshal info for monitor")
-        }
-        //w.logger.Info(allProducts)
-        err = channel.Publish(
-            exchangeName,
-            "",
-            false,
-            false,
-            amqp.Publishing{
-                ContentType: "text/plain",
-                Body:        []byte(productBytes),
-            },
-        )
-        if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed publish a Testmessage")
-        }
+		var allProducts []Product
+		w.DB.Find(&allProducts)
+		productBytes, err := json.MarshalIndent(allProducts, " ", "")
+		if err != nil {
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to marshal info for monitor")
+		}
+		//w.logger.Info(allProducts)
+		err = channel.Publish(
+			exchangeName,
+			"",
+			false,
+			false,
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(productBytes),
+			},
+		)
+		if err != nil {
+			w.logger.Error(err)
+			w.logger.Fatal("Failed publish a Testmessage")
+		}
 
-        // log all data being send for test cases
-        f, err := os.OpenFile(logFileDataDir+logFileData, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-        if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to write data log")
-        }
-        f.Truncate(0)
-        f.Seek(0, 0)
-        f.Write(productBytes)
-        defer f.Close()
+		// log all data being send for test cases
+		f, err := os.OpenFile(logFileDataDir+logFileData, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to write data log")
+		}
+		f.Truncate(0)
+		f.Seek(0, 0)
+		f.Write(productBytes)
+		defer f.Close()
 
 	}
 }
 
 func (w *warehouse) SubscribeToAllWarehouseData(channel *amqp.Channel, exchangeNames []string) {
-    w.logger.Info("Subscribing to the Data of all other warehouses")
+	w.logger.Info("Subscribing to the Data of all other warehouses")
 	var wg sync.WaitGroup
 	wg.Add(len(exchangeNames))
-    for _, name := range exchangeNames {
-        go func(name string) {
-            w.SubtoWarehouseData(channel, name)
-            wg.Done()
-        }(name)
-    }
-    wg.Wait()
+	for _, name := range exchangeNames {
+		go func(name string) {
+			w.SubtoWarehouseData(channel, name)
+			wg.Done()
+		}(name)
+	}
+	wg.Wait()
 }
 
 func (w *warehouse) SubtoWarehouseData(channel *amqp.Channel, exchangeName string) {
-    err := os.MkdirAll(logFileDir, 0644)
+	err := os.MkdirAll(logFileDir, 0644)
 	if err != nil {
-        fmt.Println("doof")
+		fmt.Println("doof")
 	}
 	f, err := os.OpenFile(logFileDir+logFilePrefix+exchangeName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-        fmt.Println("doof")
+		fmt.Println("doof")
 	}
 	defer f.Close()
 
-    w.logger.Infof("Subbing to data exchange !! %s !!", exchangeName)
-    q, err := channel.QueueDeclare(
-        "",
-        false,
-        false,
-        true,
-        false,
-        nil,
-    )
-    if err != nil {
-        w.logger.Error("Failed to declare queue on exchange")
-    }
+	w.logger.Infof("Subbing to data exchange !! %s !!", exchangeName)
+	q, err := channel.QueueDeclare(
+		"",
+		false,
+		false,
+		true,
+		false,
+		nil,
+	)
+	if err != nil {
+		w.logger.Error("Failed to declare queue on exchange")
+	}
 
-    err = channel.QueueBind(
-        q.Name,
-        "",
-        exchangeName,
-        false,
-        nil,
-    )
-    if err != nil {
-        w.logger.Error("Failed to bind to queue to subscribe")
-    }
+	err = channel.QueueBind(
+		q.Name,
+		"",
+		exchangeName,
+		false,
+		nil,
+	)
+	if err != nil {
+		w.logger.Error("Failed to bind to queue to subscribe")
+	}
 
-    msgs, err := channel.Consume(
-        q.Name,
-        "",
-        true,
-        false,
-        false,
-        false,
-        nil,
-    )
-    if err != nil {
-        w.logger.Error("Failed to register as a consumer here")
-    }
+	msgs, err := channel.Consume(
+		q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		w.logger.Error("Failed to register as a consumer here")
+	}
 
-    var wg sync.WaitGroup
-    wg.Add(1)
-    go func() {
-        w.logger.Info("Waiting for messages here")
-        for d := range msgs {
-            w.logger.Infof("Recevied Update from another warehouse: %s", exchangeName)
-            var allProducts []domain.Producttype
-            err := json.Unmarshal(d.Body, &allProducts)
-            //fmt.Println(allProducts)
-            if err != nil {
-                w.logger.Error(err)
-            }
-            allProductsJson, err := json.MarshalIndent(allProducts, " ", "")
-            if err != nil {
-                w.logger.Error(err)
-            }
-            //w.logger.Info(string(allProductsJson))
-            f.Truncate(0)
-            f.Seek(0, 0)
-            _, err = f.Write(allProductsJson)
-            //productsFileName := logFileDir + logFilePrefix + queueName
-            //err = ioutil.WriteFile(productsFileName, jsonProducts, 0644)
-            if err != nil {
-                w.logger.Error(err)
-            }
-        }
-        wg.Done()
-    }()
-    wg.Wait()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		w.logger.Info("Waiting for messages here")
+		for d := range msgs {
+			w.logger.Infof("Recevied Update from another warehouse: %s", exchangeName)
+			var allProducts []domain.Producttype
+			err := json.Unmarshal(d.Body, &allProducts)
+			//fmt.Println(allProducts)
+			if err != nil {
+				w.logger.Error(err)
+			}
+			allProductsJson, err := json.MarshalIndent(allProducts, " ", "")
+			if err != nil {
+				w.logger.Error(err)
+			}
+			//w.logger.Info(string(allProductsJson))
+			f.Truncate(0)
+			f.Seek(0, 0)
+			_, err = f.Write(allProductsJson)
+			//productsFileName := logFileDir + logFilePrefix + queueName
+			//err = ioutil.WriteFile(productsFileName, jsonProducts, 0644)
+			if err != nil {
+				w.logger.Error(err)
+			}
+		}
+		wg.Done()
+	}()
+	wg.Wait()
 }
 
 // publishMessages waits for a message on the storageChan
@@ -421,7 +418,7 @@ func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string, ot
 				false,
 				amqp.Publishing{
 					ContentType: "text/plain",
-                    Body:        []byte(zeroProduct),
+					Body:        []byte(zeroProduct),
 				},
 			)
 			if err != nil {
@@ -434,42 +431,42 @@ func (w *warehouse) publishMessages(c *amqp.Channel, storageChan chan string, ot
 
 func (w *warehouse) publishDataMonitor(c *amqp.Channel, queueName string) {
 	for {
-        time.Sleep(30 * time.Second)
+		time.Sleep(30 * time.Second)
 		//w.logger.Info("Waiting for a product to drop to zero")
 
 		//zeroProduct := <-storageChan
 		//if !strings.Contains(zeroProduct, ":") {
-			//w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
-			//continue
+		//w.logger.Error("Cannot publish Message %s because the format is invalid", zeroProduct)
+		//continue
 		//}
 
 		w.logger.Info("Sending Info to Data Queue!")
-        var allProducts []Product
-        w.DB.Find(&allProducts)
-        productBytes, err := json.Marshal(allProducts)
-        if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed to marshal info for monitor")
-        }
-        //w.logger.Info(allProducts)
-        err = c.Publish(
-            "",
-            queueName,
-            false,
-            false,
-            amqp.Publishing{
-                ContentType: "text/plain",
-                Body:        []byte(productBytes),
-            },
-        )
-        if err != nil {
-            w.logger.Error(err)
-            w.logger.Fatal("Failed publish a Testmessage")
-        }
+		var allProducts []Product
+		w.DB.Find(&allProducts)
+		productBytes, err := json.Marshal(allProducts)
+		if err != nil {
+			w.logger.Error(err)
+			w.logger.Fatal("Failed to marshal info for monitor")
+		}
+		//w.logger.Info(allProducts)
+		err = c.Publish(
+			"",
+			queueName,
+			false,
+			false,
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(productBytes),
+			},
+		)
+		if err != nil {
+			w.logger.Error(err)
+			w.logger.Fatal("Failed publish a Testmessage")
+		}
 	}
 }
 func (w *warehouse) subscribeToOtherWarehouseData(c *amqp.Channel, queueName string) {
-    w.logger.Infof("Subscribing to Queue: %s", queueName)
+	w.logger.Infof("Subscribing to Queue: %s", queueName)
 	var wg sync.WaitGroup
 	wg.Add(1)
 	var msgs <-chan amqp.Delivery
@@ -477,61 +474,61 @@ func (w *warehouse) subscribeToOtherWarehouseData(c *amqp.Channel, queueName str
 
 	//err = os.MkdirAll(logFileDir, 0644)
 	//if err != nil {
-        //fmt.Println("doof")
+	//fmt.Println("doof")
 	//}
 	//f, err := os.OpenFile(logFileDir+logFilePrefix+queueName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	//if err != nil {
-        //fmt.Println("doof")
+	//fmt.Println("doof")
 	////}
 	//defer f.Close()
 	var attempt int
 	for {
 		time.Sleep(backoff.Default.Duration(attempt))
-        msgs, err = c.Consume(
-            queueName,
-            "",
-            true,
-            false,
-            false,
-            false,
-            nil,
-        )
-        if err != nil {
-            w.logger.Infof("Failed to subscribe to queue %s, trying again", queueName)
-            w.logger.Error(err)
-            attempt++
-            continue
+		msgs, err = c.Consume(
+			queueName,
+			"",
+			true,
+			false,
+			false,
+			false,
+			nil,
+		)
+		if err != nil {
+			w.logger.Infof("Failed to subscribe to queue %s, trying again", queueName)
+			w.logger.Error(err)
+			attempt++
+			continue
 		}
 		break
 	}
-    w.logger.Infof("Successfully subscribed to queue %s \n", queueName)
+	w.logger.Infof("Successfully subscribed to queue %s \n", queueName)
 
 	go func() {
-        for d := range msgs {
-            w.logger.Infof("Receiving Status Update from a Warehouse queue name: %s", queueName)
-            w.logger.Infof(string(d.Body))
+		for d := range msgs {
+			w.logger.Infof("Receiving Status Update from a Warehouse queue name: %s", queueName)
+			w.logger.Infof(string(d.Body))
 			//s.logger.Infof("Received Message: %s from queue", string(d.Body))
-            //var allProducts []domain.Producttype
-            //err := json.Unmarshal(d.Body, &allProducts)
-            //fmt.Println(allProducts)
-            //if err != nil {
-                //TODO: move the file writing somewhere else
-                //fmt.Println("doof")
-            //}
-            //allProductsJson, err := json.MarshalIndent(allProducts, " ", "")
-            //if err != nil {
-                ////TODO: move the file writing somewhere else
-                //fmt.Println("doof")
-            //}
-            //f.Truncate(0)
-            //f.Seek(0, 0)
-            //f.Write(allProductsJson)
-            //productsFileName := logFileDir + logFilePrefix + queueName
-            //err = ioutil.WriteFile(productsFileName, jsonProducts, 0644)
-            //if err != nil {
-                ////TODO: move the file writing somewhere else
-                //fmt.Println("doof")
-            //}
+			//var allProducts []domain.Producttype
+			//err := json.Unmarshal(d.Body, &allProducts)
+			//fmt.Println(allProducts)
+			//if err != nil {
+			//TODO: move the file writing somewhere else
+			//fmt.Println("doof")
+			//}
+			//allProductsJson, err := json.MarshalIndent(allProducts, " ", "")
+			//if err != nil {
+			////TODO: move the file writing somewhere else
+			//fmt.Println("doof")
+			//}
+			//f.Truncate(0)
+			//f.Seek(0, 0)
+			//f.Write(allProductsJson)
+			//productsFileName := logFileDir + logFilePrefix + queueName
+			//err = ioutil.WriteFile(productsFileName, jsonProducts, 0644)
+			//if err != nil {
+			////TODO: move the file writing somewhere else
+			//fmt.Println("doof")
+			//}
 			//sendChan <- string(d.Body)
 		}
 		wg.Done()
@@ -540,6 +537,7 @@ func (w *warehouse) subscribeToOtherWarehouseData(c *amqp.Channel, queueName str
 	wg.Wait()
 
 }
+
 //subscribeMessages subscribes to the RequestProducts queue and whenever a request for products comes in
 //it trys to initalize the transfer of this product
 func (w *warehouse) subscribeMessages(c *amqp.Channel, sendChan chan string, queueName string) {
@@ -547,34 +545,34 @@ func (w *warehouse) subscribeMessages(c *amqp.Channel, sendChan chan string, que
 	wg.Add(1)
 	var msgs <-chan amqp.Delivery
 	var err error
-    var attempt int
+	var attempt int
 	for {
 		time.Sleep(backoff.Default.Duration(attempt))
-        msgs, err = c.Consume(
-            queueName,
-            "",
-            true,
-            false,
-            false,
-            false,
-            nil,
-        )
-        if err != nil {
-            w.logger.Infof("Failed to subscribe to queue %s, trying again \n", queueName)
-            attempt++
-            continue
+		msgs, err = c.Consume(
+			queueName,
+			"",
+			true,
+			false,
+			false,
+			false,
+			nil,
+		)
+		if err != nil {
+			w.logger.Infof("Failed to subscribe to queue %s, trying again \n", queueName)
+			attempt++
+			continue
 		}
 		break
 	}
-    w.logger.Infof("Successfully subscribed to queue %s \n", queueName)
+	w.logger.Infof("Successfully subscribed to queue %s \n", queueName)
 	//msgs, err = c.Consume(
-		//queueName,
-		//"",
-		//true,
-		//false,
-		//false,
-		//false,
-		//nil,
+	//queueName,
+	//"",
+	//true,
+	//false,
+	//false,
+	//false,
+	//nil,
 	//)
 	if err != nil {
 		w.logger.Error(err)

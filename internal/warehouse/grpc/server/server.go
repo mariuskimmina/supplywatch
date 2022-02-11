@@ -76,22 +76,22 @@ func (s *gserver) ReceivProducts(ctx context.Context, req *pb.ReceivProductsRequ
 	if err != nil {
 		return nil, fmt.Errorf("Error opening log file: %v", err)
 	}
-    defer f.Close()
+	defer f.Close()
 	// first we log the Request
 	// this way we can compare the shippingReceivLog with the shippingSendLog of the other warehouse
 	// if they don't match something went wrong
-    logentry := &domain.ShippingLog{
-        ShippingProductID:   req.Product.Id,
-        ShippingProductName: req.Product.Name,
-    }
-	if err != nil {
-        return nil, err
+	logentry := &domain.ShippingLog{
+		ShippingProductID:   req.Product.Id,
+		ShippingProductName: req.Product.Name,
 	}
-    logjson, err := json.Marshal(logentry)
-    if err != nil {
-        return nil, fmt.Errorf("Error marshaling log data: %v", err)
-    }
-    f.WriteString(string(logjson) + ",\n")
+	if err != nil {
+		return nil, err
+	}
+	logjson, err := json.Marshal(logentry)
+	if err != nil {
+		return nil, fmt.Errorf("Error marshaling log data: %v", err)
+	}
+	f.WriteString(string(logjson) + ",\n")
 
 	//if err != nil {
 	//return nil, err

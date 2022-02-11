@@ -16,7 +16,7 @@ import (
 
 type monitor struct {
 	logger Logger
-    config config.SupplywatchConfig
+	config config.SupplywatchConfig
 }
 
 // Logger is a generic interface that can be implemented by any logging engine
@@ -31,16 +31,15 @@ type Logger interface {
 	Fatalf(template string, args ...interface{})
 }
 
-
 func NewMonitor(logger Logger, config config.SupplywatchConfig) *monitor {
 	return &monitor{
 		logger: logger,
-        config: config,
+		config: config,
 	}
 }
 
 func (s *monitor) RunAndServe() {
-    //time.Sleep(30 * time.Second)
+	//time.Sleep(30 * time.Second)
 	var wg sync.WaitGroup
 	wg.Add(1)
 	// RabbitMQ
@@ -48,45 +47,45 @@ func (s *monitor) RunAndServe() {
 		s.SetupMessageQueue(s.config.NumOfWarehouses)
 		wg.Done()
 	}()
-    for i := 1; i <= s.config.NumOfWarehouses; i++ {
-        path := "/w" + strconv.Itoa(i)
-        http.HandleFunc(path, warehousedata)
-    }
-    http.HandleFunc("/", s.overview)
-    http.ListenAndServe(":9000", nil)
-    wg.Wait()
+	for i := 1; i <= s.config.NumOfWarehouses; i++ {
+		path := "/w" + strconv.Itoa(i)
+		http.HandleFunc(path, warehousedata)
+	}
+	http.HandleFunc("/", s.overview)
+	http.ListenAndServe(":9000", nil)
+	wg.Wait()
 }
 
 func (s *monitor) overview(w http.ResponseWriter, req *http.Request) {
-    NumOfWarehouses := strconv.Itoa(s.config.NumOfWarehouses)
-    fmt.Fprintf(w, "Welcome to the Monitor!\n\nNumber of Warehouses: %s", NumOfWarehouses)
+	NumOfWarehouses := strconv.Itoa(s.config.NumOfWarehouses)
+	fmt.Fprintf(w, "Welcome to the Monitor!\n\nNumber of Warehouses: %s", NumOfWarehouses)
 }
 
 func warehousedata(w http.ResponseWriter, req *http.Request) {
-    w.Header().Set("Content-Type", "application/json")
-    path := req.URL.Path
-    number := path[len(path) - 1:]
+	w.Header().Set("Content-Type", "application/json")
+	path := req.URL.Path
+	number := path[len(path)-1:]
 	productsFileName := "/var/supplywatch/monitor/products-warehouse" + number + "DataExchange"
 	if _, err := os.Stat(productsFileName); errors.Is(err, os.ErrNotExist) {
-        fmt.Print(w, err)
+		fmt.Print(w, err)
 	}
 	productsFile, err := os.Open(productsFileName)
 	if err != nil {
-        fmt.Fprintf(w, err.Error())
+		fmt.Fprintf(w, err.Error())
 	}
 	defer productsFile.Close()
 	jsonProducts, err := ioutil.ReadAll(productsFile)
 	if err != nil {
-        fmt.Fprintf(w, err.Error())
+		fmt.Fprintf(w, err.Error())
 	}
-    var products []domain.Producttype
-    err = json.Unmarshal(jsonProducts, &products)
+	var products []domain.Producttype
+	err = json.Unmarshal(jsonProducts, &products)
 	if err != nil {
-        fmt.Fprintf(w, err.Error())
+		fmt.Fprintf(w, err.Error())
 	}
-    allProductsJson, err := json.MarshalIndent(&products, " ", "")
+	allProductsJson, err := json.MarshalIndent(&products, " ", "")
 	if err != nil {
-        fmt.Fprintf(w, err.Error())
+		fmt.Fprintf(w, err.Error())
 	}
-    fmt.Fprintf(w, string(allProductsJson))
+	fmt.Fprintf(w, string(allProductsJson))
 }

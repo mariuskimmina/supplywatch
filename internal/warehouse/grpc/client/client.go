@@ -117,7 +117,7 @@ func (c *gclient) Start(sendChan chan string, inOutProductChan chan *domain.InOu
 			_, err := c.ReceivProducts(ctx, sendProdcuts)
 			if err != nil {
 				fmt.Println("Failed to send Products, trying again in 5 seconds")
-                fmt.Println(err)
+				fmt.Println(err)
 				time.Sleep(5 * time.Second)
 				continue
 			}

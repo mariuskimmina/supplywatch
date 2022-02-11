@@ -28,8 +28,8 @@ type Producttype struct {
 }
 
 type Product interface {
-    Increment()
-    Decrement()
+	Increment()
+	Decrement()
 	//gorm.Model
 	//ID             uuid.UUID
 	//Name           string

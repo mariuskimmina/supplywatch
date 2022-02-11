@@ -40,9 +40,9 @@ func main() {
 		logger.Fatal("Failed to load supplywatch configuration")
 	}
 
-    // This part is only needed to have the warehouses work on kubernetes
-    // since kubernetes changes the hostname by appending some giberish uuid
-    // TODO: Find a better solution for multiple warehouses on both compose and kubernetes
+	// This part is only needed to have the warehouses work on kubernetes
+	// since kubernetes changes the hostname by appending some giberish uuid
+	// TODO: Find a better solution for multiple warehouses on both compose and kubernetes
 	if strings.Contains(host, "warehouse1") {
 		dbHost = "database1"
 		logger.Infof("Trying to Connect to: %s", dbHost)
@@ -64,9 +64,9 @@ func main() {
 	}
 
 	dbURI := fmt.Sprintf(
-        "host=%s user=%s dbname=%s sslmode=disable password=%s port=%d",
-        dbHost, whconfig.DBUser, whconfig.DBDatabase, whconfig.DBPassword, whconfig.DBPort,
-    )
+		"host=%s user=%s dbname=%s sslmode=disable password=%s port=%d",
+		dbHost, whconfig.DBUser, whconfig.DBDatabase, whconfig.DBPassword, whconfig.DBPort,
+	)
 	logger.Infof(dbURI)
 	db := dbConnect(dbURI)
 	warehouse := warehouse.NewWarehouse(logger, &whconfig, &swConfig, db)

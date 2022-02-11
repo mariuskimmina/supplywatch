@@ -50,32 +50,32 @@ func (w *warehouse) setupProducts() error {
 		//"eff79513-5425-4b9c-8ff5-b597f7a7f67e",
 	}
 	for index := range products {
-        w.logger.Infof("Setting up Product %d out of %d \n", index, len(products) - 1)
+		w.logger.Infof("Setting up Product %d out of %d \n", index, len(products)-1)
 		id, err := uuid.Parse(ids[index])
 		if err != nil {
-            w.logger.Error("Error Setting up Products")
+			w.logger.Error("Error Setting up Products")
 			return err
 		}
 
 		newProduct := &Product{Name: products[index], ID: id, Quantity: 3}
-        w.logger.Info(newProduct.ID.String())
-        result := w.DB.Clauses(clause.OnConflict{
-            Columns: []clause.Column{{Name: "id"}},
-            DoUpdates: clause.AssignmentColumns([]string{"quantity"}),
-        }).Create(&newProduct)
-        //result := w.DB.FirstOrCreate(&newProduct, Product{ID: id})
-        w.logger.Info(result.Error)
-        //result := w.DB.Create(&newProduct)
-        //if err != nil {
-            //w.logger.Error("Error during database operation")
-            //w.logger.Error(err)
-        //}
+		w.logger.Info(newProduct.ID.String())
+		result := w.DB.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{"quantity"}),
+		}).Create(&newProduct)
+		//result := w.DB.FirstOrCreate(&newProduct, Product{ID: id})
+		w.logger.Info(result.Error)
+		//result := w.DB.Create(&newProduct)
+		//if err != nil {
+		//w.logger.Error("Error during database operation")
+		//w.logger.Error(err)
+		//}
 		//w.DB.Create(&newProduct)
 		Products = append(Products, newProduct)
-        w.logger.Infof("Done Setting up Product %d out of %d \n", index, len(products) - 1)
+		w.logger.Infof("Done Setting up Product %d out of %d \n", index, len(products)-1)
 
 	}
-    w.logger.Info("Done setting up Products")
+	w.logger.Info("Done setting up Products")
 	return nil
 }
 
