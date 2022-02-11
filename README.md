@@ -11,7 +11,7 @@ It consists of:
 * Monitor
     * a central overview, here you can view the data of each warehouse
 
-Warehouses can also ship products to other warehouses. When a warehouse has nothing left of any given prodct it will send
+Warehouses can also ship products to other warehouses. When a warehouse has nothing left of any given product it will send
 a message to all other warehouses (via MessageQueue) requesting said product. If any of the other warehouses has atleast
 two units of that product left it will send one to the requesting warehouse (via gRPC).
 
@@ -42,7 +42,6 @@ helm install supplywatch-service
 
 ## Project Structure
 
-* `bin/`: Scripts to automate test
 * `build/`: defines the infrastructure
   * `<service-name>/`: define a Dockerfile for the concrete service.
 * `configurations/`: config files
@@ -56,19 +55,4 @@ helm install supplywatch-service
 * `media/`: images
 * `pkg/`: code that is used by multiple services.
 * `proto/`: protobuf files for gRPC
-* `tests/`: describtions of test cases.
-
-
-## Tests
-
-### Functional tests
-
-Functional tests are descirbed in the `test` directory.
-
-![UDP Test](tests/sensor-udp-test.md)
-![HTTP Test](tests/http-tests.md)
-
-### Unit tests
-
-Unit tests can be executed with `make test`
-Current test coverage (29.11.2021): ~10%
+* `tests/`: Scripts to test functionality
