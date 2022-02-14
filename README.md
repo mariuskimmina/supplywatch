@@ -31,15 +31,6 @@ Afterwards you can start the project by simply running:
 docker-compose up -d --build
 ```
 
-## Kubernetes deployment
-
-To make the deployment of the system as easy as possible, a helm chart has been provided
-Assuming that helm is installed on your system and has been setup to communicate with your cluster you can simply run:
-
-```
-helm install supplywatch-service
-```
-
 ## Project Structure
 
 * `build/`: defines the infrastructure
@@ -56,3 +47,12 @@ helm install supplywatch-service
 * `pkg/`: code that is used by multiple services.
 * `proto/`: protobuf files for gRPC
 * `tests/`: Scripts to test functionality
+
+## Kubernetes deployment
+
+To make the deployment of the system as easy as possible, a helm chart has been provided
+Assuming that helm is installed on your system and has been setup to communicate with your cluster you can simply run:
+
+```
+helm install supplywatch-service
+```

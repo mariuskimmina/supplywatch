@@ -70,6 +70,17 @@ func (w *warehouse) SetupPublishing(storageChan, sendChan chan string, warehouse
 		w.logger.Fatal("failed to get hostname")
 	}
 
+    // needed to work on kubernetes to get rid of the identifier that kubernetes appends to the name
+    if strings.Contains(host, "warehouse1"){
+        host = "warehouse1"
+    } else if strings.Contains(host, "warehouse2") {
+        host = "warehouse2"
+    } else if strings.Contains(host, "warehouse3") {
+        host = "warehouse3"
+    } else {
+        w.logger.Fatal("Invalid Hostname found")
+    }
+
 	// Each warehouse creates a queue for itself, based on its hostname
 	// otherQueues contains the names of all queues but the one of the current warehouse
 	// we will publish to otherQueues and subscribe to our own

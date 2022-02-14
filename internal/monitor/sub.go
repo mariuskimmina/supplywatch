@@ -57,14 +57,15 @@ func (s *monitor) SetupMessageQueue(numOfWarehouses int) {
 }
 
 func (s *monitor) SubtoWarehouseData(channel *amqp.Channel, exchangeName string) {
+    time.Sleep(30 * time.Second)
 	s.logger.Infof("Subbing to data exchange !! %s !!", exchangeName)
 	err := os.MkdirAll(logFileDir, 0644)
 	if err != nil {
-		fmt.Println("doof")
+		s.logger.Error("Failed to create Logfile")
 	}
 	f, err := os.OpenFile(logFileDir+logFilePrefix+exchangeName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		fmt.Println("doof")
+		s.logger.Error("Failed to Open Logfile")
 	}
 	defer f.Close()
 
@@ -115,13 +116,11 @@ func (s *monitor) SubtoWarehouseData(channel *amqp.Channel, exchangeName string)
 			err := json.Unmarshal(d.Body, &allProducts)
 			//fmt.Println(allProducts)
 			if err != nil {
-				//TODO: move the file writing somewhere else
-				fmt.Println("doof")
+                s.logger.Error("Failed to write log file")
 			}
 			allProductsJson, err := json.MarshalIndent(allProducts, " ", "")
 			if err != nil {
-				//TODO: move the file writing somewhere else
-				fmt.Println("doof")
+                s.logger.Error("Failed to write log file")
 			}
 			f.Truncate(0)
 			f.Seek(0, 0)

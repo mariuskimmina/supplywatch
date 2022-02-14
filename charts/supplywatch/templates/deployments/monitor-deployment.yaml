@@ -16,5 +16,8 @@ spec:
       containers:
         - name: monitor
           image: registry.code.fbi.h-da.de/distributed-systems/2020_vsprakt_moore/vs_ws21-22_mi5x-gimbel/mi5x-vfbi-003-team-g/monitor
+          ports:
+            - containerPort: 9000
+              name: http-port
       imagePullSecrets:
         - name: myregkeytwo
